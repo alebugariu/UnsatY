@@ -506,19 +506,31 @@ public class Input_Reader {
 			}
 		}
 	}
-	
-	private List<String> get_instantiated_assertion(List<String> assertions, Example example) {
-		List<String> instantiated_assertions = new LinkedList<String>();
+
+	private String get_instantiated_assertions(List<String> assertions, Example example) {
+		String instantiated_assertions = "";
 		for (Quant_Var quant_var : example.get_instantiated_quant_vars()) {
 			for (String assertion : assertions) {
-				if (assertion.contains(quant_var.get_name().toString()) && !instantiated_assertions.contains(assertion)) {
-					instantiated_assertions.add(assertion);
+				if (assertion.contains(quant_var.get_name().toString())
+						&& !instantiated_assertions.contains(assertion)) {
+					instantiated_assertions += assertion + "\n";
 					break;
 				}
 			}
 		}
 		return instantiated_assertions;
-		
+	}
+
+	private String get_used_declarations(List<String> declarations, String assertions) {
+		String used_declarations = "";
+		for (String declaration : declarations) {
+			String name = declaration.replace("(declare-fun", "").replace("(declare-sort", "").replace("|", "").trim();
+			name = name.substring(0, name.indexOf(" "));
+			if (assertions.contains(name)) {
+				used_declarations += declaration + "\n";
+			}
+		}
+		return used_declarations;
 	}
 
 	public Boolean minimize(Example example) {
@@ -537,18 +549,25 @@ public class Input_Reader {
 			boolean found_assert = false;
 
 			List<String> assertions = new LinkedList<String>();
+			List<String> declarations = new LinkedList<String>();
 
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
 				if (!line.startsWith("(assert")) {
-					if (found_assert) {
-						// add the assertions instantiated in the example
-						for(String instantiated_assertion : this.get_instantiated_assertion(assertions, example)) {
-							output.println(instantiated_assertion);
+					if (line.startsWith("(declare-fun") || line.startsWith("(declare-sort")) {
+						declarations.add(line);
+					} else {
+						if (found_assert) {
+							// add the used declarations and the assertions instantiated in the example
+							String instantiated_assertions = get_instantiated_assertions(assertions, example);
+							String used_declarations = get_used_declarations(declarations, instantiated_assertions);
+
+							output.print(used_declarations);
+							output.print(instantiated_assertions);
+							found_assert = false;
 						}
-						found_assert = false;
+						output.println(line);
 					}
-					output.println(line);
 				} else {
 					assertions.add(line);
 					if (!found_assert) {
