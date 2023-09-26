@@ -157,7 +157,7 @@ public class Evaluator {
 		return true;
 	}
 
-	// Tries to minimize a successfully validated potential example.
+	// Tries to minimize a successfully validated example.
 	protected boolean minimize(Example example) throws Proof_Exception {
 		minimization = false;
 
@@ -170,16 +170,16 @@ public class Evaluator {
 
 		example.unsat_core = unsat_core;
 		String minimized_example = context.benchmarkToSMTString("", "", "unsat", "", unsat_core, true_expression);
-		String minimized_example_name = String_Utility.get_file_name(example.get_File()) + "_minimized.smt2";
+		String minimized_example_name = String_Utility.get_file_name(example.get_File()).replace("_potential", "") + "_minimized.smt2";
 
-		String temp_file_path = "temp" + File.separator + minimized_example_name;
+		String output_file_path = "output" + File.separator + minimized_example_name;
 		try {
-			File temp_file = new File(temp_file_path);
-			if (!temp_file.createNewFile()) {
-				temp_file.delete();
-				temp_file.createNewFile();
+			File output_file = new File(output_file_path);
+			if (!output_file.createNewFile()) {
+				output_file.delete();
+				output_file.createNewFile();
 			}
-			PrintStream output = new PrintStream(temp_file);
+			PrintStream output = new PrintStream(output_file);
 			output.println(minimized_example);
 			output.close();
 		} catch (Exception e) {

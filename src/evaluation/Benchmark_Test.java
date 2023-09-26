@@ -8,9 +8,6 @@
 package evaluation;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,16 +24,13 @@ import util.Verbal_Output.Log_Type;
 public class Benchmark_Test {
 
 	public static void main(String[] args) {
-		try {
-			Files.createDirectories(Paths.get("temp")); // create a temp directory, if it does not exist
-			evaluation_z3();
-			// evaluation_vampire();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		File tmpFolder = new File("temp");
+		tmpFolder.mkdir(); 
+		evaluation_z3();
+		// evaluation_vampire();
 	}
 
-	private static String base_path = "test" + File.separator + "files";
+	private static String base_path = "files";
 
 	private static Log_Type log_type = Log_Type.full;
 

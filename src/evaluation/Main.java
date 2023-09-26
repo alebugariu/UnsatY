@@ -66,6 +66,12 @@ public class Main {
 
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		
+		File logsFolder = new File("logs");
+		logsFolder.mkdir();
+		
+		File tmpFolder = new File("temp");
+		tmpFolder.mkdir();
+		
 		File outputFolder = new File("output");
 		outputFolder.mkdir();
 		
@@ -82,6 +88,7 @@ public class Main {
 				Concurrency_Handler.process_file(executor, file, prover, Log_Type.full);
 			}
 			executor.shutdown();
+			FileUtils.deleteDirectory(tmpFolder);
 			return;
 		}
 
@@ -95,6 +102,7 @@ public class Main {
 			}
 			Concurrency_Handler.process_file(executor, file, prover, Log_Type.full);
 			executor.shutdown();
+			FileUtils.deleteDirectory(tmpFolder);
 		}
 	}
 }

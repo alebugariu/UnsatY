@@ -36,8 +36,8 @@ public class Benchmark_Runner implements Callable<Void> {
 
 	private void set_printstream_to_new_file(File input_file) {
 		String file_name = String_Utility.get_file_name(input_file);
-		file_name += "_benchmark_test_output_" + prover + ".txt";
-		File file = new File("output" + File.separator + file_name);
+		file_name += "_benchmark_test_log_" + prover + ".txt";
+		File file = new File("logs" + File.separator + file_name);
 		try {
 			if (!file.createNewFile()) {
 				file.delete();
