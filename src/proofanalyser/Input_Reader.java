@@ -507,25 +507,54 @@ public class Input_Reader {
 		}
 	}
 
-	private String get_instantiated_assertions(List<String> assertions, Example example) {
-		String instantiated_assertions = "";
-		for (Quant_Var quant_var : example.get_instantiated_quant_vars()) {
-			for (String assertion : assertions) {
-				if (assertion.contains(quant_var.get_name().toString())
-						&& !instantiated_assertions.contains(assertion)) {
-					instantiated_assertions += assertion + "\n";
-					break;
-				}
+	private boolean in_unsat_core(String assertion, BoolExpr[] unsat_core) {
+		for (BoolExpr unsat_core_expr : unsat_core) {
+			if (assertion.contains(unsat_core_expr.toString())) {
+				return true;
 			}
 		}
-		return instantiated_assertions;
+		return false;
+	}
+
+	private boolean was_instantiated(String assertion, List<Quant_Var> quant_vars) {
+		for (Quant_Var quant_var : quant_vars) {
+			if (assertion.contains(quant_var.get_name().toString())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private String get_required_assertions(List<String> assertions, Example example) {
+		BoolExpr[] unsat_core = example.unsat_core;
+		List<Quant_Var> quant_vars = example.get_instantiated_quant_vars();
+		String required_assertions = "";
+		for (String assertion : assertions) {
+			if (required_assertions.contains(assertion)) {
+				continue;
+			}
+			if (!assertion.contains("forall")) { // quantifier-free
+				if (in_unsat_core(assertion, unsat_core)) {
+					required_assertions += assertion + "\n";
+				}
+			} else if (was_instantiated(assertion, quant_vars)) {
+				required_assertions += assertion + "\n";
+			}
+		}
+		return required_assertions;
+
 	}
 
 	private String get_used_declarations(List<String> declarations, String assertions) {
 		String used_declarations = "";
 		for (String declaration : declarations) {
-			String name = declaration.replace("(declare-fun", "").replace("(declare-sort", "").replace("|", "").trim();
-			name = name.substring(0, name.indexOf(" "));
+			String name = declaration.replace("(declare-fun", "").replace("(declare-sort", "")
+					.replace("(declare-const", "").replace("|", "").trim();
+			if (name.contains(" ")) {
+				name = name.substring(0, name.indexOf(" "));
+			} else if (name.contains(")")) {
+				name = name.substring(0, name.indexOf(")")); // constants
+			}
 			if (assertions.contains(name)) {
 				used_declarations += declaration + "\n";
 			}
@@ -553,21 +582,25 @@ public class Input_Reader {
 
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
+				if (line.isEmpty()) {
+					continue;
+				}
 				if (!line.startsWith("(assert")) {
-					if (line.startsWith("(declare-fun") || line.startsWith("(declare-sort")) {
+					if (line.startsWith("(declare-fun") || line.startsWith("(declare-sort")
+							|| line.startsWith("(declare-const")) {
 						declarations.add(line);
-					} else {
-						if (found_assert) {
-							// add the used declarations and the assertions instantiated in the example
-							String instantiated_assertions = get_instantiated_assertions(assertions, example);
-							String used_declarations = get_used_declarations(declarations, instantiated_assertions);
-
-							output.print(used_declarations);
-							output.print(instantiated_assertions);
-							found_assert = false;
-						}
-						output.println(line);
+						continue;
 					}
+					if (found_assert) {
+						// add the used declarations and the assertions instantiated in the example
+						String instantiated_assertions = get_required_assertions(assertions, example);
+						String used_declarations = get_used_declarations(declarations, instantiated_assertions);
+
+						output.print(used_declarations);
+						output.print(instantiated_assertions);
+						found_assert = false;
+					}
+					output.println(line);
 				} else {
 					assertions.add(line);
 					if (!found_assert) {
