@@ -18,6 +18,7 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 
+import quantvar.Quant_Var;
 import quantvar.Quant_Var_Handler;
 import util.Input_Compatibility;
 import util.Proof_Exception;
@@ -52,7 +53,7 @@ public class Example {
 	// unsat-proof examined by the proof_analyser.
 	// Is provided in the constructor.
 	private Quant_Var_Handler quant_vars;
-	
+
 	BoolExpr[] unsat_core;
 
 	protected Example(Input_Reader input_reader, Proof_Analyser proof_analyser, Quant_Var_Handler quant_vars) {
@@ -65,9 +66,18 @@ public class Example {
 
 	// Contains the last example that we generated.
 	private File example_file;
-	
+
 	public File get_File() {
 		return example_file;
+	}
+
+	public List<Quant_Var> get_instantiated_quant_vars() {
+		List<Quant_Var> instantiated_quant_vars = new LinkedList<Quant_Var>();
+		for (Quant_Var quant_var : quant_vars.get_quant_vars())
+			if (quant_var.is_instantiated()) {
+				instantiated_quant_vars.add(quant_var);
+			}
+		return instantiated_quant_vars;
 	}
 
 	public String get_user_presentation(PrintStream output, Boolean success) {
@@ -141,7 +151,7 @@ public class Example {
 				constant_declarations, constant_allocations, instantiated_formulas, further_declarations);
 		return example_file;
 	}
-	
+
 	public Boolean is_the_same(BoolExpr[] other_example) {
 		BoolExpr[] this_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null, null, null);
 		if (this_example.length != other_example.length) {
@@ -168,7 +178,7 @@ public class Example {
 		}
 		return true;
 	}
-	
+
 	// *****************************************************************************
 	// Recovery-related methods and fields.
 
@@ -209,6 +219,6 @@ public class Example {
 		}
 		used_recovery = true;
 	}
-	
+
 	// *****************************************************************************
 }

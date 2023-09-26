@@ -52,7 +52,7 @@ public class Quant_Var {
 	private Symbol name;
 	// Example: x0.
 
-	protected Symbol get_name() {
+	public Symbol get_name() {
 		return name;
 	}
 
@@ -181,7 +181,7 @@ public class Quant_Var {
 
 	// Indicator whether this quantified variable is instantiated in the
 	// unsat-proof, i.e., whether we have found at least one concrete value.
-	protected Boolean is_instantiated() {
+	public Boolean is_instantiated() {
 		return !concrete_values.isEmpty();
 	}
 

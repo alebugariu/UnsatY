@@ -63,6 +63,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				framework.minimize_example();
 				log.println("------------------------------------------");
 				log.print(framework.get_user_presentation());
+				framework.minimize_input();
 			} else {
 				System.out.println("EXAMPLE CONSTURCTION FAILED.");
 			}

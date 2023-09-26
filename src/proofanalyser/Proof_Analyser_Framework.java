@@ -121,6 +121,11 @@ public class Proof_Analyser_Framework {
 		success = evaluator.minimize(example);
 		return success;
 	}
+	
+	public Boolean minimize_input() {
+		success = input_reader.minimize(example);
+		return success;
+	}
 
 	public Status get_status() {
 		return evaluator.status;

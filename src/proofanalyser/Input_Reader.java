@@ -8,12 +8,14 @@
 package proofanalyser;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import com.microsoft.z3.BoolExpr;
@@ -28,11 +30,13 @@ import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 import com.microsoft.z3.enumerations.Z3_sort_kind;
 
+import quantvar.Quant_Var;
 import quantvar.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Input_Compatibility;
 import util.Proof_Exception;
 import util.Setup;
+import util.String_Utility;
 import util.Verbal_Output;
 import util.Verbal_Output.Log_Type;
 
@@ -206,10 +210,10 @@ public class Input_Reader {
 		// Regardless of which prover we will use later, we use the input parsed by the
 		// Z3 API to collect our desired information. For simplicity we handle the
 		// quantifiers and the names with two separate searches through the z3_program.
-	
+
 		for (Expr<?> expression : input) {
 			String expression_as_string = expression.toString();
-			if(!expression_as_string.contains("forall")){
+			if (!expression_as_string.contains("forall")) {
 				continue;
 			}
 			Expr<?>[] expression_in_array = new Expr<?>[] { expression };
@@ -501,5 +505,62 @@ public class Input_Reader {
 				}
 			}
 		}
+	}
+	
+	private List<String> get_instantiated_assertion(List<String> assertions, Example example) {
+		List<String> instantiated_assertions = new LinkedList<String>();
+		for (Quant_Var quant_var : example.get_instantiated_quant_vars()) {
+			for (String assertion : assertions) {
+				if (assertion.contains(quant_var.get_name().toString()) && !instantiated_assertions.contains(assertion)) {
+					instantiated_assertions.add(assertion);
+					break;
+				}
+			}
+		}
+		return instantiated_assertions;
+		
+	}
+
+	public Boolean minimize(Example example) {
+		Scanner scanner;
+		try {
+			scanner = new Scanner(this.initial_input_file);
+
+			String minimized_input_name = String_Utility.get_file_name(this.initial_input_file) + "_minimized.smt2";
+			String output_file_path = "output" + File.separator + minimized_input_name;
+			File output_file = new File(output_file_path);
+			if (!output_file.createNewFile()) {
+				output_file.delete();
+				output_file.createNewFile();
+			}
+			PrintStream output = new PrintStream(output_file);
+			boolean found_assert = false;
+
+			List<String> assertions = new LinkedList<String>();
+
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if (!line.startsWith("(assert")) {
+					if (found_assert) {
+						// add the assertions instantiated in the example
+						for(String instantiated_assertion : this.get_instantiated_assertion(assertions, example)) {
+							output.println(instantiated_assertion);
+						}
+						found_assert = false;
+					}
+					output.println(line);
+				} else {
+					assertions.add(line);
+					if (!found_assert) {
+						found_assert = true;
+					}
+				}
+			}
+			output.close();
+			scanner.close();
+		} catch (IOException e) {
+			return false;
+		}
+		return false;
 	}
 }

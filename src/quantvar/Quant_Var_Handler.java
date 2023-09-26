@@ -90,6 +90,10 @@ public class Quant_Var_Handler {
 		this.quantified_input_formulas = new HashMap<Expr<?>, List<Quantifier>>();
 		this.parent_quantifiers = new HashMap<Quantifier, Quantifier>();
 	}
+	
+	public List<Quant_Var> get_quant_vars(){
+		return quant_vars;
+	}
 
 	// *****************************************************************************
 	// Input-related methods and fields.
