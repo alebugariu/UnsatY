@@ -73,46 +73,46 @@ public class Benchmark_Test {
 
 		{
 			// Test Set 1.
-			add("example_application_of_four_nested_functions.smt2");
-			add("example_application_of_three_nested_functions.smt2");
-			add("example_application_of_two_nested_functions.smt2");
-			add("example_barber.smt2");
-			add("example_boogie.smt2");
-			add("example_combinations.smt2");
-			add("example_de_bruijn_index_0.smt2");
-			add("example_de_bruijn_index_1.smt2");
-			add("example_de_bruijn_index_2.smt2");
-			add("example_de_bruijn_index_3.smt2");
-			add("example_de_bruijn_index_4.smt2");
-			add("example_difference_of_three_quantified_variables_without_patterns.smt2");
-			add("example_difference_of_three_quantified_variables_with_patterns.smt2");
-			add("example_difference_of_two_quantified_variables.smt2");
-			add("example_extract_quantified_variables.smt2");
-			add("example_foo.smt2");
-			add("example_infinite_possibilities.smt2");
-			add("example_infinite_possibilities_constrained.smt2");
-			add("example_just_booleans_with_pattern.smt2");
-			add("example_just_integers_with_pattern.smt2");
-			add("example_linked_list.smt2");
-			add("example_negated_quantifier.smt2");
-			add("example_nested_function_applications.smt2");
-			add("example_nested_quantifier.smt2");
-			add("example_no_quantifiers.smt2");
-			add("example_product_of_three_quantified_variables.smt2");
-			add("example_product_of_two_quantified_variables.smt2");
-			add("example_project_description.smt2");
-			add("example_project_proposal.smt2");
-			add("example_schroedingers_cat.smt2");
-			add("example_sequential_quantifiers_1.smt2");
-			add("example_sequential_quantifiers_2.smt2");
-			add("example_sequential_quantifiers_3.smt2");
-			add("example_sum_of_three_constants.smt2");
-			add("example_sum_of_three_quantified_variables.smt2");
-			add("example_sum_of_two_constants.smt2");
-			add("example_sum_of_two_quantified_variables.smt2");
-			add("example_survey.smt2");
-			add("example_thesis_overview_without_symmetry.smt2");
-			add("example_thesis_overview_with_symmetry.smt2");
+			add("bachelor_thesis/example_application_of_four_nested_functions.smt2");
+			add("bachelor_thesis/example_application_of_three_nested_functions.smt2");
+			add("bachelor_thesis/example_application_of_two_nested_functions.smt2");
+			add("bachelor_thesis/example_barber.smt2");
+			add("bachelor_thesis/example_boogie.smt2");
+			add("bachelor_thesis/example_combinations.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_0.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_1.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_2.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_3.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_4.smt2");
+			add("bachelor_thesis/example_difference_of_three_quantified_variables_without_patterns.smt2");
+			add("bachelor_thesis/example_difference_of_three_quantified_variables_with_patterns.smt2");
+			add("bachelor_thesis/example_difference_of_two_quantified_variables.smt2");
+			add("bachelor_thesis/example_extract_quantified_variables.smt2");
+			add("bachelor_thesis/example_foo.smt2");
+			add("bachelor_thesis/example_infinite_possibilities.smt2");
+			add("bachelor_thesis/example_infinite_possibilities_constrained.smt2");
+			add("bachelor_thesis/example_just_booleans_with_pattern.smt2");
+			add("bachelor_thesis/example_just_integers_with_pattern.smt2");
+			add("bachelor_thesis/example_linked_list.smt2");
+			add("bachelor_thesis/example_negated_quantifier.smt2");
+			add("bachelor_thesis/example_nested_function_applications.smt2");
+			add("bachelor_thesis/example_nested_quantifier.smt2");
+			add("bachelor_thesis/example_no_quantifiers.smt2");
+			add("bachelor_thesis/example_product_of_three_quantified_variables.smt2");
+			add("bachelor_thesis/example_product_of_two_quantified_variables.smt2");
+			add("bachelor_thesis/example_project_description.smt2");
+			add("bachelor_thesis/example_project_proposal.smt2");
+			add("bachelor_thesis/example_schroedingers_cat.smt2");
+			add("bachelor_thesis/example_sequential_quantifiers_1.smt2");
+			add("bachelor_thesis/example_sequential_quantifiers_2.smt2");
+			add("bachelor_thesis/example_sequential_quantifiers_3.smt2");
+			add("bachelor_thesis/example_sum_of_three_constants.smt2");
+			add("bachelor_thesis/example_sum_of_three_quantified_variables.smt2");
+			add("bachelor_thesis/example_sum_of_two_constants.smt2");
+			add("bachelor_thesis/example_sum_of_two_quantified_variables.smt2");
+			add("bachelor_thesis/example_survey.smt2");
+			add("bachelor_thesis/example_thesis_overview_without_symmetry.smt2");
+			add("bachelor_thesis/example_thesis_overview_with_symmetry.smt2");
 
 			// Test Set 2.
 			add("fm_paper/fm_paper_figure02.smt2");
@@ -261,45 +261,45 @@ public class Benchmark_Test {
 
 		{
 			// Test Set 1.
-			add("example_application_of_four_nested_functions.smt2");
-			add("example_application_of_three_nested_functions.smt2");
-			add("example_application_of_two_nested_functions.smt2");
-			add("example_barber.smt2");
-			add("example_boogie.smt2");
-			add("example_combinations.smt2");
-			add("example_de_bruijn_index_0.smt2");
-			add("example_de_bruijn_index_1.smt2");
-			add("example_de_bruijn_index_2.smt2");
-			add("example_de_bruijn_index_3.smt2");
-			add("example_de_bruijn_index_4.smt2");
-			add("example_difference_of_three_quantified_variables_without_patterns.smt2");
-			add("example_difference_of_three_quantified_variables_with_patterns.smt2");
-			add("example_difference_of_two_quantified_variables.smt2");
-			add("example_foo.smt2");
-			add("example_infinite_possibilities.smt2");
-			add("example_infinite_possibilities_constrained.smt2");
-			add("example_just_booleans_with_pattern.smt2");
-			add("example_just_integers_with_pattern.smt2");
-			add("example_linked_list.smt2");
-			add("example_negated_quantifier.smt2");
-			add("example_nested_function_applications.smt2");
-			add("example_nested_quantifier.smt2");
-			add("example_no_quantifiers.smt2");
-			add("example_product_of_three_quantified_variables.smt2");
-			add("example_product_of_two_quantified_variables.smt2");
-			add("example_project_description.smt2");
-			add("example_project_proposal.smt2");
-			add("example_schroedingers_cat.smt2");
-			add("example_sequential_quantifiers_1.smt2");
-			add("example_sequential_quantifiers_2.smt2");
-			add("example_sequential_quantifiers_3.smt2");
-			add("example_sum_of_three_constants.smt2");
-			add("example_sum_of_three_quantified_variables.smt2");
-			add("example_sum_of_two_constants.smt2");
-			add("example_sum_of_two_quantified_variables.smt2");
-			add("example_survey.smt2");
-			add("example_thesis_overview_without_symmetry.smt2");
-			add("example_thesis_overview_with_symmetry.smt2");
+			add("bachelor_thesis/example_application_of_four_nested_functions.smt2");
+			add("bachelor_thesis/example_application_of_three_nested_functions.smt2");
+			add("bachelor_thesis/example_application_of_two_nested_functions.smt2");
+			add("bachelor_thesis/example_barber.smt2");
+			add("bachelor_thesis/example_boogie.smt2");
+			add("bachelor_thesis/example_combinations.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_0.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_1.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_2.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_3.smt2");
+			add("bachelor_thesis/example_de_bruijn_index_4.smt2");
+			add("bachelor_thesis/example_difference_of_three_quantified_variables_without_patterns.smt2");
+			add("bachelor_thesis/example_difference_of_three_quantified_variables_with_patterns.smt2");
+			add("bachelor_thesis/example_difference_of_two_quantified_variables.smt2");
+			add("bachelor_thesis/example_foo.smt2");
+			add("bachelor_thesis/example_infinite_possibilities.smt2");
+			add("bachelor_thesis/example_infinite_possibilities_constrained.smt2");
+			add("bachelor_thesis/example_just_booleans_with_pattern.smt2");
+			add("bachelor_thesis/example_just_integers_with_pattern.smt2");
+			add("bachelor_thesis/example_linked_list.smt2");
+			add("bachelor_thesis/example_negated_quantifier.smt2");
+			add("bachelor_thesis/example_nested_function_applications.smt2");
+			add("bachelor_thesis/example_nested_quantifier.smt2");
+			add("bachelor_thesis/example_no_quantifiers.smt2");
+			add("bachelor_thesis/example_product_of_three_quantified_variables.smt2");
+			add("bachelor_thesis/example_product_of_two_quantified_variables.smt2");
+			add("bachelor_thesis/example_project_description.smt2");
+			add("bachelor_thesis/example_project_proposal.smt2");
+			add("bachelor_thesis/example_schroedingers_cat.smt2");
+			add("bachelor_thesis/example_sequential_quantifiers_1.smt2");
+			add("bachelor_thesis/example_sequential_quantifiers_2.smt2");
+			add("bachelor_thesis/example_sequential_quantifiers_3.smt2");
+			add("bachelor_thesis/example_sum_of_three_constants.smt2");
+			add("bachelor_thesis/example_sum_of_three_quantified_variables.smt2");
+			add("bachelor_thesis/example_sum_of_two_constants.smt2");
+			add("bachelor_thesis/example_sum_of_two_quantified_variables.smt2");
+			add("bachelor_thesis/example_survey.smt2");
+			add("bachelor_thesis/example_thesis_overview_without_symmetry.smt2");
+			add("bachelor_thesis/example_thesis_overview_with_symmetry.smt2");
 
 			// Test Set 2.
 			add("fm_paper/fm_paper_figure02.smt2");
@@ -352,7 +352,7 @@ public class Benchmark_Test {
 
 		{
 			// Test Set 1.
-			add("example_extract_quantified_variables.smt2");
+			add("bachelor_thesis/example_extract_quantified_variables.smt2");
 
 			// Test Set 2.
 			add("fm_paper/fm_paper_figure06.smt2");
