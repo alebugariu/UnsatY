@@ -31,8 +31,8 @@ make
 
 # compile our tool:
 cd $PATH_UNSATY
-mkdir classes
-javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3_4.12.1/build/com.microsoft.z3.jar" -sourcepath src src/evaluation.Main.java
+mkdir -p classes
+javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3_4.12.1/build/com.microsoft.z3.jar" -sourcepath src src/evaluation/Main.java
 chmod +x run.sh
 
 export LD_LIBRARY_PATH=$PATH_SMTSolvers/z3_4.12.1/build
