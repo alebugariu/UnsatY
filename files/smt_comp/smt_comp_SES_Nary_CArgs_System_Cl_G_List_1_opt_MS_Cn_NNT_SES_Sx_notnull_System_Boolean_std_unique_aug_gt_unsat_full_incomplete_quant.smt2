@@ -1,5 +1,3 @@
-; INCLUDE_IN_Z3_BENCHMARK_TEST TRUE
-; INCLUDE_IN_VAMPIRE_BENCHMARK_TEST TRUE
 
 (set-info :smt-lib-version 2.6)
 (set-info :source | This benchmark originally named "SExpressionSimplifier.Nary.CollectArguments$System.Collections.Generic.List`1...optional...Microsoft.Contracts.NonNullType.SExpressionSimplifier.Sx$notnull$System.Boolean.smt2" This benchmark was translated by Michal Moskal. |)

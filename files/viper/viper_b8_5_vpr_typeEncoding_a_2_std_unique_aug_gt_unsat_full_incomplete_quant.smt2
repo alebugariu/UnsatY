@@ -1,5 +1,3 @@
-; INCLUDE_IN_Z3_BENCHMARK_TEST FALSE
-; INCLUDE_IN_VAMPIRE_BENCHMARK_TEST TRUE
 
 ; NOTE: this file is refuted by MBQI from command line, but not with the API
 

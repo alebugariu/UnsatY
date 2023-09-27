@@ -1,5 +1,3 @@
-; INCLUDE_IN_Z3_BENCHMARK_TEST TRUE
-; INCLUDE_IN_VAMPIRE_BENCHMARK_TEST TRUE
 
 (set-info :smt-lib-version 2.6)
 (set-info :source | This benchmark originally named "SExpressionSimplifier.Atom.Write$System.IO.TextWriter$notnull.smt2" This benchmark was translated by Michal Moskal. |)

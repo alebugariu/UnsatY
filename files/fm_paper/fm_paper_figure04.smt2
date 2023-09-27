@@ -1,5 +1,3 @@
-; INCLUDE_IN_Z3_BENCHMARK_TEST FALSE
-; INCLUDE_IN_VAMPIRE_BENCHMARK_TEST FALSE
 
 (set-option :AUTO_CONFIG false)
 (set-option :smt.MBQI false)
