@@ -30,9 +30,12 @@ make
 
 # clone smt-triggen and install PySMT
 cd $ROOT
-git clone https://github.com/alebugariu/smt-triggen Triggen 
+git clone https://github.com/alebugariu/smt-triggen Triggen
+pip3 install -e Triggen 
 curl -L https://github.com/alebugariu/pysmt/archive/refs/tags/v0.8.0-ale.tar.gz | tar xvz -C .
 mv pysmt-0.8.0-ale pysmt
+
+export PYTHONPATH=$ROOT/pysmt
 
 # compile our tool:
 cd $PATH_UNSATY
