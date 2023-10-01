@@ -7,8 +7,10 @@
  *******************************************************************************/
 package evaluation;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,12 +28,18 @@ public class Benchmark_Runner implements Callable<Void> {
 	private Prover prover;
 	private PrintStream log;
 	private Log_Type log_type;
+	private String preprocessor;
 
-	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type) {
-		this.input_file = input_file;
+	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type, String preprocessor) throws Proof_Exception {
+		this.preprocessor = preprocessor;
+		if (this.preprocessor == null) {
+			this.input_file = input_file;
+		} else {
+			this.input_file = preprocess(input_file);
+		}
 		this.prover = prover;
 		this.log_type = log_type;
-		set_printstream_to_new_file(input_file);
+		set_printstream_to_new_file(this.input_file);
 	}
 
 	private void set_printstream_to_new_file(File input_file) {
@@ -47,6 +55,33 @@ public class Benchmark_Runner implements Callable<Void> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private File preprocess(File input_file) throws Proof_Exception {
+		try {
+			String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
+					+ File.separator + "test_runner.py";
+			Process python_process = new ProcessBuilder("python3", preprocessing_script, "PatternAugmenter",
+					"--timeout", "600", "--location", input_file.getAbsolutePath()).start();
+
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(python_process.getErrorStream()));
+			
+			String error_message = "";
+			String s;
+			while ((s = stdError.readLine()) != null) {
+				error_message += s + "\n";
+			}
+			if(!error_message.isEmpty()) {
+				throw new Proof_Exception(error_message);
+			}
+		} catch (IOException e) {
+			throw new Proof_Exception(e.getMessage());
+		}
+		return null;
+	}
+
+	public boolean preprocessing_enabled() {
+		return preprocessor != null;
 	}
 
 	@Override

@@ -45,7 +45,7 @@ public class Benchmark_Test {
 		try {
 			for (String benchmark : successful_z3_benchmarks) {
 				File input_file = new File(base_path + File.separator + benchmark);
-				Concurrency_Handler.process_file(executor, input_file, Prover.z3, log_type);
+				Concurrency_Handler.process_file(executor, input_file, Prover.z3, log_type, null);
 			}
 		} catch (Exception e) {
 			System.out.println("\tPROBLEM: " + e.getMessage());
@@ -60,7 +60,7 @@ public class Benchmark_Test {
 		try {
 			for (String benchmark : successful_vampire_benchmarks) {
 				File input_file = new File(base_path + File.separator + benchmark);
-				Concurrency_Handler.process_file(executor, input_file, Prover.vampire, log_type);
+				Concurrency_Handler.process_file(executor, input_file, Prover.vampire, log_type, null);
 			}
 		} catch (Exception e) {
 			System.out.println("\tPROBLEM: " + e.getMessage());

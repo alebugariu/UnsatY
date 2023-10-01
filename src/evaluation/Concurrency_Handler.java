@@ -20,8 +20,12 @@ import util.Verbal_Output.Log_Type;
 
 public class Concurrency_Handler {
 
-	public static void start_thread(ExecutorService executor, Benchmark_Runner runner) throws InterruptedException, ExecutionException {
+	public static void start_thread(ExecutorService executor, Benchmark_Runner runner)
+			throws InterruptedException, ExecutionException {
 		int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
+		if (runner.preprocessing_enabled()) {
+			timeout += 600; // additional 600s for preprocessing
+		}
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
 		System.out.println("Started Calculations: " + dtf.format(now));
@@ -39,10 +43,10 @@ public class Concurrency_Handler {
 		System.out.println();
 	}
 
-	public static void process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type) {
-		Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type);
-		System.out.println("Processing " + file.toString() + " with " + prover + ": ");
+	public static void process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) {
 		try {
+			Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor);
+			System.out.println("Processing " + file.toString() + " with " + prover + ": ");
 			start_thread(executor, runner);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

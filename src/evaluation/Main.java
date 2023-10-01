@@ -41,6 +41,10 @@ public class Main {
 		Option proverOpt = new Option("prover", true, "prover used to generate the unsat proof (Z3, Vampire)");
 		proverOpt.setRequired(true);
 		options.addOption(proverOpt);
+		
+
+		Option preprocessOpt = new Option("pre", true, "absolute path to the tool used to preprocess the inputs (transform them into NNF, ensure that all quantified variables have unique names, etc.)");
+		options.addOption(preprocessOpt);
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -75,6 +79,12 @@ public class Main {
 		File outputFolder = new File("output");
 		outputFolder.mkdir();
 		
+		String preprocessor = null;
+		
+		if (cmd.hasOption("pre")) {
+			preprocessor = cmd.getOptionValue("pre");
+		}
+		
 		if (cmd.hasOption("folder")) {
 
 			String folderName = cmd.getOptionValue("folder");
@@ -85,7 +95,7 @@ public class Main {
 			}
 			Collection<File> files = FileUtils.listFiles(folder, new String[] { "smt2" }, true);
 			for (File file : files) {
-				Concurrency_Handler.process_file(executor, file, prover, Log_Type.full);
+				Concurrency_Handler.process_file(executor, file, prover, Log_Type.full, preprocessor);
 			}
 			executor.shutdown();
 			FileUtils.deleteDirectory(tmpFolder);
@@ -100,7 +110,7 @@ public class Main {
 				System.out.println("The file " + fileName + " does not exist!");
 				System.exit(1);
 			}
-			Concurrency_Handler.process_file(executor, file, prover, Log_Type.full);
+			Concurrency_Handler.process_file(executor, file, prover, Log_Type.full, preprocessor);
 			executor.shutdown();
 			FileUtils.deleteDirectory(tmpFolder);
 		}
