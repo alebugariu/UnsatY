@@ -10,7 +10,7 @@ package util;
 public class Setup {
 	public static int z3_timout = 600000; // 600 s in ms.
 	public static int z3_memory_limit = 6000; // 6000 MB.
-	public static int z3_rlimit = 1000000000;
+	public static int z3_rlimit = 10000000;
 
 	public static String vampire_timeout = "600"; // 600 s.
 	public static String vampire_memory_limit = "6000"; // 6000 MB.
