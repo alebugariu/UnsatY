@@ -8,8 +8,6 @@
 package evaluation;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -23,12 +21,6 @@ public class Concurrency_Handler {
 	public static void start_thread(ExecutorService executor, Benchmark_Runner runner)
 			throws InterruptedException, ExecutionException {
 		int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
-		if (runner.preprocessing_enabled()) {
-			timeout += 600; // additional 600s for preprocessing
-		}
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-		LocalDateTime now = LocalDateTime.now();
-		System.out.println("Started Calculations: " + dtf.format(now));
 		// Kick off calculations.
 		Future<Void> future = executor.submit(runner);
 		try {
@@ -38,18 +30,17 @@ public class Concurrency_Handler {
 				future.cancel(true);
 			}
 		}
-		now = LocalDateTime.now();
-		System.out.println("Finished Calculations: " + dtf.format(now));
-		System.out.println();
 	}
 
-	public static void process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) {
+	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) {
 		try {
 			Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor);
 			System.out.println("Processing " + file.toString() + " with " + prover + ": ");
-			start_thread(executor, runner);
+			Future<Void> future = executor.submit(runner);
+			return future;
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+		return null;
 	}
 }

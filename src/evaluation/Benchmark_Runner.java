@@ -88,10 +88,12 @@ public class Benchmark_Runner implements Callable<Void> {
 	public Void call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log_type, log);
 		try {
-			framework.setup();
-			framework.generate_proof();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
+			System.out.println("Started Calculations: " + dtf.format(now));
+			framework.setup();
+			framework.generate_proof();
+			now = LocalDateTime.now();
 			System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
 			if (framework.construct_potential_example()) {
 				System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
@@ -109,6 +111,9 @@ public class Benchmark_Runner implements Callable<Void> {
 			System.out.print("[STATUS: " + framework.get_status() + "]");
 			System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
 			System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+			now = LocalDateTime.now();
+			System.out.println("Finished Calculations: " + dtf.format(now));
+			System.out.println();
 		} catch (Proof_Exception e) {
 			System.out.println("FAIL: " + e.getMessage());
 		}

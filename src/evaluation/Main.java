@@ -9,9 +9,13 @@ package evaluation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -41,9 +45,9 @@ public class Main {
 		Option proverOpt = new Option("prover", true, "prover used to generate the unsat proof (Z3, Vampire)");
 		proverOpt.setRequired(true);
 		options.addOption(proverOpt);
-		
 
-		Option preprocessOpt = new Option("pre", true, "absolute path to the tool used to preprocess the inputs (transform them into NNF, ensure that all quantified variables have unique names, etc.)");
+		Option preprocessOpt = new Option("pre", true,
+				"absolute path to the tool used to preprocess the inputs (transform them into NNF, ensure that all quantified variables have unique names, etc.)");
 		options.addOption(preprocessOpt);
 
 		CommandLineParser parser = new DefaultParser();
@@ -68,23 +72,21 @@ public class Main {
 			System.exit(1);
 		}
 
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		
 		File logsFolder = new File("logs");
 		logsFolder.mkdir();
-		
+
 		File tmpFolder = new File("temp");
 		tmpFolder.mkdir();
-		
+
 		File outputFolder = new File("output");
 		outputFolder.mkdir();
-		
+
 		String preprocessor = null;
-		
+
 		if (cmd.hasOption("pre")) {
 			preprocessor = cmd.getOptionValue("pre");
 		}
-		
+
 		if (cmd.hasOption("folder")) {
 
 			String folderName = cmd.getOptionValue("folder");
@@ -94,10 +96,7 @@ public class Main {
 				System.exit(1);
 			}
 			Collection<File> files = FileUtils.listFiles(folder, new String[] { "smt2" }, true);
-			for (File file : files) {
-				Concurrency_Handler.process_file(executor, file, prover, Log_Type.full, preprocessor);
-			}
-			executor.shutdown();
+			evaluate(files, prover, preprocessor);
 			FileUtils.deleteDirectory(tmpFolder);
 			return;
 		}
@@ -110,9 +109,31 @@ public class Main {
 				System.out.println("The file " + fileName + " does not exist!");
 				System.exit(1);
 			}
-			Concurrency_Handler.process_file(executor, file, prover, Log_Type.full, preprocessor);
-			executor.shutdown();
+			Collection<File> files = new ArrayList<File>();
+			files.add(file);
+			evaluate(files, prover, preprocessor);
 			FileUtils.deleteDirectory(tmpFolder);
 		}
+	}
+
+	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor) {
+		int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
+		int nr_threads = Runtime.getRuntime().availableProcessors();
+		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);
+		List<Future<Void>> threads = new ArrayList<Future<Void>>();
+
+		for (File benchmark : benchmarks) {
+			threads.add(Concurrency_Handler.process_file(executor, benchmark, prover, Log_Type.full, preprocessor));
+		}
+		for (Future<Void> future : threads) {
+			try {
+				future.get(timeout, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				if (!future.isDone()) {
+					future.cancel(true);
+				}
+			}
+		}
+		executor.shutdown();
 	}
 }
