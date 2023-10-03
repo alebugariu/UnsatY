@@ -116,7 +116,8 @@ public class Main {
 		}
 	}
 
-	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor) {
+	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor)
+			throws Proof_Exception {
 		int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
 		int nr_threads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);

@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import proofanalyser.Proof_Analyser_Framework.Prover;
+import util.Proof_Exception;
 import util.Verbal_Output.Log_Type;
 
 public class Concurrency_Handler {
@@ -32,15 +33,10 @@ public class Concurrency_Handler {
 		}
 	}
 
-	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) {
-		try {
+	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) throws Proof_Exception{
 			Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor);
 			System.out.println("Processing " + file.toString() + " with " + prover + ": ");
 			Future<Void> future = executor.submit(runner);
 			return future;
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-		return null;
 	}
 }

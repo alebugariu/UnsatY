@@ -77,7 +77,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				error_message += s + "\n";
 			}
 			if (!error_message.isEmpty()) {
-				throw new Proof_Exception(error_message);
+				throw new Proof_Exception("Error during preprocessing: " + error_message);
 			}
 
 			String output = "";
@@ -85,14 +85,14 @@ public class Benchmark_Runner implements Callable<Void> {
 				output += s + "\n";
 			}
 			if (output.contains("crash")) {
-				throw new Proof_Exception(output);
+				throw new Proof_Exception("Error during preprocessing: " + output);
 			}
 			String new_file_path = file_path
 					.replace(parent_folder, parent_folder + File.separator + "pattern_augmenter")
 					.replace(file_name, file_name + "_std_unique_aug-gt_unsat-full");
 			return new File(new_file_path);
-		} catch (Exception e) {
-			throw new Proof_Exception(e.getMessage());
+		} catch (IOException e) {
+			throw new Proof_Exception("Error during preprocessing: " + e.getMessage());
 		}
 	}
 
