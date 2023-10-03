@@ -84,7 +84,7 @@ public class Benchmark_Runner implements Callable<Void> {
 			while ((s = stdOutput.readLine()) != null) {
 				output += s + "\n";
 			}
-			if (output.contains("crash")) {
+			if (output.contains("crash") && !output.contains("crashed in 0 cases")) {
 				throw new Proof_Exception("Error during preprocessing: " + output);
 			}
 			String new_file_path = file_path
