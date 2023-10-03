@@ -30,7 +30,8 @@ public class Benchmark_Runner implements Callable<Void> {
 	private Log_Type log_type;
 	private String preprocessor;
 
-	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type, String preprocessor) throws Proof_Exception {
+	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type, String preprocessor)
+			throws Proof_Exception {
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
 			this.input_file = input_file;
@@ -58,36 +59,41 @@ public class Benchmark_Runner implements Callable<Void> {
 	}
 
 	private File preprocess(File input_file) throws Proof_Exception {
+		String file_name = String_Utility.get_file_name(input_file);
+		String parent_folder = input_file.getParentFile().getName();
+		String file_path = input_file.getAbsolutePath();
 		try {
 			String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
 					+ File.separator + "test_runner.py";
 			Process python_process = new ProcessBuilder("python3", preprocessing_script, "PatternAugmenter",
-					"--timeout", "600", "--location", input_file.getAbsolutePath()).start();
+					"--timeout", "600", "--location", file_path).start();
 
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(python_process.getErrorStream()));
 			BufferedReader stdOutput = new BufferedReader(new InputStreamReader(python_process.getInputStream()));
-			
+
 			String error_message = "";
 			String s;
 			while ((s = stdError.readLine()) != null) {
 				error_message += s + "\n";
 			}
-			if(!error_message.isEmpty()) {
+			if (!error_message.isEmpty()) {
 				throw new Proof_Exception(error_message);
 			}
-			
+
 			String output = "";
 			while ((s = stdOutput.readLine()) != null) {
 				output += s + "\n";
 			}
-			if(output.contains("crash")) {
-			       throw new Proof_Exception(output);
+			if (output.contains("crash")) {
+				throw new Proof_Exception(output);
 			}
-		} catch (IOException e) {
+			String new_file_path = file_path
+					.replace(parent_folder, parent_folder + File.separator + "pattern_augmenter")
+					.replace(file_name, file_name + "_std_unique_aug-gt_unsat-full");
+			return new File(new_file_path);
+		} catch (Exception e) {
 			throw new Proof_Exception(e.getMessage());
 		}
-		System.out.println("No error");
-		return null;
 	}
 
 	public boolean preprocessing_enabled() {
