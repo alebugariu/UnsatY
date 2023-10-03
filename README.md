@@ -35,7 +35,7 @@ chmod +x install.sh
 Run the script install.sh: 
 
 ```
-./install.sh
+source ./install.sh
 ```
 
 # Usage
