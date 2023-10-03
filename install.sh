@@ -18,7 +18,7 @@ cd $ROOT
 mkdir -p $PATH_SMTSolvers
 cd $PATH_SMTSolvers
 
-# Z3
+# Z3 [4.12.1 for UnsatY]
 wget https://github.com/Z3Prover/z3/archive/z3-4.12.1.tar.gz
 tar -zxvf z3-4.12.1.tar.gz
 rm z3-4.12.1.tar.gz
@@ -27,6 +27,12 @@ cd z3_4.12.1
 python scripts/mk_make.py --java
 cd build
 make
+
+# Z3 [4.8.10 for smt-triggen]
+curl -L -O https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip
+unzip z3-4.8.10-x64-ubuntu-18.04.zip
+rm z3-4.8.10-x64-ubuntu-18.04.zip
+mv z3-4.8.10-x64-ubuntu-18.04 z3-4.8.10
 
 # clone smt-triggen and install PySMT
 cd $ROOT
@@ -43,4 +49,4 @@ mkdir -p classes
 javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3_4.12.1/build/com.microsoft.z3.jar" -sourcepath src src/evaluation/Main.java
 chmod +x run.sh
 
-export LD_LIBRARY_PATH=$PATH_SMTSolvers/z3_4.12.1/build
+export PATH=$PATH:$PATH_SMTSolvers/z3-4.8.10/bin
