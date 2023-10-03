@@ -65,6 +65,7 @@ public class Benchmark_Runner implements Callable<Void> {
 					"--timeout", "600", "--location", input_file.getAbsolutePath()).start();
 
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(python_process.getErrorStream()));
+			BufferedReader stdOutput = new BufferedReader(new InputStreamReader(python_process.getInputStream()));
 			
 			String error_message = "";
 			String s;
@@ -74,9 +75,18 @@ public class Benchmark_Runner implements Callable<Void> {
 			if(!error_message.isEmpty()) {
 				throw new Proof_Exception(error_message);
 			}
+			
+			String output = "";
+			while ((s = stdOutput.readLine()) != null) {
+				output += s + "\n";
+			}
+			if(output.contains("crash")) {
+			       throw new Proof_Exception(output);
+			}
 		} catch (IOException e) {
 			throw new Proof_Exception(e.getMessage());
 		}
+		System.out.println("No error");
 		return null;
 	}
 
