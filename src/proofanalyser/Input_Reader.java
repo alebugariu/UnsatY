@@ -375,31 +375,10 @@ public class Input_Reader {
 		Symbol[] variables = quantifier.getBoundVariableNames();
 		Sort[] types = quantifier.getBoundVariableSorts();
 		int n = variables.length;
-		Quantifier parent_quantifier = quant_vars.get_parent_quantifier(quantifier);
-		while (parent_quantifier != null) {
-			Symbol[] further_variables = parent_quantifier.getBoundVariableNames();
-			Sort[] further_types = parent_quantifier.getBoundVariableSorts();
-			int new_n = n + further_variables.length;
-			Symbol[] total_variables = new Symbol[new_n];
-			Sort[] total_types = new Sort[new_n];
-			for (int i = 0; i < new_n; i++) {
-				if (i < n) {
-					total_variables[i] = variables[i];
-					total_types[i] = types[i];
-				} else {
-					total_variables[i] = further_variables[i - n];
-					total_types[i] = further_types[i - n];
-				}
-			}
-			variables = total_variables;
-			types = total_types;
-			n = new_n;
-			parent_quantifier = quant_vars.get_parent_quantifier(parent_quantifier);
-		}
 		// Then, for each of them we create a constant with the same name, and store
 		// these in REVERSE order (due to De Bruijn indexing).
+		Expr<?>[] constant_variables = new Expr<?>[variables.length];
 		try {
-			Expr<?>[] constant_variables = new Expr<?>[variables.length];
 			for (int i = 0; i < n; i++) {
 				constant_variables[n - i - 1] = context.mkConst(variables[i].toString(), types[i]);
 			}
@@ -521,7 +500,7 @@ public class Input_Reader {
 		return false;
 	}
 
-	private String get_required_assertions(List<String> assertions, Example example) {
+	private String get_required_assertions(Set<String> assertions, Example example) {
 		BoolExpr[] unsat_core = example.unsat_core;
 		List<Quant_Var> quant_vars = example.get_instantiated_quant_vars();
 		String required_assertions = "";
@@ -541,7 +520,7 @@ public class Input_Reader {
 
 	}
 
-	private String get_used_declarations(List<String> declarations, String assertions) {
+	private String get_used_declarations(Set<String> declarations, String assertions) {
 		String used_declarations = "";
 		for (String declaration : declarations) {
 			String name = declaration.replace("(declare-fun", "").replace("(declare-sort", "")
@@ -561,7 +540,7 @@ public class Input_Reader {
 	public Boolean minimize(Example example) {
 		Scanner scanner;
 		try {
-			scanner = new Scanner(this.initial_input_file);
+			scanner = new Scanner(this.z3_input_file);
 
 			String minimized_input_name = String_Utility.get_file_name(this.initial_input_file) + "_minimized.smt2";
 			String output_file_path = "output" + File.separator + minimized_input_name;
@@ -573,8 +552,8 @@ public class Input_Reader {
 			PrintStream output = new PrintStream(output_file);
 			boolean found_assert = false;
 
-			List<String> assertions = new LinkedList<String>();
-			List<String> declarations = new LinkedList<String>();
+			Set<String> assertions = new LinkedHashSet<String>();
+			Set<String> declarations = new LinkedHashSet<String>();
 
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
