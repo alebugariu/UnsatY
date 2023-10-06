@@ -164,7 +164,7 @@ public class Input_Reader {
 				// make_z3_compatible defined in the class Input_Compability.
 				put("proof", "true");
 				put("model", "false");
-				put("rlimit", String.valueOf(Setup.z3_rlimit));
+				//put("rlimit", String.valueOf(Setup.z3_rlimit));
 				// The seeds cannot be added to the context (Z3 API does not allow it), but will
 				// be added to the solver in the Z3_Proof_Analyser.
 			}

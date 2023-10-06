@@ -113,8 +113,6 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		// The following tactics enables proof generation with MBQI (tactic "smt" is equivalent to "(check-sat-using smt)" in the input file)
 		// and ensure on-par performance with command line
 		// See https://github.com/Z3Prover/z3/issues/5490 for further information.
-		// The following tactic corresponds to having "(check-sat-using smt)" in the
-		// input file.
 		Tactic tactic = context.andThen(context.mkTactic("solve-eqs"), context.mkTactic("simplify"),
 				context.mkTactic("normalize-bounds"), context.mkTactic("propagate-values"), context.mkTactic("smt"));
 		Solver solver = context.mkSolver(tactic);

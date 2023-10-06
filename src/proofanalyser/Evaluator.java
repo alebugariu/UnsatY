@@ -77,8 +77,9 @@ public class Evaluator {
 	protected Evaluator(Input_Reader input_reader, Proof_Analyser proof_analyser, Quant_Var_Handler quant_vars) {
 		this.verbal_output = input_reader.verbal_output;
 		this.context = input_reader.context;
-		// Enable unsat-core generation (which we did not need before).
+		// Enable unsat-core generation (which we did not need before) and disable proof generation
 		context.updateParamValue("unsat_core", "true");
+		context.updateParamValue("proof", "false");
 		this.evaluation_solver = context.mkSolver();
 		// Set the solver settings.
 		Params evaluation_solver_settings = context.mkParams();
