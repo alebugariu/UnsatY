@@ -14,8 +14,6 @@ import java.time.format.DateTimeFormatter;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Params;
-import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 
 import quantvar.Quant_Var_Handler;
@@ -65,9 +63,7 @@ public class Evaluator {
 	// Is provided in the constructor.
 	private Context context;
 
-	// The solver that we use for evaluation.
-	// Is initialized in the constructor.
-	private Solver evaluation_solver;
+	private Unsat_Core_Finder unsat_core_finder;
 
 	private BoolExpr true_expression;
 
@@ -77,19 +73,7 @@ public class Evaluator {
 	protected Evaluator(Input_Reader input_reader, Proof_Analyser proof_analyser, Quant_Var_Handler quant_vars) {
 		this.verbal_output = input_reader.verbal_output;
 		this.context = input_reader.context;
-		// Enable unsat-core generation (which we did not need before) and disable proof generation
-		context.updateParamValue("unsat_core", "true");
-		context.updateParamValue("proof", "false");
-		this.evaluation_solver = context.mkSolver();
-		// Set the solver settings.
-		Params evaluation_solver_settings = context.mkParams();
-		evaluation_solver_settings.add("auto-config", false);
-		evaluation_solver_settings.add("mbqi", true);
-		evaluation_solver_settings.add("ematching", false);
-		evaluation_solver_settings.add("unsat_core", true);
-		evaluation_solver_settings.add("timeout", Setup.z3_timout);
-		evaluation_solver_settings.add("max_memory", Setup.z3_memory_limit);
-		evaluation_solver.setParameters(evaluation_solver_settings);
+		this.unsat_core_finder = new Unsat_Core_Finder(this.context);
 		this.true_expression = this.context.mkBool(true);
 	}
 
@@ -162,7 +146,7 @@ public class Evaluator {
 	protected boolean minimize(Example example) throws Proof_Exception {
 		minimization = false;
 
-		BoolExpr[] unsat_core = evaluation_solver.getUnsatCore();
+		BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
 
 		if (unsat_core.length > 0 && !Setup.testing_environment) {
 			verbal_output.add_to_buffer("[INFO]", "Z3 generates the following UNSAT-core:");
@@ -208,7 +192,7 @@ public class Evaluator {
 		// check method rather than via solver.add(evaluation_program), because the
 		// latter approach always produces empty unsat-cores.
 		// See https://stackoverflow.com/questions/32595806/z3-java-api-get-unsat-core.
-		status = evaluation_solver.check(potential_example);
+		status = unsat_core_finder.check(potential_example);
 		if (status.equals(Status.UNSATISFIABLE)) {
 			verbal_output.add_to_buffer("[SUCCESS]", "The potential example is unsat.");
 			return true;
@@ -220,7 +204,7 @@ public class Evaluator {
 			verbal_output.add_to_buffer("[PROBLEM]", "The potential example is unknown.");
 			verbal_output.add_to_buffer("[PROBLEM]", "It therefore does not suffice to produce the contradiction.");
 			Exception_Handler.throw_proof_exception(
-					"The potential example is unknown: " + evaluation_solver.getReasonUnknown(), verbal_output,
+					"The potential example is unknown: " + unsat_core_finder.get_reason_unknown(), verbal_output,
 					Status.UNKNOWN);
 		}
 		// Unreachable.
