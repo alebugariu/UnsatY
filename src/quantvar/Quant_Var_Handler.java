@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -90,8 +90,8 @@ public class Quant_Var_Handler {
 		this.quantified_input_formulas = new HashMap<Expr<?>, List<Quantifier>>();
 		this.parent_quantifiers = new HashMap<Quantifier, Quantifier>();
 	}
-	
-	public List<Quant_Var> get_quant_vars(){
+
+	public List<Quant_Var> get_quant_vars() {
 		return quant_vars;
 	}
 
@@ -242,7 +242,7 @@ public class Quant_Var_Handler {
 					// Since multiple quantified variables may appear in the same input formula, we
 					// must remember all of them that do so.
 					if (!vampirized_input_formulas.containsKey(vampirized_input_formula)) {
-						Set<Quant_Var> input_formula_quant_vars = new HashSet<Quant_Var>();
+						Set<Quant_Var> input_formula_quant_vars = new LinkedHashSet<Quant_Var>();
 						input_formula_quant_vars.add(quant_var);
 						vampirized_input_formulas.put(vampirized_input_formula, input_formula_quant_vars);
 					} else {
@@ -281,7 +281,7 @@ public class Quant_Var_Handler {
 
 	// Returns a set of all vampire_names of elements in quant_vars.
 	public Set<String> get_vampire_quant_var_names() {
-		Set<String> out = new HashSet<String>();
+		Set<String> out = new LinkedHashSet<String>();
 		for (Quant_Var quant_var : quant_vars) {
 			if (quant_var.is_vampire_quant_var()) {
 				out.add(((Vampire_Quant_Var) quant_var).get_vampire_name());
@@ -325,7 +325,7 @@ public class Quant_Var_Handler {
 
 	// We can only setup the parser once we collected all function declarations from
 	// the input, as the parser relies on them to parse function applications.
-	public void setup_parser(List<FuncDecl<?>> function_declarations) {
+	public void setup_parser(Set<FuncDecl<?>> function_declarations) {
 		parser = new Vampire_to_Z3_Parser(context, function_declarations);
 	}
 
@@ -502,21 +502,21 @@ public class Quant_Var_Handler {
 
 	// Contains the declarations of these constants we just described.
 	// Is null before the method make_assertions has been called.
-	public List<FuncDecl<?>> constant_declarations;
+	public Set<FuncDecl<?>> constant_declarations;
 
 	// Contains assignments of concrete values to the constants in
 	// constant_declarations.
 	// Is null before make_assertions has been called.
-	public List<Expr<?>> constant_allocations;
+	public Set<Expr<?>> constant_allocations;
 
 	// Contains the input formulas that we instantiate.
 	// Is null before make_assertions has been called.
-	public List<Expr<?>> instantiated_formulas;
+	public Set<Expr<?>> instantiated_formulas;
 
 	// Contains further declarations for some expressions in constant_allocations
 	// and instantiated_formulas.
 	// Is null before make_assertions has been called.
-	public List<FuncDecl<?>> further_declarations;
+	public Set<FuncDecl<?>> further_declarations;
 
 	// Uses the concrete values we extracted from the unsat-proofs to instantiate
 	// some of the quantifiers from the input.
@@ -527,10 +527,10 @@ public class Quant_Var_Handler {
 	public void make_assertions(Context context) {
 		// Initialize our sets and map.
 		make_constants(context);
-		constant_declarations = new LinkedList<FuncDecl<?>>();
-		constant_allocations = new LinkedList<Expr<?>>();
-		instantiated_formulas = new LinkedList<Expr<?>>();
-		further_declarations = new LinkedList<FuncDecl<?>>();
+		constant_declarations = new LinkedHashSet<FuncDecl<?>>();
+		constant_allocations = new LinkedHashSet<Expr<?>>();
+		instantiated_formulas = new LinkedHashSet<Expr<?>>();
+		further_declarations = new LinkedHashSet<FuncDecl<?>>();
 		for (Expr<?> quantified_input_formula : quantified_input_formulas.keySet()) {
 			// We instantiate each quantifier that appears in sequence in the input formula
 			// separately, along with any nested quantifiers it may contain.
@@ -582,16 +582,13 @@ public class Quant_Var_Handler {
 					for (Expr<?> quant_var_constant_allocation : quant_var_constant_allocations) {
 						if (quant_var_constant_allocation.isEq()) {
 							Expr<?> constant = quant_var_constant_allocation.getArgs()[0];
-							if (constant.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)
-									&& !constant_declarations.contains(constant.getFuncDecl())) {
+							if (constant.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
 								constant_declarations.add(constant.getFuncDecl());
 							}
 						}
 					}
 					for (FuncDecl<?> further_declaration : quant_var.make_further_declarations()) {
-						if (!further_declarations.contains(further_declaration)) {
-							further_declarations.add(further_declaration);
-						}
+						further_declarations.add(further_declaration);
 					}
 				}
 			}
@@ -620,9 +617,7 @@ public class Quant_Var_Handler {
 					quantifier_constants[len - i - 1] = constants;
 					for (Expr<?> constant : constants) {
 						FuncDecl<?> constant_declaration = constant.getFuncDecl();
-						if (!constant_declarations.contains(constant_declaration)) {
-							constant_declarations.add(constant_declaration);
-						}
+						constant_declarations.add(constant_declaration);
 					}
 					break;
 				}

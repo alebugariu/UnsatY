@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
@@ -120,10 +121,10 @@ public class Example {
 	// Generates a potential example and stores it at "temp\<name>.smt2"
 	protected File make_new_example(String name) throws Proof_Exception {
 		quant_vars.make_assertions(context);
-		List<FuncDecl<?>> constant_declarations = quant_vars.constant_declarations;
-		List<Expr<?>> constant_allocations = quant_vars.constant_allocations;
-		List<Expr<?>> instantiated_formulas = quant_vars.instantiated_formulas;
-		List<FuncDecl<?>> further_declarations = quant_vars.further_declarations;
+		Set<FuncDecl<?>> constant_declarations = quant_vars.constant_declarations;
+		Set<Expr<?>> constant_allocations = quant_vars.constant_allocations;
+		Set<Expr<?>> instantiated_formulas = quant_vars.instantiated_formulas;
+		Set<FuncDecl<?>> further_declarations = quant_vars.further_declarations;
 		/*
 		 * Example
 		 * 

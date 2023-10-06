@@ -7,7 +7,7 @@
  *******************************************************************************/
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -354,7 +354,7 @@ public class Implementation_Test {
 		System.out.print("Testing the method String_Utility.get_min_dist_string: \t\t\t\t");
 		try {
 			// Check that it does what it is supposed to.
-			Set<String> candidates = new HashSet<String>();
+			Set<String> candidates = new LinkedHashSet<String>();
 			candidates.add("cut");
 			candidates.add(smt_func_decl_1_const);
 			candidates.add(smt_func_decl_2_const);
@@ -475,7 +475,7 @@ public class Implementation_Test {
 	public void test_devampirize() {
 		System.out.print("Testing the method String_Utility.devampirize: \t\t\t\t\t");
 		// Check that it does what it is supposed to.
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new LinkedHashSet<String>();
 		names.add("Test");
 		assertEquals("Test", String_Utility.devampirize("'Test'", names));
 		names.add("P");
@@ -496,7 +496,7 @@ public class Implementation_Test {
 	public static String vampire_line_4 = "184. $sum(X2,$sum($uminus(X2),X3)) = X3 [forward demodulation 164,31]";
 
 	private void prepare_vampire_lines() {
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new LinkedHashSet<String>();
 		names.add("f");
 		vampire_line_1 = String_Utility.devampirize(vampire_line_1, names);
 		vampire_line_2 = String_Utility.devampirize(vampire_line_2, names);
@@ -651,7 +651,7 @@ public class Implementation_Test {
 		System.out.print("Testing the method Basic_Expr_Parser.parse_to_expr: \t\t\t\t");
 		// Check that it does what it is supposed to.
 		Context context = new Context();
-		Vampire_to_Z3_Parser parser = new Vampire_to_Z3_Parser(context, new LinkedList<FuncDecl<?>>());
+		Vampire_to_Z3_Parser parser = new Vampire_to_Z3_Parser(context, new LinkedHashSet<FuncDecl<?>>());
 		assertEquals("true", parser.parse_to_expr("true").toString());
 		assertEquals("false", parser.parse_to_expr("false").toString());
 		assertEquals("1", parser.parse_to_expr("1").toString());

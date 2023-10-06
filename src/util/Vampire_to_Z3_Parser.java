@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.Context;
@@ -32,7 +33,7 @@ public class Vampire_to_Z3_Parser {
 
 	private Map<String, FuncDecl<?>> declarations;
 
-	public Vampire_to_Z3_Parser(Context context, List<FuncDecl<?>> f_decls) {
+	public Vampire_to_Z3_Parser(Context context, Set<FuncDecl<?>> f_decls) {
 		// Note: It is crucial to always use the same context, as otherwise it does not
 		// know what we are talking about.
 		this.context = context;

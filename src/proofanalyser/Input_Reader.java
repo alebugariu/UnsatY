@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -113,9 +113,9 @@ public class Input_Reader {
 	// Collects all declarations from the input.
 	// Is null before the method z3_setup has been called.
 	// Is empty before the method analyze_input has been called.
-	protected List<FuncDecl<?>> declarations;
+	protected Set<FuncDecl<?>> declarations;
 
-	public List<Expr<?>> constants;
+	public Set<Expr<?>> constants;
 
 	// We further collect all user-defined names. That is, the names of every
 	// user-defined function, constant and type. We need them if our Proof_Analyser
@@ -138,9 +138,9 @@ public class Input_Reader {
 	protected Input_Reader(File input_file, Log_Type output_type, PrintStream out) {
 		this.initial_input_file = input_file;
 		this.verbal_output = new Verbal_Output(output_type, out);
-		this.function_names = new HashSet<String>();
-		this.constant_names = new HashSet<String>();
-		this.type_names = new HashSet<String>();
+		this.function_names = new LinkedHashSet<String>();
+		this.constant_names = new LinkedHashSet<String>();
+		this.type_names = new LinkedHashSet<String>();
 		if (!Setup.testing_environment) {
 			verbal_output.add_to_buffer("[INFO]", "Handling " + initial_input_file.toString() + ".");
 			verbal_output.add_to_buffer("[INFO]", "Created an Input_Reader object.");
@@ -171,8 +171,8 @@ public class Input_Reader {
 		};
 		this.context = new Context(context_settings);
 		this.quant_vars = new Quant_Var_Handler(verbal_output, context, this);
-		this.declarations = new LinkedList<FuncDecl<?>>();
-		this.constants = new LinkedList<Expr<?>>();
+		this.declarations = new LinkedHashSet<FuncDecl<?>>();
+		this.constants = new LinkedHashSet<Expr<?>>();
 		// Next, we have to modify the input_file so that the method parseSMTLIB2File as
 		// well as the code written in this project will succeed.
 		this.z3_input_file = Input_Compatibility.make_z3_compatible(initial_input_file, verbal_output);
@@ -334,9 +334,10 @@ public class Input_Reader {
 			// We look for applications of uninterpreted functions, which are applications
 			// marked as Z3_OP_UNINTERPRETED and have more than 0 arguments.
 			if (expression.isApp()) {
-				if (expression.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)
-						&& quantifier != null && expression.getNumArgs() > 0) {
-					declarations.add(expression.getFuncDecl());
+				FuncDecl<?> func_decl = expression.getFuncDecl();
+				if (func_decl.getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED) && quantifier != null
+						&& expression.getNumArgs() > 0) {
+					declarations.add(func_decl);
 					// We found an application of an uninterpreted function, which we give to
 					// quant_vars. However, the variables in the application are not directly the
 					// quantified variables, but some sort of local variables that reference the
@@ -352,7 +353,7 @@ public class Input_Reader {
 					// Note that uninterpreted functions with zero arguments are constants, which we
 					// ignore.
 				} else if (expression.getNumArgs() == 0) {
-					declarations.add(expression.getFuncDecl());
+					declarations.add(func_decl);
 					constants.add(expression);
 				}
 				if (expression.getNumArgs() > 0) {
@@ -417,40 +418,34 @@ public class Input_Reader {
 				// Our expression is an application.
 				// If it has type Z3_OP_UNINTERPRETED, then its name is user-defined.
 				if (expression.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
-					Set<Sort> types = new HashSet<Sort>();
+					Set<Sort> types = new LinkedHashSet<Sort>();
 					if (expression.getNumArgs() > 0) {
 						// We found an uninterpreted function.
 						String function_name = expression.getFuncDecl().getName().toString();
-						if (!function_names.contains(function_name)) {
-							function_names.add(function_name);
-							if (!Setup.testing_environment) {
-								verbal_output.add_to_buffer("[INFO]", "Added " + function_name + " to function_names.");
-							}
-							for (Sort sort : expression.getFuncDecl().getDomain()) {
-								types.add(sort);
-							}
-							types.add(expression.getFuncDecl().getRange());
+						function_names.add(function_name);
+						if (!Setup.testing_environment) {
+							verbal_output.add_to_buffer("[INFO]", "Added " + function_name + " to function_names.");
 						}
+						for (Sort sort : expression.getFuncDecl().getDomain()) {
+							types.add(sort);
+						}
+						types.add(expression.getFuncDecl().getRange());
 					} else if (expression.getNumArgs() == 0) {
 						// We found a user-defined constant.
 						String constant_name = expression.getFuncDecl().getName().toString();
-						if (!constant_names.contains(constant_name)) {
-							constant_names.add(constant_name);
-							if (!Setup.testing_environment) {
-								verbal_output.add_to_buffer("[INFO]", "Added " + constant_name + " to constant_names.");
-							}
-							types.add(expression.getFuncDecl().getRange());
+						constant_names.add(constant_name);
+						if (!Setup.testing_environment) {
+							verbal_output.add_to_buffer("[INFO]", "Added " + constant_name + " to constant_names.");
 						}
+						types.add(expression.getFuncDecl().getRange());
 					}
 					// Finally, we add the user-defined types that we found.
 					for (Sort sort : types) {
 						if (sort.getSortKind().equals(Z3_sort_kind.Z3_UNINTERPRETED_SORT)) {
 							String new_type = sort.getName().toString();
-							if (!type_names.contains(new_type)) {
-								type_names.add(new_type);
-								if (!Setup.testing_environment) {
-									verbal_output.add_to_buffer("[INFO]", "Added " + new_type + " to type_names.");
-								}
+							type_names.add(new_type);
+							if (!Setup.testing_environment) {
+								verbal_output.add_to_buffer("[INFO]", "Added " + new_type + " to type_names.");
 							}
 						}
 					}

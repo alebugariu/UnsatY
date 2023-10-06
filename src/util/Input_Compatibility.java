@@ -12,10 +12,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
@@ -322,13 +324,13 @@ public class Input_Compatibility {
 	// - All assignments of concrete values to constants in constant_allocations.
 	// - All instantiated quantifiers in quantifier_instantiations.
 	public static File make_example(File input_file, Verbal_Output verbal_output, String output_file_name,
-			List<FuncDecl<?>> constant_declarations, List<Expr<?>> constant_allocations,
-			List<Expr<?>> quantifier_instantiations, List<FuncDecl<?>> further_declarations) throws Proof_Exception {
+			Set<FuncDecl<?>> constant_declarations, Set<Expr<?>> constant_allocations,
+			Set<Expr<?>> quantifier_instantiations, Set<FuncDecl<?>> further_declarations) throws Proof_Exception {
 		// We differ between declarations and assertions, because we want to ensure that
 		// everything was declared before it may be possibly used in some assertion.
-		List<String> sort_declaration_print_buffer = new LinkedList<String>();
-		List<String> declaration_print_buffer = new LinkedList<String>();
-		List<String> assertion_print_buffer = new LinkedList<String>();
+		Set<String> sort_declaration_print_buffer = new LinkedHashSet<String>();
+		Set<String> declaration_print_buffer = new LinkedHashSet<String>();
+		Set<String> assertion_print_buffer = new LinkedHashSet<String>();
 		Scanner scanner;
 		try {
 			scanner = new Scanner(input_file);
@@ -364,11 +366,7 @@ public class Input_Compatibility {
 				// to throw an error when parsing.
 				line = String_Utility.func_decl_to_const_decl(line);
 			}
-			if (!declaration_print_buffer.contains(line)) {
-				// We must be careful not to add declarations twice (this may happen if the
-				// thing declared appears both in the input and in further_declarations).
-				declaration_print_buffer.add(line);
-			}
+			declaration_print_buffer.add(line);
 		}
 		// For each quantified variable, there as many associated constants in
 		// constant_declarations as there were found possible values. If no possible
@@ -380,25 +378,19 @@ public class Input_Compatibility {
 			// Once more we rewrite the function-declarations without arguments to
 			// constant-declarations to have the same form everywhere.
 			line = String_Utility.func_decl_to_const_decl(line);
-			if (!declaration_print_buffer.contains(line)) {
-				declaration_print_buffer.add(line);
-			}
+			declaration_print_buffer.add(line);
 		}
 		// Now, we assign our possible values to these constants we just declared.
 		for (Expr<?> constant_allocation : constant_allocations) {
 			String line = String_Utility.remove_line_breaks("(assert " + constant_allocation.toString() + ")");
-			if (!assertion_print_buffer.contains(line)) {
-				assertion_print_buffer.add(line);
-			}
+			assertion_print_buffer.add(line);
 		}
 		// Finally, we have instantiated quantifiers that substitute the quantified
 		// variables with all the possible combinations of constants corresponding to
 		// each of those quantified variables.
 		for (Expr<?> quantifier_instantiation : quantifier_instantiations) {
 			String line = String_Utility.remove_line_breaks("(assert " + quantifier_instantiation.toString() + ")");
-			if (!assertion_print_buffer.contains(line)) {
-				assertion_print_buffer.add(line);
-			}
+			assertion_print_buffer.add(line);
 		}
 		// Then, we are set to actually create that evaluation file and fill it.
 		try {

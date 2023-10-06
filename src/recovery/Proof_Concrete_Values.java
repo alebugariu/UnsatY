@@ -7,7 +7,7 @@
  *******************************************************************************/
 package recovery;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.microsoft.z3.Expr;
@@ -29,7 +29,7 @@ public class Proof_Concrete_Values {
 	}
 
 	public Proof_Concrete_Values() {
-		concrete_values = new HashSet<Expr<?>>();
+		concrete_values = new LinkedHashSet<Expr<?>>();
 	}
 
 	// Adds new_value to concrete_values if not already present.
@@ -45,7 +45,7 @@ public class Proof_Concrete_Values {
 
 	// Returns the subset of concrete_values that have the sort type.
 	public Set<Expr<?>> get(Sort type) {
-		Set<Expr<?>> out = new HashSet<Expr<?>>();
+		Set<Expr<?>> out = new LinkedHashSet<Expr<?>>();
 		for (Expr<?> concrete_value : concrete_values) {
 			try {
 				if (concrete_value.getSort().equals(type)) {

@@ -9,7 +9,7 @@ package quantvar;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +141,7 @@ public class Quant_Var {
 					function_applications_with_quantified_variables.get(f_decl).add(application);
 				}
 			} else {
-				Set<Expr<?>> arguments = new HashSet<Expr<?>>();
+				Set<Expr<?>> arguments = new LinkedHashSet<Expr<?>>();
 				arguments.add(application);
 				function_applications_with_quantified_variables.put(f_decl, arguments);
 			}

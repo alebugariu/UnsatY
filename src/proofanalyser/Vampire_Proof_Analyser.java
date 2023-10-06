@@ -10,7 +10,7 @@ package proofanalyser;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -103,7 +103,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 			verbal_output.add_to_buffer("[INFO]", "Created a Vampire_Proof_Analyser object.");
 		}
 		// Create the names set.
-		names = new HashSet<String>();
+		names = new LinkedHashSet<String>();
 		names.addAll(input_reader.function_names);
 		names.addAll(input_reader.constant_names);
 		for (String sort : input_reader.type_names) {
