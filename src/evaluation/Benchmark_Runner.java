@@ -63,6 +63,7 @@ public class Benchmark_Runner implements Callable<Void> {
 		String parent_folder = input_file.getParentFile().getName();
 		String file_path = input_file.getAbsolutePath();
 		try {
+			System.out.println("Preprocessing " + file_name);
 			String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
 					+ File.separator + "test_runner.py";
 			Process python_process = new ProcessBuilder("python3", preprocessing_script, "PatternAugmenter",
@@ -96,14 +97,11 @@ public class Benchmark_Runner implements Callable<Void> {
 		}
 	}
 
-	public boolean preprocessing_enabled() {
-		return preprocessor != null;
-	}
-
 	@Override
 	public Void call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log_type, log);
 		try {
+			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
 			System.out.println("Started Calculations: " + dtf.format(now));

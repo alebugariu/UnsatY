@@ -35,7 +35,6 @@ public class Concurrency_Handler {
 
 	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) throws Proof_Exception{
 			Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor);
-			System.out.println("Processing " + file.toString() + " with " + prover + ": ");
 			Future<Void> future = executor.submit(runner);
 			return future;
 	}

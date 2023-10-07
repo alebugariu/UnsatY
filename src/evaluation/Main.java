@@ -95,6 +95,10 @@ public class Main {
 				System.out.println("The folder " + folderName + " does not exist!");
 				System.exit(1);
 			}
+			if (!folder.isDirectory()) {
+				System.out.println(folderName + " is not a folder!");
+				System.exit(1);
+			}
 			Collection<File> files = FileUtils.listFiles(folder, new String[] { "smt2" }, true);
 			evaluate(files, prover, preprocessor);
 			FileUtils.deleteDirectory(tmpFolder);
@@ -107,6 +111,10 @@ public class Main {
 			File file = new File(fileName);
 			if (!file.exists()) {
 				System.out.println("The file " + fileName + " does not exist!");
+				System.exit(1);
+			}
+			if (!file.isFile()) {
+				System.out.println(fileName + " is not a file!");
 				System.exit(1);
 			}
 			Collection<File> files = new ArrayList<File>();
@@ -133,6 +141,7 @@ public class Main {
 				if (!future.isDone()) {
 					future.cancel(true);
 				}
+				e.printStackTrace();
 			}
 		}
 		executor.shutdown();
