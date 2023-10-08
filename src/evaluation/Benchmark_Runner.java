@@ -97,39 +97,57 @@ public class Benchmark_Runner implements Callable<Void> {
 		}
 	}
 
+	private void process(Proof_Analyser_Framework framework) throws Proof_Exception {
+		System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		System.out.println("Started Calculations: " + dtf.format(now));
+		framework.setup();
+		framework.generate_proof();
+		now = LocalDateTime.now();
+		System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
+		if (framework.construct_potential_example()) {
+			System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
+			framework.minimize_example();
+			log.println("------------------------------------------");
+			log.print(framework.get_user_presentation());
+			framework.minimize_input();
+		} else {
+			System.out.println("EXAMPLE CONSTURCTION FAILED.");
+		}
+		log.println("------------------------------------------");
+		log.print("[STATUS: " + framework.get_status() + "]");
+		log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+		log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+		System.out.print("[STATUS: " + framework.get_status() + "]");
+		System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+		System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+		now = LocalDateTime.now();
+		System.out.println("Finished Calculations: " + dtf.format(now));
+		System.out.println();
+	}
+
 	@Override
 	public Void call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log_type, log);
 		try {
-			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-			LocalDateTime now = LocalDateTime.now();
-			System.out.println("Started Calculations: " + dtf.format(now));
-			framework.setup();
-			framework.generate_proof();
-			now = LocalDateTime.now();
-			System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
-			if (framework.construct_potential_example()) {
-				System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
-				framework.minimize_example();
-				log.println("------------------------------------------");
-				log.print(framework.get_user_presentation());
-				framework.minimize_input();
-			} else {
-				System.out.println("EXAMPLE CONSTURCTION FAILED.");
-			}
-			log.println("------------------------------------------");
-			log.print("[STATUS: " + framework.get_status() + "]");
-			log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-			log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
-			System.out.print("[STATUS: " + framework.get_status() + "]");
-			System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-			System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
-			now = LocalDateTime.now();
-			System.out.println("Finished Calculations: " + dtf.format(now));
-			System.out.println();
+			process(framework);
 		} catch (Proof_Exception e) {
-			System.out.println("FAIL: " + e.getMessage());
+			String error_message = e.getMessage();
+			System.out.println("FAIL: " + error_message);
+			if (!error_message.contains("smt tactic failed to show goal to be sat/unsat (incomplete quantifiers)")) {
+				// try to extract the unsat core first
+				System.out.println();
+				System.out.println(
+						"Trying to extract the unsat core for " + input_file.toString() + " with " + prover + ": ");
+				try {
+					if (framework.generate_unsat_core()) {
+						process(new Proof_Analyser_Framework(framework.get_input_file(), prover, log_type, log)); // the input file now only contains the unsat core
+					}
+				} catch (Proof_Exception exc) {
+					System.out.println("FAIL: " + exc.getMessage());
+				}
+			}
 		}
 		framework.close_context();
 		return null;

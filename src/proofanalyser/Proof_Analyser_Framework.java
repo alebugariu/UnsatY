@@ -8,9 +8,13 @@
 package proofanalyser;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Status;
 
@@ -95,7 +99,7 @@ public class Proof_Analyser_Framework {
 					input_reader.verbal_output);
 		}
 	}
-	
+
 	public void generate_proof() throws Proof_Exception {
 		proof_analyser.generate_unsat_proof();
 	}
@@ -110,6 +114,30 @@ public class Proof_Analyser_Framework {
 		return success;
 	}
 
+	public boolean generate_unsat_core() throws Proof_Exception {
+		Context context = input_reader.context;
+		Unsat_Core_Finder unsat_core_finder = new Unsat_Core_Finder(context);
+		if (unsat_core_finder.is_unsat(input_reader.input, input_reader.verbal_output)) {
+			BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
+			String unsat_core_assertions = input_reader.context.benchmarkToSMTString("", "", "unsat", "", unsat_core, context.mkBool(true));
+			FileWriter fileWriter;
+			try {
+				fileWriter = new FileWriter(input_file, false);
+				fileWriter.write(unsat_core_assertions);
+				fileWriter.close();
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			} 
+		}
+		return false;
+	}
+	
+	public File get_input_file() {
+		return input_file;
+	}
+
 	private Boolean success = false;
 
 	public Boolean recover_example() throws Proof_Exception {
@@ -121,7 +149,7 @@ public class Proof_Analyser_Framework {
 		success = evaluator.minimize(example);
 		return success;
 	}
-	
+
 	public Boolean minimize_input() {
 		success = input_reader.minimize(example);
 		return success;
@@ -142,7 +170,7 @@ public class Proof_Analyser_Framework {
 	public String get_user_presentation() {
 		return example.get_user_presentation(log, success);
 	}
-	
+
 	public void close_context() {
 		input_reader.context.close();
 	}

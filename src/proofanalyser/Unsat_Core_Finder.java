@@ -13,7 +13,10 @@ import com.microsoft.z3.Params;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 
+import util.Exception_Handler;
+import util.Proof_Exception;
 import util.Setup;
+import util.Verbal_Output;
 
 public class Unsat_Core_Finder {
 
@@ -22,7 +25,8 @@ public class Unsat_Core_Finder {
 
 	public Unsat_Core_Finder(Context context) {
 		this.context = context;
-		// Enable unsat-core generation (which we did not need before) and disable proof generation
+		// Enable unsat-core generation (which we did not need before) and disable proof
+		// generation
 		this.context.updateParamValue("unsat_core", "true");
 		this.context.updateParamValue("proof", "false");
 		this.solver = this.context.mkSolver();
@@ -36,17 +40,38 @@ public class Unsat_Core_Finder {
 		solver_settings.add("max_memory", Setup.z3_memory_limit);
 		this.solver.setParameters(solver_settings);
 	}
-	
-	BoolExpr[] get_unsat_core() {
+
+	public BoolExpr[] get_unsat_core() {
 		return solver.getUnsatCore();
 	}
-	
-	Status check(BoolExpr[] formula) {
+
+	private Status check(BoolExpr[] formula) {
 		return solver.check(formula);
 	}
-	
-	String get_reason_unknown() {
+
+	public String get_reason_unknown() {
 		return solver.getReasonUnknown();
+	}
+
+	public Boolean is_unsat(BoolExpr[] formula, Verbal_Output verbal_output) throws Proof_Exception {
+		// Note that we add the formula as an argument of the
+		// check method rather than via solver.add(formula), because the
+		// latter approach always produces empty unsat-cores.
+		// See https://stackoverflow.com/questions/32595806/z3-java-api-get-unsat-core.
+		Status status = check(formula);
+		if (status.equals(Status.UNSATISFIABLE)) {
+			verbal_output.add_to_buffer("[SUCCESS]", "The formula is unsat.");
+			return true;
+		} else if (status.equals(Status.SATISFIABLE)) {
+			verbal_output.add_to_buffer("[PROBLEM]", "The formula is sat.");
+			return false;
+		} else if (status.equals(Status.UNKNOWN)) {
+			verbal_output.add_to_buffer("[PROBLEM]", "The formula is unknown.");
+			Exception_Handler.throw_proof_exception("The formula is unknown: " + get_reason_unknown(),
+					verbal_output, Status.UNKNOWN);
+		}
+		// Unreachable.
+		return false;
 	}
 
 }

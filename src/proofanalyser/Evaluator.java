@@ -65,8 +65,6 @@ public class Evaluator {
 
 	private Unsat_Core_Finder unsat_core_finder;
 
-	private BoolExpr true_expression;
-
 	// Expects a Quant_Var_Handler object that is populated appropriately.
 	// Do not call this constructor yourself but use the evaluate method in your
 	// Proof_Analyser object.
@@ -74,7 +72,6 @@ public class Evaluator {
 		this.verbal_output = input_reader.verbal_output;
 		this.context = input_reader.context;
 		this.unsat_core_finder = new Unsat_Core_Finder(this.context);
-		this.true_expression = this.context.mkBool(true);
 	}
 
 	protected Status status = Status.SATISFIABLE;
@@ -84,7 +81,7 @@ public class Evaluator {
 	protected Boolean validate(Example example, File example_file) {
 		BoolExpr[] parsed_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null, null, null);
 		try {
-			if (is_unsat(parsed_example)) {
+			if (unsat_core_finder.is_unsat(parsed_example, verbal_output)) {
 				return true;
 			}
 		} catch (Proof_Exception e) {
@@ -109,7 +106,7 @@ public class Evaluator {
 			recovery = 1;
 			BoolExpr[] parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null,
 					null, null);
-			if (!is_unsat(parsed_potential_example)) {
+			if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
 				if (Setup.testing_environment) {
 					DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 					LocalDateTime now = LocalDateTime.now();
@@ -120,7 +117,7 @@ public class Evaluator {
 				recovery = 2;
 				parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null, null,
 						null);
-				if (!is_unsat(parsed_potential_example)) {
+				if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
 					if (Setup.testing_environment) {
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 						LocalDateTime now = LocalDateTime.now();
@@ -131,7 +128,7 @@ public class Evaluator {
 					recovery = 3;
 					parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null,
 							null, null);
-					if (!is_unsat(parsed_potential_example)) {
+					if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
 						return false;
 					}
 				}
@@ -154,7 +151,7 @@ public class Evaluator {
 		}
 
 		example.unsat_core = unsat_core;
-		String minimized_example = context.benchmarkToSMTString("", "", "unsat", "", unsat_core, true_expression);
+		String minimized_example = context.benchmarkToSMTString("", "", "unsat", "", unsat_core, context.mkBool(true));
 		String minimized_example_name = String_Utility.get_file_name(example.get_File()).replace("_potential", "") + "_minimized.smt2";
 
 		String output_file_path = "output" + File.separator + minimized_example_name;
@@ -183,31 +180,5 @@ public class Evaluator {
 		// Minimization fail.
 		status = Status.UNSATISFIABLE;
 		return true;
-	}
-
-	// Checks with Z3 whether the potential_example is unsat.
-	// Returns true if that is the case
-	private Boolean is_unsat(BoolExpr[] potential_example) throws Proof_Exception {
-		// Note that we add the evaluation_program as an argument of the
-		// check method rather than via solver.add(evaluation_program), because the
-		// latter approach always produces empty unsat-cores.
-		// See https://stackoverflow.com/questions/32595806/z3-java-api-get-unsat-core.
-		status = unsat_core_finder.check(potential_example);
-		if (status.equals(Status.UNSATISFIABLE)) {
-			verbal_output.add_to_buffer("[SUCCESS]", "The potential example is unsat.");
-			return true;
-		} else if (status.equals(Status.SATISFIABLE)) {
-			verbal_output.add_to_buffer("[PROBLEM]", "The potential example is sat.");
-			verbal_output.add_to_buffer("[PROBLEM]", "It therefore does not suffice to produce the contradiction.");
-			return false;
-		} else if (status.equals(Status.UNKNOWN)) {
-			verbal_output.add_to_buffer("[PROBLEM]", "The potential example is unknown.");
-			verbal_output.add_to_buffer("[PROBLEM]", "It therefore does not suffice to produce the contradiction.");
-			Exception_Handler.throw_proof_exception(
-					"The potential example is unknown: " + unsat_core_finder.get_reason_unknown(), verbal_output,
-					Status.UNKNOWN);
-		}
-		// Unreachable.
-		return false;
 	}
 }
