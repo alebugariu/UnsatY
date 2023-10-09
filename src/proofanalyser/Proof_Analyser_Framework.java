@@ -133,10 +133,6 @@ public class Proof_Analyser_Framework {
 		}
 		return false;
 	}
-	
-	public File get_input_file() {
-		return input_file;
-	}
 
 	private Boolean success = false;
 

@@ -8,10 +8,8 @@
 package evaluation;
 
 import java.io.File;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import proofanalyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
@@ -19,23 +17,10 @@ import util.Verbal_Output.Log_Type;
 
 public class Concurrency_Handler {
 
-	public static void start_thread(ExecutorService executor, Benchmark_Runner runner)
-			throws InterruptedException, ExecutionException {
-		int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
-		// Kick off calculations.
-		Future<Void> future = executor.submit(runner);
-		try {
-			future.get(timeout, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			if (!future.isDone()) {
-				future.cancel(true);
-			}
-		}
-	}
-
-	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type, String preprocessor) throws Proof_Exception{
-			Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor);
-			Future<Void> future = executor.submit(runner);
-			return future;
+	public static Future<Boolean> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type,
+			String preprocessor, boolean unsat_core) throws Proof_Exception {
+		Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor, unsat_core);
+		Future<Boolean> future = executor.submit(runner);
+		return future;
 	}
 }

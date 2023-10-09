@@ -22,15 +22,16 @@ import util.Proof_Exception;
 import util.String_Utility;
 import util.Verbal_Output.Log_Type;
 
-public class Benchmark_Runner implements Callable<Void> {
+public class Benchmark_Runner implements Callable<Boolean> {
 
 	private File input_file;
 	private Prover prover;
 	private PrintStream log;
 	private Log_Type log_type;
 	private String preprocessor;
+	private boolean unsat_core;
 
-	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type, String preprocessor)
+	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type, String preprocessor, boolean unsat_core)
 			throws Proof_Exception {
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
@@ -40,6 +41,7 @@ public class Benchmark_Runner implements Callable<Void> {
 		}
 		this.prover = prover;
 		this.log_type = log_type;
+		this.unsat_core = unsat_core;
 		set_printstream_to_new_file(this.input_file);
 	}
 
@@ -127,29 +129,31 @@ public class Benchmark_Runner implements Callable<Void> {
 		System.out.println();
 	}
 
+	// returns true if one should try to compute the unsat core first
 	@Override
-	public Void call() {
+	public Boolean call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log_type, log);
 		try {
-			process(framework);
+			if (unsat_core) {
+				System.out.println(
+						"Trying to extract the unsat core for " + input_file.toString() + " with " + prover + ": ");
+				framework.setup();
+				if (framework.generate_unsat_core()) {
+					process(framework);
+				}
+			} else {
+				process(framework);
+			}
 		} catch (Proof_Exception e) {
 			String error_message = e.getMessage();
 			System.out.println("FAIL: " + error_message);
+			System.out.println();
 			if (!error_message.contains("smt tactic failed to show goal to be sat/unsat (incomplete quantifiers)")) {
-				// try to extract the unsat core first
-				System.out.println();
-				System.out.println(
-						"Trying to extract the unsat core for " + input_file.toString() + " with " + prover + ": ");
-				try {
-					if (framework.generate_unsat_core()) {
-						process(new Proof_Analyser_Framework(framework.get_input_file(), prover, log_type, log)); // the input file now only contains the unsat core
-					}
-				} catch (Proof_Exception exc) {
-					System.out.println("FAIL: " + exc.getMessage());
-				}
+				framework.close_context();
+				return true;
 			}
 		}
 		framework.close_context();
-		return null;
+		return false;
 	}
 }

@@ -60,15 +60,18 @@ public class Unsat_Core_Finder {
 		// See https://stackoverflow.com/questions/32595806/z3-java-api-get-unsat-core.
 		Status status = check(formula);
 		if (status.equals(Status.UNSATISFIABLE)) {
-			verbal_output.add_to_buffer("[SUCCESS]", "The formula is unsat.");
+			verbal_output.add_to_buffer("[SUCCESS]", "Z3 returned unsat.");
 			return true;
-		} else if (status.equals(Status.SATISFIABLE)) {
-			verbal_output.add_to_buffer("[PROBLEM]", "The formula is sat.");
+		} 
+		if (status.equals(Status.SATISFIABLE)) {
+			verbal_output.add_to_buffer("[PROBLEM]", "Z3 returned sat.");
 			return false;
-		} else if (status.equals(Status.UNKNOWN)) {
-			verbal_output.add_to_buffer("[PROBLEM]", "The formula is unknown.");
-			Exception_Handler.throw_proof_exception("The formula is unknown: " + get_reason_unknown(),
+		}
+		if (status.equals(Status.UNKNOWN)) {
+			verbal_output.add_to_buffer("[PROBLEM]", "Z3 returned unknown.");
+			Exception_Handler.throw_proof_exception("Z3 returned unknown because: " + get_reason_unknown(),
 					verbal_output, Status.UNKNOWN);
+			return false;
 		}
 		// Unreachable.
 		return false;

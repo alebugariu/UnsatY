@@ -24,7 +24,7 @@ tar -zxvf z3-4.12.1.tar.gz
 rm z3-4.12.1.tar.gz
 mv z3-z3-4.12.1 z3_4.12.1
 cd z3_4.12.1
-python scripts/mk_make.py --java
+python scripts/mk_make.py --java USE_OPENMP=1
 cd build
 make
 
