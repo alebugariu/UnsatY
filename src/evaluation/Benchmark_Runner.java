@@ -19,7 +19,9 @@ import java.util.concurrent.Callable;
 import proofanalyser.Proof_Analyser_Framework;
 import proofanalyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
+import util.Setup;
 import util.String_Utility;
+import util.Verbal_Output.Log_Type;
 
 public class Benchmark_Runner implements Callable<Boolean> {
 
@@ -39,7 +41,9 @@ public class Benchmark_Runner implements Callable<Boolean> {
 		}
 		this.prover = prover;
 		this.unsat_core = unsat_core;
-		set_printstream_to_new_file(this.input_file);
+		if (Setup.log_type == Log_Type.full) {
+			set_printstream_to_new_file(this.input_file);
+		}
 	}
 
 	private void set_printstream_to_new_file(File input_file) {
@@ -108,16 +112,20 @@ public class Benchmark_Runner implements Callable<Boolean> {
 		if (framework.construct_potential_example()) {
 			System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
 			framework.minimize_example();
-			log.println("------------------------------------------");
-			log.print(framework.get_user_presentation());
+			if (Setup.log_type == Log_Type.full) {
+				log.println("------------------------------------------");
+				log.print(framework.get_user_presentation());
+			}
 			framework.minimize_input();
 		} else {
 			System.out.println("EXAMPLE CONSTURCTION FAILED.");
 		}
-		log.println("------------------------------------------");
-		log.print("[STATUS: " + framework.get_status() + "]");
-		log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-		log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+		if (Setup.log_type == Log_Type.full) {
+			log.println("------------------------------------------");
+			log.print("[STATUS: " + framework.get_status() + "]");
+			log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+			log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+		}
 		System.out.print("[STATUS: " + framework.get_status() + "]");
 		System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
 		System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");

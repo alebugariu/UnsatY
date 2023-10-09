@@ -109,32 +109,4 @@ public class Verbal_Output {
 			quant_vars.print_all_instantiations(log);
 		}
 	}
-
-	// Prints information collected during a single evaluation run.
-	public void print_evaluation_file_contents(File evaluation_file, List<String> declaration_print_buffer,
-			List<String> assertion_print_buffer) {
-		if (!buffer.isEmpty()) {
-			log.println("------------------------------------------");
-			print_buffer();
-		}
-		log.println("------------------------------------------");
-		log.println("[INFO] Generated a potential example at " + evaluation_file.toString() + ".");
-		log.println("[INFO] It has the following contents:");
-		for (String line : declaration_print_buffer) {
-			log.println("\t" + line);
-		}
-		for (String line : assertion_print_buffer) {
-			log.println("\t" + line);
-		}
-	}
-
-	// Prints the remaining elements in the print_buffer and that we succeeded.
-	public void print_finish() {
-		if (!buffer.isEmpty()) {
-			log.println("------------------------------------------");
-			print_buffer();
-		}
-		log.println("------------------------------------------");
-		log.println("[SUCCESS] Evaluation success.");
-	}
 }
