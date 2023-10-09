@@ -20,6 +20,7 @@ import java.util.Set;
 import com.microsoft.z3.Expr;
 
 import proofanalyser.Vampire_Unsat_Proof;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to run Vampire over the command line.
@@ -60,25 +61,25 @@ public class Vampire_Runner {
 				if (success) {
 					return new Vampire_Unsat_Proof(vampire_proof);
 				} else {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[PROBLEM]",
 								"The Vampire unsat-proof does not contain the expected success line.");
 					}
 				}
 			} else if (exit_code != 0) {
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[PROBLEM]", "The Vampire process for proving " + input_file.toString()
 							+ " returned the exit code: " + exit_code + ".");
 				}
 			}
 		} catch (IOException e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", "Failed to run Vampire due to some I/O-related problem.");
 				verbal_output.add_to_buffer("[PROBLEM]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}
 		} catch (InterruptedException e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", "Failed to run Vampire due to some process-related problem.");
 				verbal_output.add_to_buffer("[PROBLEM]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
@@ -148,7 +149,7 @@ public class Vampire_Runner {
 				}
 			}
 		} catch (IOException e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]",
 						"Failed to use Vampire to translate some input line due to some I/O-related problem.");
 				verbal_output.add_to_buffer("[PROBLEM]", e.getMessage());

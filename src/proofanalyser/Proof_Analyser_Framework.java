@@ -22,7 +22,6 @@ import quantvar.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Proof_Exception;
 import util.String_Utility;
-import util.Verbal_Output.Log_Type;
 
 /*
  * This class provides an interface for the user.
@@ -33,12 +32,6 @@ public class Proof_Analyser_Framework {
 	// File containing the input.
 	// Is provided in the constructor.
 	private File input_file;
-
-	// Controls the amount of additional output that is printed.
-	// Can be set to none, reduced or full.
-	// Is possibly provided in the constructor.
-	// By default is set to none.
-	private Log_Type log_type = Log_Type.none;
 
 	// Indicates where the log should be printed.
 	// Is possibly provided in the constructor.
@@ -69,10 +62,9 @@ public class Proof_Analyser_Framework {
 	private Example example;
 	private File example_file;
 
-	public Proof_Analyser_Framework(File input_file, Prover prover, Log_Type log_type, PrintStream log) {
+	public Proof_Analyser_Framework(File input_file, Prover prover, PrintStream log) {
 		this.input_file = input_file;
 		this.prover = prover;
-		this.log_type = log_type;
 		this.log = log;
 	}
 
@@ -83,7 +75,7 @@ public class Proof_Analyser_Framework {
 	// - All quantified variables have unique names.
 	// - There are no existential quantifiers.
 	public void setup() throws Proof_Exception {
-		this.input_reader = new Input_Reader(input_file, log_type, log);
+		this.input_reader = new Input_Reader(input_file, log);
 		if (prover.equals(Prover.z3)) {
 			// Set up a Z3_Proof_Analyser.
 			input_reader.z3_setup();

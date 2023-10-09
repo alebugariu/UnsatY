@@ -7,6 +7,8 @@
  *******************************************************************************/
 package util;
 
+import util.Verbal_Output.Log_Type;
+
 public class Setup {
 	public static int z3_timout = 600000; // 600 s in ms.
 	public static int z3_memory_limit = 6000; // 6000 MB.
@@ -59,6 +61,6 @@ public class Setup {
 		nlsat_seed_value = seed;
 	}
 
-	public static Boolean testing_environment = false;
+	public static Log_Type log_type = Log_Type.none;
 
 }

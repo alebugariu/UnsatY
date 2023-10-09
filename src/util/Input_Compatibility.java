@@ -22,6 +22,8 @@ import java.util.Set;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 
+import util.Verbal_Output.Log_Type;
+
 /*
  * This class contains methods that are used to modify or create an SMT-LIBv2
  * input file (.smt2), so that it can be parsed by the respective prover and that
@@ -40,12 +42,13 @@ public class Input_Compatibility {
 			// First, we read the input from file and make some general modifications
 			// (in the sense that we do them regardless of which prover we will use).
 			List<String> modified_input = read_and_make_generally_compatible(input_file, verbal_output);
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"Will now preprocess the input file for reading it with the Z3 API.");
 			}
 			String fileName = String_Utility.get_file_name(input_file);
-			// Next, we create a file for the modified input at "temp\<file_name>_z3_input.smt2".
+			// Next, we create a file for the modified input at
+			// "temp\<file_name>_z3_input.smt2".
 			String temp_file_path = "temp" + File.separator + fileName + "_z3_input.smt2";
 			File temp_file = new File(temp_file_path);
 			if (!temp_file.createNewFile()) {
@@ -54,15 +57,16 @@ public class Input_Compatibility {
 			}
 			PrintStream output = new PrintStream(temp_file);
 			for (String line : modified_input) {
-				if(line.trim().equals("(set-option :smt.mbqi false)")) {
-					// the benchmarks from the evaluation of the FM paper used E-matching, now we need to enable MBQI
+				if (line.trim().equals("(set-option :smt.mbqi false)")) {
+					// the benchmarks from the evaluation of the FM paper used E-matching, now we
+					// need to enable MBQI
 					output.println("(set-option :smt.mbqi true)");
 					continue;
 				}
 				output.println(line);
 			}
 			output.close();
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"Finished modifying the input so that it can be processed by the Z3 API.");
 				verbal_output.add_to_buffer("[INFO]", "New input file is at: " + temp_file_path + ".");
@@ -71,7 +75,7 @@ public class Input_Compatibility {
 			// Return the modified file.
 			return temp_file;
 		} catch (Exception e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}
@@ -91,7 +95,7 @@ public class Input_Compatibility {
 			// First, we read the input from file and make some general modifications
 			// (in the sense that we do them regardless of which prover we will use).
 			List<String> modified_input = read_and_make_generally_compatible(input_file, verbal_output);
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"Will now preprocess the input file for proving it with Vampire.");
 			}
@@ -106,7 +110,7 @@ public class Input_Compatibility {
 			// Now, we are set to further modify the expressions and print them to output.
 			for (String line : modified_input) {
 				if (line.contains("check-sat") || line.contains("get-proof")) {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[INFO]", "Removed the line \"" + line + "\" from the input.");
 					}
 					continue;
@@ -116,7 +120,7 @@ public class Input_Compatibility {
 				for (String new_line : new_lines) {
 					output.println(new_line);
 					if (!line.equals(new_line)) {
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[INFO]", "Modified the following input line:");
 							verbal_output.add_to_buffer("\t", "Old line: \"" + line + "\".");
 							verbal_output.add_to_buffer("\t", "New line: \"" + new_line + "\".");
@@ -125,7 +129,7 @@ public class Input_Compatibility {
 				}
 			}
 			output.close();
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"Finished modifying the input so that it can be processed by Vampire.");
 				verbal_output.add_to_buffer("[INFO]", "New input file is at: " + temp_file_path + ".");
@@ -134,7 +138,7 @@ public class Input_Compatibility {
 			// Return the modified file.
 			return temp_file;
 		} catch (Exception e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}
@@ -196,7 +200,7 @@ public class Input_Compatibility {
 				}
 				if (line.contains("set-info")) {
 					// We ignore lines that set information.
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[INFO]", "Removed the line \"" + line + "\" from the input.");
 					}
 					continue;
@@ -211,7 +215,7 @@ public class Input_Compatibility {
 							actual_seed = actual_seed.substring(Setup.sat_random_seed.length() + 1,
 									actual_seed.length() - 1);
 							Setup.set_sat_random_seed(actual_seed);
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[INFO]",
 										"Set " + Setup.sat_random_seed + " to " + actual_seed + ".");
 							}
@@ -219,7 +223,7 @@ public class Input_Compatibility {
 							modified_input.add(line);
 							continue;
 						} catch (Proof_Exception e) {
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[PROBLEM]",
 										"Failed to extract " + Setup.sat_random_seed + " from the input.");
 							}
@@ -231,7 +235,7 @@ public class Input_Compatibility {
 							actual_seed = actual_seed.substring(Setup.smt_random_seed.length() + 1,
 									actual_seed.length() - 1);
 							Setup.set_smt_random_seed(actual_seed);
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[INFO]",
 										"Set " + Setup.smt_random_seed + " to " + actual_seed + ".");
 							}
@@ -239,7 +243,7 @@ public class Input_Compatibility {
 							modified_input.add(line);
 							continue;
 						} catch (Proof_Exception e) {
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[PROBLEM]",
 										"Failed to extract " + Setup.smt_random_seed + " from the input.");
 							}
@@ -251,7 +255,7 @@ public class Input_Compatibility {
 							actual_seed = actual_seed.substring(Setup.nlsat_seed.length() + 1,
 									actual_seed.length() - 1);
 							Setup.set_nlsat_seed(actual_seed);
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[INFO]",
 										"Set " + Setup.nlsat_seed + " to " + actual_seed + ".");
 							}
@@ -259,7 +263,7 @@ public class Input_Compatibility {
 							modified_input.add(line);
 							continue;
 						} catch (Proof_Exception e) {
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[PROBLEM]",
 										"Failed to extract " + Setup.nlsat_seed + " from the input.");
 							}
@@ -287,7 +291,7 @@ public class Input_Compatibility {
 				// If we reach this part, we can output the possibly modified line.
 				modified_input.add(new_line);
 				if (!line.equals(new_line)) {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[INFO]", "Modified the following input line:");
 						verbal_output.add_to_buffer("\t", "Old line: \"" + line + "\".");
 						verbal_output.add_to_buffer("\t", "New line: \"" + new_line + "\".");
@@ -298,14 +302,14 @@ public class Input_Compatibility {
 			// Finally, we add the seeds that have not been set by the input.
 			for (String seed : seeds.keySet()) {
 				modified_input.add(0, seeds.get(seed));
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[INFO]", "Added the following line to the input: " + seeds.get(seed));
 				}
 			}
 			verbal_output.print_buffer();
 			return modified_input;
 		} catch (FileNotFoundException e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}
@@ -420,7 +424,7 @@ public class Input_Compatibility {
 			// Return the path to the modified file.
 			return temp_file;
 		} catch (IOException e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}

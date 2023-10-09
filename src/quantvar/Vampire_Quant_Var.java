@@ -15,6 +15,7 @@ import com.microsoft.z3.Expr;
 
 import util.Setup;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to collect all the info about a quantified variable
@@ -81,13 +82,13 @@ public class Vampire_Quant_Var extends Quant_Var {
 				// by memorizing the index (in the arguments of the current expression) of each
 				// sub-expression we "dive" into.
 				List<Integer> tracking_indexes = new LinkedList<Integer>();
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[INFO]",
 							"Looking for the quantified variable " + get_name() + " in " + application + ".");
 				}
 				if (!track_function_applications_until_quantified_variable(get_name().toString(), application,
 						tracking_indexes)) {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[PROBLEM]", "Failed to find the quantified variable " + get_name()
 								+ " in the function application.");
 					}
@@ -95,13 +96,13 @@ public class Vampire_Quant_Var extends Quant_Var {
 				}
 				// We then take the very same "path" in the function_application to find the
 				// corresponding concrete value.
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[INFO]",
 							"Looking for the concrete value corresponding to the quantified variable " + get_name()
 									+ " in " + function_application + ".");
 				}
 				if (!repeat_function_applications_until_concrete_value(function_application, tracking_indexes)) {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[PROBLEM]",
 								"Failed tracking: Did not find a suitable concrete value where expected.");
 					}

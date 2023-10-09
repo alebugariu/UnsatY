@@ -34,6 +34,7 @@ import util.Setup;
 import util.String_Utility;
 import util.Vampire_to_Z3_Parser;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to maintain the information about quantified variables
@@ -112,7 +113,7 @@ public class Quant_Var_Handler {
 				// If the new quantified variable has the same name as another one we already
 				// encountered and they are from different quantifiers, then the input violates
 				// our assumptions.
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[ERROR]", "The quantified variable " + new_name
 							+ " is used by the input for multiple different quantified variables.");
 				}
@@ -261,7 +262,7 @@ public class Quant_Var_Handler {
 					if (quant_var.number_in_input_formula == number_in_input_formula) {
 						// If the quantified variable we are adding has the same number has the
 						// quant_var we currently look and, then we found our match.
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[INFO]",
 									"Mapped the quantified variable " + name + " from the vampire-proof in line "
 											+ line_number + " to the quantified variable " + quant_var.get_name()
@@ -273,7 +274,7 @@ public class Quant_Var_Handler {
 				}
 			}
 		} catch (Proof_Exception e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", "Failed to add the Vampire_Quant_Var " + name + ".");
 			}
 		}
@@ -306,7 +307,7 @@ public class Quant_Var_Handler {
 					quant_var.is_explicitly_instantiated = true;
 				}
 			} catch (Z3Exception e) {
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[PROBLEM]", "Tried to add the concrete value " + value
 							+ " that has unknown type to the quantified variable " + quant_var.get_name() + ".");
 				}
@@ -339,7 +340,7 @@ public class Quant_Var_Handler {
 						quant_var.add_concrete_value(value);
 					}
 				} catch (Z3Exception e) {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[PROBLEM]", "Tried to add the possible value " + value
 								+ " that has unknown type to the quantified variable " + quant_var.get_name() + ".");
 					}
@@ -378,7 +379,7 @@ public class Quant_Var_Handler {
 									parsed_function_application, verbal_output);
 						}
 					} catch (Z3Exception e) {
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[PROBLEM]",
 									"Tried to add the possible value " + parsed_function_application
 											+ " that has unknown type to the quantified variable "
@@ -388,7 +389,7 @@ public class Quant_Var_Handler {
 				}
 			}
 		} else {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]",
 						"Failed to parse the function application " + function_application + " to a Z3 Expr<?>.");
 			}
@@ -410,7 +411,7 @@ public class Quant_Var_Handler {
 							quant_var.add_concrete_value(parsed_concrete_value);
 						}
 					} catch (Z3Exception e) {
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[PROBLEM]",
 									"Tried to add the possible value " + parsed_concrete_value
 											+ " that has unknown type to the quantified variable "
@@ -420,7 +421,7 @@ public class Quant_Var_Handler {
 				}
 			}
 		} else {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]",
 						"Failed to parse the concrete value " + concrete_value + " to a Z3 Expr<?>.");
 			}
@@ -455,7 +456,7 @@ public class Quant_Var_Handler {
 										other_quant_var.add_concrete_value(parsed_concrete_value);
 									}
 								} catch (Z3Exception e) {
-									if (!Setup.testing_environment) {
+									if (Setup.log_type == Log_Type.full) {
 										verbal_output.add_to_buffer("[PROBLEM]",
 												"Tried to add the possible value " + parsed_concrete_value
 														+ " that has unknown type to the quantified variable "
@@ -465,7 +466,7 @@ public class Quant_Var_Handler {
 							}
 						}
 					} else {
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[PROBLEM]",
 									"Failed to parse the concrete value " + concrete_value + " to a Z3 Expr<?>.");
 						}
@@ -795,9 +796,7 @@ public class Quant_Var_Handler {
 				n_instantiations += quant_var.concrete_values.size();
 			}
 		}
-		if (Setup.testing_environment) {
-			System.out.println("Number of instantiated quantifiers: " + n_instantiations);
-		}
+		System.out.println("Number of instantiated quantifiers: " + n_instantiations);
 		return out;
 	}
 

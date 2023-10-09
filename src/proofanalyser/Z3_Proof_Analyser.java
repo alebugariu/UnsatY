@@ -7,8 +7,6 @@
  *******************************************************************************/
 package proofanalyser;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +29,7 @@ import util.Exception_Handler;
 import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to generate and analyze a Z3 unsat-proof and find explicit
@@ -102,7 +101,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		this.input_reader = input_reader;
 		this.context = input_reader.context;
 		this.quant_vars = input_reader.quant_vars;
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Created a Z3_Proof_Analyser object.");
 		}
 	}
@@ -149,19 +148,11 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		}
 
 		if (status.equals(Status.UNSATISFIABLE)) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", "Successfully generated an unsat-proof with Z3.");
 			}
 			Expr<?> api_proof = solver.getProof();
 			proof = new Z3_Unsat_Proof(api_proof);
-			if (Setup.testing_environment) {
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-				LocalDateTime now = LocalDateTime.now();
-				System.out.println("The Z3 API generated the unsat proof: " + dtf.format(now));
-				System.out.println();
-				System.out.println(api_proof);
-				System.out.println();
-			}
 		}
 	}
 
@@ -176,7 +167,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		input_reader.analyze_input();
 		find_quantifier_instantiations(new Expr<?>[] { proof.getProofExpression() });
 		// Print what we encountered while looking at the unsat-proof.
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.print_prove(quant_vars);
 		}
 		return quant_vars;
@@ -191,7 +182,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				// We therefore only care about expressions that are applications of functions,
 				// because isProofQuantInst only returns true if so does isApp.
 				if (current_expression.isProofQuantInst()) {
-					if (!Setup.testing_environment) {
+					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[INFO]",
 								"Found a quantifier instantiation: " + current_expression + ".");
 					}
@@ -201,7 +192,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 						dive_into_quantifier_instantiation(current_expression);
 					} catch (Proof_Exception e) {
 						// The quantifier did not have the expected Or-Not form.
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[INFO]", "We therefore skip this quantifer instantiation.");
 						}
 					}
@@ -237,7 +228,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			Exception_Handler.throw_proof_exception("The quantifier instantiation " + quantifier_instantiation
 					+ " does not have the expected (or (not (forall (x) (P x))) (P a)) form.", verbal_output);
 		}
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "The quantifier instantiation has the expected Or-Not form.");
 		}
 		// Cast quantified_quantifier to a Quantifier so we can use Quantifier methods.
@@ -249,7 +240,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		Sort[] quantified_variable_sorts = quantifier.getBoundVariableSorts();
 		// We need the number of quantified variables for De-Bruijn indexing.
 		int len = quantified_variable_names.length;
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "It instantiates the following quantified variables: "
 					+ Arrays.toString(quantified_variable_names) + ".");
 		}
@@ -286,13 +277,13 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// by memorizing the index (in the arguments of the current expression) of each
 			// sub-expression we "dive" into.
 			List<Integer> tracking_indexes = new LinkedList<Integer>();
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", "Looking for the quantified variable "
 						+ quantified_variable_names[i] + " in " + quantifier + ".");
 			}
 			if (!track_function_applications_until_quantified_variable(len - i - 1, quantifier.getBody(),
 					tracking_indexes)) {
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[PROBLEM]", "Failed to find the quantified variable "
 							+ quantified_variable_names[i] + " in the quantifier instantiation.");
 				}
@@ -300,7 +291,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			}
 			// We then take the very same "path" in the instantiated_quantifier to find the
 			// corresponding concrete value, before we give the pair to quant_vars.
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"Looking for the concrete value corresponding to the quantified variable "
 								+ quantified_variable_names[i] + " in " + instantiated_quantifier + ".");
@@ -367,14 +358,14 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			if (current_expression.getSort().equals(quantified_variable_sort)) {
 				// If that's the case, we just found our pair of quantified variable and
 				// concrete value.
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[SUCCESS]", "The quantified variable " + quantified_variable_name
 							+ " is instantiated with the concrete value " + current_expression + ".");
 				}
 				quant_vars.add_quantifier_instantiation(quantified_variable_name, current_expression.simplify());
 			} else {
 				// If that's not the case, then our tracking failed.
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[PROBLEM]",
 							"Failed tracking: Did not find a suitable concrete value where expected.");
 				}
@@ -389,7 +380,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				repeat_function_applications_until_concrete_value(quantified_variable_name, quantified_variable_sort,
 						sub_expressions[next_index], tracking_indexes);
 			} else {
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[PROBLEM]",
 							"Failed tracking: Could not dive into a non-existing sub-expression (out-of-bounds index).");
 				}

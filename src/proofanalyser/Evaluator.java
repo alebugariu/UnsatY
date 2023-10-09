@@ -22,6 +22,7 @@ import util.Proof_Exception;
 import util.Setup;
 import util.String_Utility;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to check whether a potential example is unsat.
@@ -96,33 +97,30 @@ public class Evaluator {
 	protected Boolean recover(Example example, File example_file) {
 		recovery = 0;
 		try {
-			if (Setup.testing_environment) {
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-				LocalDateTime now = LocalDateTime.now();
-				System.out.println("Started Recovery 1: " + dtf.format(now));
-			}
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+			LocalDateTime now = LocalDateTime.now();
+			System.out.println("Started Recovery 1: " + dtf.format(now));
+
 			example.recovery_strategy_default_values();
 			example_file = example.make_new_example("potential_example_recover_1");
 			recovery = 1;
 			BoolExpr[] parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null,
 					null, null);
 			if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
-				if (Setup.testing_environment) {
-					DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-					LocalDateTime now = LocalDateTime.now();
-					System.out.println("Started Recovery 2: " + dtf.format(now));
-				}
+				dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+				now = LocalDateTime.now();
+				System.out.println("Started Recovery 2: " + dtf.format(now));
+
 				example.recover_strategy_syntactically_appearing_concrete_values();
 				example_file = example.make_new_example("potential_example_recover_2");
 				recovery = 2;
 				parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null, null,
 						null);
 				if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
-					if (Setup.testing_environment) {
-						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-						LocalDateTime now = LocalDateTime.now();
-						System.out.println("Started Recovery 3: " + dtf.format(now));
-					}
+					dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+					now = LocalDateTime.now();
+					System.out.println("Started Recovery 3: " + dtf.format(now));
+
 					example.recover_strategy_off_by_one();
 					example_file = example.make_new_example("potential_example_recover_3");
 					recovery = 3;
@@ -145,14 +143,15 @@ public class Evaluator {
 
 		BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
 
-		if (unsat_core.length > 0 && !Setup.testing_environment) {
+		if (unsat_core.length > 0 && Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Z3 generates the following UNSAT-core:");
 			verbal_output.add_all_to_buffer("\t", unsat_core);
 		}
 
 		example.unsat_core = unsat_core;
 		String minimized_example = context.benchmarkToSMTString("", "", "unsat", "", unsat_core, context.mkBool(true));
-		String minimized_example_name = String_Utility.get_file_name(example.get_File()).replace("_potential", "") + "_minimized.smt2";
+		String minimized_example_name = String_Utility.get_file_name(example.get_File()).replace("_potential", "")
+				+ "_minimized.smt2";
 
 		String output_file_path = "output" + File.separator + minimized_example_name;
 		try {
@@ -165,7 +164,7 @@ public class Evaluator {
 			output.println(minimized_example);
 			output.close();
 		} catch (Exception e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", e.getMessage());
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}

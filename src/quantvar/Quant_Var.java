@@ -28,6 +28,7 @@ import util.Proof_Exception;
 import util.Setup;
 import util.Vampire_Runner;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to collect all the info about a quantified variable,
@@ -172,7 +173,7 @@ public class Quant_Var {
 				concrete_values.add(new_value);
 			}
 		} catch (Z3Exception e) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[PROBLEM]", "Tried to add the concrete value " + new_value
 						+ " that has unknown type to the quantified variable " + name + ".");
 			}

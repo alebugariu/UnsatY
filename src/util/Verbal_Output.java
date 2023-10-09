@@ -22,16 +22,12 @@ import quantvar.Quant_Var_Handler;
 public class Verbal_Output {
 
 	// Indicator on the amount of additional output that is printed.
-	public enum Log_Type {
-		none, reduced, full
-	}
-
-	// Controls the amount of additional output that is printed.
 	// - none: Print nothing other than the final result.
-	// - reduced: Print the contents of data structures after their setup.
 	// - full: Print all intermediate steps. Information may be redundant.
-	// Is provided in the constructor.
-	private Log_Type log_type;
+
+	public enum Log_Type {
+		none, full
+	}
 
 	// Indicates where the log should be printed.
 	// Is possibly provided in the constructor.
@@ -43,23 +39,22 @@ public class Verbal_Output {
 	private List<String> buffer;
 
 	// Constructor if you want to print to System.out.
-	public Verbal_Output(Log_Type output_type) {
-		this(output_type, System.out);
+	public Verbal_Output() {
+		this(System.out);
 	}
 
 	// Constructor if you want to print somewhere else.
-	public Verbal_Output(Log_Type output_type, PrintStream out) {
-		this.log_type = output_type;
+	public Verbal_Output(PrintStream out) {
 		this.log = out;
 		buffer = new ArrayList<String>();
-		if (!output_type.equals(Log_Type.none)) {
+		if (Setup.log_type == Log_Type.full) {
 			out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		}
 	}
 
 	// Adds s to the buffer, prepended by the tag, if output_type is set to full.
 	public void add_to_buffer(String tag, String s) {
-		if (log_type.equals(Log_Type.full)) {
+		if (Setup.log_type == Log_Type.full) {
 			buffer.add(tag + " " + s);
 		} else if (tag.equals("[ERROR]")) {
 			buffer.add(tag + " " + s);
@@ -70,7 +65,7 @@ public class Verbal_Output {
 	// prepended by the tag, if output_type is set to full.
 	public void add_all_to_buffer(String tag, Object[] objects) {
 		for (Object object : objects) {
-			if (log_type.equals(Log_Type.full)) {
+			if (Setup.log_type == Log_Type.full) {
 				add_to_buffer(tag, object.toString());
 			} else if (tag.equals("[ERROR]")) {
 				buffer.add(tag + " " + object);
@@ -95,7 +90,7 @@ public class Verbal_Output {
 		if (!buffer.isEmpty()) {
 			print_buffer();
 		}
-		if (log_type.equals(Log_Type.full)) {
+		if (Setup.log_type == Log_Type.full) {
 			log.println("------------------------------------------");
 			log.println("[INFO] Set up our data structures as follows:");
 			quant_vars.print_all_definitions(log);
@@ -110,7 +105,7 @@ public class Verbal_Output {
 			print_buffer();
 		}
 		log.println("------------------------------------------");
-		if (log_type.equals(Log_Type.full)) {
+		if (Setup.log_type == Log_Type.full) {
 			quant_vars.print_all_instantiations(log);
 		}
 	}

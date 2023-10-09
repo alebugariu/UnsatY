@@ -24,6 +24,7 @@ import util.String_Utility;
 import util.Vampire_Runner;
 import util.Vampire_to_Z3_Parser;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to generate and analyze a Vampire unsat-proof and find
@@ -99,7 +100,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 		this.verbal_output = input_reader.verbal_output;
 		this.input_reader = input_reader;
 		this.quant_vars = input_reader.quant_vars;
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Created a Vampire_Proof_Analyser object.");
 		}
 		// Create the names set.
@@ -112,35 +113,34 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 			names.add(sort + "()");
 		}
 		quant_vars.add_names(names);
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]",
 					"Collected and modified the following user-defined names to be used in our regular expressions: "
 							+ names.toString() + ".");
 		}
 		quant_vars.setup_parser(input_reader.declarations);
 	}
-	
+
 	// Uses Vampire to generate an unsat-proof for the input_file and stores it in
 	// the proof set.
 	@Override
 	public void generate_unsat_proof() throws Proof_Exception {
 		proof = Vampire_Runner.run_vampire(input_file, names, verbal_output);
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Successfully generated an unsat-proof with Vampire.");
 		}
 	}
 
-	// Looks for implicit quantifier instantiations in the generated proof and gives them to quant_vars.
+	// Looks for implicit quantifier instantiations in the generated proof and gives
+	// them to quant_vars.
 	// Throws a Proof_Exception if Vampire cannot prove unsat within the resources
 	// defined in the class Setup.
 	// Returns quant_vars.
 	@Override
 	public Quant_Var_Handler extract_quantifier_instantiations() throws Proof_Exception {
-		if (Setup.testing_environment) {
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-			LocalDateTime now = LocalDateTime.now();
-			System.out.println("Vampire generated the unsat proof: " + dtf.format(now));
-		}
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		System.out.println("Vampire generated the unsat proof: " + dtf.format(now));
 		// Next, we traverse the proof to match the quantified variables from the proof
 		// to the ones from the input. We need to do this because Vampire tends to
 		// rename quantified variables (and unify them).
@@ -152,7 +152,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 		// runs, where the first one consider function applications and inequalities,
 		// and only after we consider comparisons, because the latter ones may rely on
 		// the information found by the others.
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]",
 					"We will now traverse the unsat-proof to extract implicit quantifier instantiations.");
 		}
@@ -162,7 +162,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 			quant_vars.update_reference_numbers(line_number, reference_numbers);
 		}
 		for (String line : lines) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"We will now extract function applications and inequalities from the line " + line + ".");
 			}
@@ -170,7 +170,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 			find_inequalities(line);
 		}
 		for (String line : lines) {
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", "We will now extract comparisons from the line " + line + ".");
 			}
 			find_equalities(line);
@@ -195,7 +195,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 			// "% Refutation found. Thanks to Tanya!".
 			// These do not contain a number or a reference nor do they contribute to the
 			// proof, so we just ignore them.
-			if (!Setup.testing_environment) {
+			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", "Skipped the line: \"" + line + "\".");
 			}
 			return;
@@ -211,7 +211,7 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 			String name = line_quant_var[0];
 			String type = line_quant_var[1];
 			if (line.contains("[input]") && reference_numbers.isEmpty()) {
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[INFO]", "Found new quantified variable " + name + " of type " + type
 							+ " in line " + line_number + " of the Vampire proof: " + line);
 				}

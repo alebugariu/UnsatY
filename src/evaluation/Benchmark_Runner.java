@@ -20,18 +20,16 @@ import proofanalyser.Proof_Analyser_Framework;
 import proofanalyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
 import util.String_Utility;
-import util.Verbal_Output.Log_Type;
 
 public class Benchmark_Runner implements Callable<Boolean> {
 
 	private File input_file;
 	private Prover prover;
 	private PrintStream log;
-	private Log_Type log_type;
 	private String preprocessor;
 	private boolean unsat_core;
 
-	public Benchmark_Runner(File input_file, Prover prover, Log_Type log_type, String preprocessor, boolean unsat_core)
+	public Benchmark_Runner(File input_file, Prover prover, String preprocessor, boolean unsat_core)
 			throws Proof_Exception {
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
@@ -40,7 +38,6 @@ public class Benchmark_Runner implements Callable<Boolean> {
 			this.input_file = preprocess(input_file);
 		}
 		this.prover = prover;
-		this.log_type = log_type;
 		this.unsat_core = unsat_core;
 		set_printstream_to_new_file(this.input_file);
 	}
@@ -132,7 +129,7 @@ public class Benchmark_Runner implements Callable<Boolean> {
 	// returns true if one should try to compute the unsat core first
 	@Override
 	public Boolean call() {
-		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log_type, log);
+		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log);
 		try {
 			if (unsat_core) {
 				System.out.println(

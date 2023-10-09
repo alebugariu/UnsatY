@@ -24,7 +24,6 @@ import proofanalyser.Proof_Analyser_Framework.Prover;
 import quantvar.Quant_Var_Handler;
 import util.Proof_Exception;
 import util.Setup;
-import util.Verbal_Output.Log_Type;
 
 /*
  * This class can be used to create triggering terms based on function
@@ -75,8 +74,7 @@ public class Triggering_Terms_Generator {
 
 	private static void construct_triggering_terms_from_proof(File input_file, Prover prover, String z3_path)
 			throws Proof_Exception, IOException {
-		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, Log_Type.none,
-				System.out);
+		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, System.out);
 		framework.setup();
 		framework.generate_proof();
 		boolean success = framework.construct_potential_example();

@@ -13,13 +13,12 @@ import java.util.concurrent.Future;
 
 import proofanalyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
-import util.Verbal_Output.Log_Type;
 
 public class Concurrency_Handler {
 
-	public static Future<Boolean> process_file(ExecutorService executor, File file, Prover prover, Log_Type log_type,
+	public static Future<Boolean> process_file(ExecutorService executor, File file, Prover prover,
 			String preprocessor, boolean unsat_core) throws Proof_Exception {
-		Benchmark_Runner runner = new Benchmark_Runner(file, prover, log_type, preprocessor, unsat_core);
+		Benchmark_Runner runner = new Benchmark_Runner(file, prover, preprocessor, unsat_core);
 		Future<Boolean> future = executor.submit(runner);
 		return future;
 	}

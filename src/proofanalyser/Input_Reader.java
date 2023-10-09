@@ -135,13 +135,13 @@ public class Input_Reader {
 	protected Set<String> type_names;
 
 	// Do not call this constructor yourself but use the Proof_Analyser_Framework.
-	protected Input_Reader(File input_file, Log_Type output_type, PrintStream out) {
+	protected Input_Reader(File input_file, PrintStream out) {
 		this.initial_input_file = input_file;
-		this.verbal_output = new Verbal_Output(output_type, out);
+		this.verbal_output = new Verbal_Output(out);
 		this.function_names = new LinkedHashSet<String>();
 		this.constant_names = new LinkedHashSet<String>();
 		this.type_names = new LinkedHashSet<String>();
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Handling " + initial_input_file.toString() + ".");
 			verbal_output.add_to_buffer("[INFO]", "Created an Input_Reader object.");
 			verbal_output.print_buffer();
@@ -178,7 +178,7 @@ public class Input_Reader {
 		this.z3_input_file = Input_Compatibility.make_z3_compatible(initial_input_file, verbal_output);
 		// Now, we are set to parse the input.
 		this.input = context.parseSMTLIB2File(z3_input_file.getAbsolutePath(), null, null, null, null);
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Successfully parsed the input with the Z3 API.");
 		}
 	}
@@ -221,11 +221,11 @@ public class Input_Reader {
 			find_quantifiers(expression_in_array, null, expression);
 		}
 		// Finally, we print what we encountered while looking at the input.
-		if (!Setup.testing_environment) {
+		if (Setup.log_type == Log_Type.full) {
 			verbal_output.print_input(initial_input_file, quant_vars);
-			System.out.println("Number of input formulas: " + input.length);
-			System.out.println("Number of quantifiers: " + n_quantifiers);
 		}
+		System.out.println("Number of input formulas: " + input.length);
+		System.out.println("Number of quantifiers: " + n_quantifiers);
 	}
 
 	// Recursively traverses all elements in expressions to find the ones that
@@ -240,7 +240,7 @@ public class Input_Reader {
 			// Quantified expressions are marked as Z3_QUANTIFIER_AST.
 			if (expression.isQuantifier()) {
 				n_quantifiers++;
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[Info]",
 							"Encountered an expression marked as Quantifier in the input: " + expression + ".");
 				}
@@ -314,7 +314,7 @@ public class Input_Reader {
 			Symbol name = quant_var_names[i];
 			Sort sort = quant_vars_sorts[i];
 			if (quant_vars.add_new_quant_var(name, sort, input_line, i, quantifier, parent)) {
-				if (!Setup.testing_environment) {
+				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[INFO]",
 							"Found quantified variable " + name + " of type " + sort + ".");
 				}
@@ -402,7 +402,7 @@ public class Input_Reader {
 						// We found an uninterpreted function.
 						String function_name = expression.getFuncDecl().getName().toString();
 						function_names.add(function_name);
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[INFO]", "Added " + function_name + " to function_names.");
 						}
 						for (Sort sort : expression.getFuncDecl().getDomain()) {
@@ -413,7 +413,7 @@ public class Input_Reader {
 						// We found a user-defined constant.
 						String constant_name = expression.getFuncDecl().getName().toString();
 						constant_names.add(constant_name);
-						if (!Setup.testing_environment) {
+						if (Setup.log_type == Log_Type.full) {
 							verbal_output.add_to_buffer("[INFO]", "Added " + constant_name + " to constant_names.");
 						}
 						types.add(expression.getFuncDecl().getRange());
@@ -423,7 +423,7 @@ public class Input_Reader {
 						if (sort.getSortKind().equals(Z3_sort_kind.Z3_UNINTERPRETED_SORT)) {
 							String new_type = sort.getName().toString();
 							type_names.add(new_type);
-							if (!Setup.testing_environment) {
+							if (Setup.log_type == Log_Type.full) {
 								verbal_output.add_to_buffer("[INFO]", "Added " + new_type + " to type_names.");
 							}
 						}

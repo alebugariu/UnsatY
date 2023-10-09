@@ -30,7 +30,6 @@ import org.apache.commons.io.FileUtils;
 
 import proofanalyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
-import util.Verbal_Output.Log_Type;
 
 public class Main {
 
@@ -138,7 +137,7 @@ public class Main {
 
 		// try to construct the examples from the unsat proofs directly
 		for (File benchmark : benchmarks) {
-			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, Log_Type.full, preprocessor, false), benchmark);
+			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, false), benchmark);
 		}
 		for (Future<Boolean> future : threads_map.keySet()) {
 			try {
@@ -156,7 +155,7 @@ public class Main {
 
 		// for the failed benchmarks, try to construct the examples from the proofs for the unsat core
 		for (File failed_benckmark : failed_files) {
-			unsat_core_threads.add(Concurrency_Handler.process_file(executor, failed_benckmark, prover, Log_Type.full, preprocessor, true));
+			unsat_core_threads.add(Concurrency_Handler.process_file(executor, failed_benckmark, prover, preprocessor, true));
 		}
 		for (Future<Boolean> future : unsat_core_threads) {
 			try {
