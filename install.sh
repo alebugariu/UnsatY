@@ -18,12 +18,12 @@ cd $ROOT
 mkdir -p $PATH_SMTSolvers
 cd $PATH_SMTSolvers
 
-# Z3 [4.12.1 for UnsatY]
-wget https://github.com/Z3Prover/z3/archive/z3-4.12.1.tar.gz
-tar -zxvf z3-4.12.1.tar.gz
-rm z3-4.12.1.tar.gz
-mv z3-z3-4.12.1 z3_4.12.1
-cd z3_4.12.1
+# Z3 [4.12.2 for UnsatY]
+wget https://github.com/Z3Prover/z3/archive/z3-4.12.2.tar.gz
+tar -zxvf z3-4.12.2.tar.gz
+rm z3-4.12.2.tar.gz
+mv z3-z3-4.12.2 z3-4.12.2
+cd z3-4.12.2
 python scripts/mk_make.py --java USE_OPENMP=1
 cd build
 make
@@ -46,7 +46,7 @@ export PYTHONPATH=$ROOT/pysmt
 # compile our tool:
 cd $PATH_UNSATY
 mkdir -p classes
-javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3_4.12.1/build/com.microsoft.z3.jar" -sourcepath src src/evaluation/Main.java
+javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3-4.12.2/build/com.microsoft.z3.jar" -sourcepath src src/evaluation/Main.java
 chmod +x run.sh
 
 export PATH=$PATH:$PATH_SMTSolvers/z3-4.8.10/bin
