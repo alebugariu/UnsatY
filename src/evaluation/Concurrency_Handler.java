@@ -16,10 +16,10 @@ import util.Proof_Exception;
 
 public class Concurrency_Handler {
 
-	public static Future<Boolean> process_file(ExecutorService executor, File file, Prover prover,
-			String preprocessor, boolean unsat_core) throws Proof_Exception {
-		Benchmark_Runner runner = new Benchmark_Runner(file, prover, preprocessor, unsat_core);
-		Future<Boolean> future = executor.submit(runner);
+	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, String preprocessor)
+			throws Proof_Exception {
+		Benchmark_Runner runner = new Benchmark_Runner(file, prover, preprocessor);
+		Future<Void> future = executor.submit(runner);
 		return future;
 	}
 }

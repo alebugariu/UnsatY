@@ -10,6 +10,8 @@ package util;
 import util.Verbal_Output.Log_Type;
 
 public class Setup {
+	public static int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
+	
 	public static int z3_timout = 600000; // 600 s in ms.
 	public static int z3_memory_limit = 6000; // 6000 MB.
 	public static int z3_rlimit = 10000000;

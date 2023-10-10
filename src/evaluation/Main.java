@@ -11,9 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -131,42 +129,16 @@ public class Main {
 
 	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor)
 			throws Proof_Exception {
-		int timeout = 1200; // 600 s for the prover to generate the proof + 600 s for our tool to process it
 		int nr_threads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);
-		Map<Future<Boolean>, File> threads_map = new HashMap<Future<Boolean>, File>();
+		List<Future<Void>> threads_map = new ArrayList<Future<Void>>();
 
-		Collection<File> failed_files = new ArrayList<File>();
-		List<Future<Boolean>> unsat_core_threads = new ArrayList<Future<Boolean>>();
-
-		// try to construct the examples from the unsat proofs directly
 		for (File benchmark : benchmarks) {
-			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, false),
-					benchmark);
+			threads_map.add(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor));
 		}
-		for (Future<Boolean> future : threads_map.keySet()) {
+		for (Future<Void> future : threads_map) {
 			try {
-				boolean try_unsat_core = future.get(timeout, TimeUnit.SECONDS);
-				if (try_unsat_core) {
-					failed_files.add(threads_map.get(future));
-				}
-			} catch (Exception e) {
-				if (!future.isDone()) {
-					future.cancel(true);
-				}
-				e.printStackTrace();
-			}
-		}
-
-		// for the failed benchmarks, try to construct the examples from the proofs for
-		// the unsat core
-		for (File failed_benckmark : failed_files) {
-			unsat_core_threads
-					.add(Concurrency_Handler.process_file(executor, failed_benckmark, prover, preprocessor, true));
-		}
-		for (Future<Boolean> future : unsat_core_threads) {
-			try {
-				future.get(timeout, TimeUnit.SECONDS);
+				future.get(Setup.timeout, TimeUnit.SECONDS);
 			} catch (Exception e) {
 				if (!future.isDone()) {
 					future.cancel(true);

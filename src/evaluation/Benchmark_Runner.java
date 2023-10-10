@@ -23,15 +23,14 @@ import util.Setup;
 import util.String_Utility;
 import util.Verbal_Output.Log_Type;
 
-public class Benchmark_Runner implements Callable<Boolean> {
+public class Benchmark_Runner implements Callable<Void> {
 
 	private File input_file;
 	private Prover prover;
 	private PrintStream log;
 	private String preprocessor;
-	private boolean unsat_core;
 
-	public Benchmark_Runner(File input_file, Prover prover, String preprocessor, boolean unsat_core)
+	public Benchmark_Runner(File input_file, Prover prover, String preprocessor)
 			throws Proof_Exception {
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
@@ -40,7 +39,6 @@ public class Benchmark_Runner implements Callable<Boolean> {
 			this.input_file = preprocess(input_file);
 		}
 		this.prover = prover;
-		this.unsat_core = unsat_core;
 		if (Setup.log_type == Log_Type.full) {
 			set_printstream_to_new_file(this.input_file);
 		}
@@ -106,59 +104,49 @@ public class Benchmark_Runner implements Callable<Boolean> {
 		LocalDateTime now = LocalDateTime.now();
 		System.out.println("Started Calculations: " + dtf.format(now));
 		framework.setup();
-		framework.generate_proof();
-		now = LocalDateTime.now();
-		System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
-		if (framework.construct_potential_example()) {
-			System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
-			framework.minimize_example();
+		if (framework.generate_unsat_core()) {
+			framework.generate_proof();
+			now = LocalDateTime.now();
+			System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
+			if (framework.construct_potential_example()) {
+				System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
+				framework.minimize_example();
+				if (Setup.log_type == Log_Type.full) {
+					log.println("------------------------------------------");
+					log.print(framework.get_user_presentation());
+				}
+				framework.minimize_input();
+			} else {
+				System.out.println("EXAMPLE CONSTURCTION FAILED.");
+			}
 			if (Setup.log_type == Log_Type.full) {
 				log.println("------------------------------------------");
-				log.print(framework.get_user_presentation());
+				log.print("[STATUS: " + framework.get_status() + "]");
+				log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+				log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 			}
-			framework.minimize_input();
+			System.out.print("[STATUS: " + framework.get_status() + "]");
+			System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+			System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 		} else {
-			System.out.println("EXAMPLE CONSTURCTION FAILED.");
+			System.out.println("UNSAT CORE CONSTURCTION FAILED.");
 		}
-		if (Setup.log_type == Log_Type.full) {
-			log.println("------------------------------------------");
-			log.print("[STATUS: " + framework.get_status() + "]");
-			log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-			log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
-		}
-		System.out.print("[STATUS: " + framework.get_status() + "]");
-		System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-		System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 		now = LocalDateTime.now();
 		System.out.println("Finished Calculations: " + dtf.format(now));
 		System.out.println();
 	}
 
-	// returns true if one should try to compute the unsat core first
 	@Override
-	public Boolean call() {
+	public Void call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log);
 		try {
-			if (unsat_core) {
-				System.out.println(
-						"Trying to extract the unsat core for " + input_file.toString() + " with " + prover + ": ");
-				framework.setup();
-				if (framework.generate_unsat_core()) {
-					process(framework);
-				}
-			} else {
-				process(framework);
-			}
+			process(framework);
 		} catch (Proof_Exception e) {
 			String error_message = e.getMessage();
 			System.out.println("FAIL: " + error_message);
 			System.out.println();
-			if (!error_message.contains("smt tactic failed to show goal to be sat/unsat (incomplete quantifiers)")) {
-				framework.close_context();
-				return true;
-			}
 		}
 		framework.close_context();
-		return false;
+		return null;
 	}
 }
