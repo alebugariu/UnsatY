@@ -13,7 +13,7 @@ PATH_SMTSolvers=$ROOT/SMTSolvers
 PATH_UNSATY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && pwd )"
   
 # run our tool:
-export LD_LIBRARY_PATH=$PATH_SMTSolvers/z3_4.12.1/build
+export LD_LIBRARY_PATH=$PATH_SMTSolvers/z3-4.12.2/build
 
 cd "$PATH_UNSATY"
-java -Djava.library.path=$PATH_SMTSolvers/z3_4.12.1/build -cp "classes:jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3_4.12.1/build/com.microsoft.z3.jar" evaluation.Main $*
+java -Djava.library.path=$PATH_SMTSolvers/z3-4.12.2/build -cp "classes:jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3-4.12.2/build/com.microsoft.z3.jar" evaluation.Main $*
