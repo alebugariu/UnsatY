@@ -98,49 +98,45 @@ public class Benchmark_Runner implements Callable<Void> {
 		}
 	}
 
-	private void process(Proof_Analyser_Framework framework) throws Proof_Exception {
-		System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-		LocalDateTime now = LocalDateTime.now();
-		System.out.println("Started Calculations: " + dtf.format(now));
-		framework.setup();
-		if (framework.generate_unsat_core()) {
-			framework.generate_proof();
-			now = LocalDateTime.now();
-			System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
-			if (framework.construct_potential_example()) {
-				System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
-				framework.minimize_example();
-				if (Setup.log_type == Log_Type.full) {
-					log.println("------------------------------------------");
-					log.print(framework.get_user_presentation());
-				}
-				framework.minimize_input();
-			} else {
-				System.out.println("EXAMPLE CONSTURCTION FAILED.");
-			}
-			if (Setup.log_type == Log_Type.full) {
-				log.println("------------------------------------------");
-				log.print("[STATUS: " + framework.get_status() + "]");
-				log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-				log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
-			}
-			System.out.print("[STATUS: " + framework.get_status() + "]");
-			System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
-			System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
-		} else {
-			System.out.println("UNSAT CORE CONSTURCTION FAILED.");
-		}
-		now = LocalDateTime.now();
-		System.out.println("Finished Calculations: " + dtf.format(now));
-		System.out.println();
-	}
-
 	@Override
 	public Void call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log);
 		try {
-			process(framework);
+			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+			LocalDateTime now = LocalDateTime.now();
+			System.out.println("Started Calculations: " + dtf.format(now));
+			framework.setup();
+			if (framework.generate_unsat_core()) {
+				framework.generate_proof();
+				now = LocalDateTime.now();
+				System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
+				if (framework.construct_potential_example()) {
+					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
+					framework.minimize_example();
+					if (Setup.log_type == Log_Type.full) {
+						log.println("------------------------------------------");
+						log.print(framework.get_user_presentation());
+					}
+					framework.minimize_input();
+				} else {
+					System.out.println("EXAMPLE CONSTURCTION FAILED.");
+				}
+				if (Setup.log_type == Log_Type.full) {
+					log.println("------------------------------------------");
+					log.print("[STATUS: " + framework.get_status() + "]");
+					log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+					log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+				}
+				System.out.print("[STATUS: " + framework.get_status() + "]");
+				System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+				System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+			} else {
+				System.out.println("UNSAT CORE CONSTURCTION FAILED.");
+			}
+			now = LocalDateTime.now();
+			System.out.println("Finished Calculations: " + dtf.format(now));
+			System.out.println();
 		} catch (Proof_Exception e) {
 			String error_message = e.getMessage();
 			System.out.println("FAIL: " + error_message);

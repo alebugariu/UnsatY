@@ -111,10 +111,11 @@ public class Proof_Analyser_Framework {
 		Unsat_Core_Finder unsat_core_finder = new Unsat_Core_Finder(context);
 		if (unsat_core_finder.is_unsat(input_reader.input, input_reader.verbal_output)) {
 			BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
+			input_reader.input = unsat_core;
 			String unsat_core_assertions = input_reader.context.benchmarkToSMTString("", "", "unsat", "", unsat_core, context.mkBool(true));
 			FileWriter fileWriter;
 			try {
-				fileWriter = new FileWriter(input_file, false);
+				fileWriter = new FileWriter("temp" + File.separator + String_Utility.get_file_name(input_file) + "_unsat_core.smt2", false);
 				fileWriter.write(unsat_core_assertions);
 				fileWriter.close();
 				return true;
