@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package quantvar;
+package quant_var;
 
 import java.io.File;
 import java.util.HashMap;

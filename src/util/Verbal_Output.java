@@ -12,7 +12,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var_Handler;
 
 /*
  * This class is used to take care of printing results and intermediate steps

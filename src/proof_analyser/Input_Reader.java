@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +30,8 @@ import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 import com.microsoft.z3.enumerations.Z3_sort_kind;
 
-import quantvar.Quant_Var;
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var;
+import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Input_Compatibility;
 import util.Proof_Exception;

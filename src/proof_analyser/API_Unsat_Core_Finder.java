@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -18,12 +18,12 @@ import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output;
 
-public class Unsat_Core_Finder {
+public class API_Unsat_Core_Finder {
 
 	private Context context;
 	private Solver solver;
 
-	public Unsat_Core_Finder(Context context) {
+	public API_Unsat_Core_Finder(Context context) {
 		this.context = context;
 		// Enable unsat-core generation (which we did not need before) and disable proof
 		// generation

@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package quantvar;
+package quant_var;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -27,7 +27,7 @@ import com.microsoft.z3.Symbol;
 import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
-import proofanalyser.Input_Reader;
+import proof_analyser.Input_Reader;
 import recovery.Default_Values;
 import util.Proof_Exception;
 import util.Setup;

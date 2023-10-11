@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import proofanalyser.Proof_Analyser_Framework.Prover;
+import proof_analyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
 
 public class Concurrency_Handler {

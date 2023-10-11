@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -18,7 +18,7 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Status;
 
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Proof_Exception;
 import util.String_Utility;
@@ -108,7 +108,7 @@ public class Proof_Analyser_Framework {
 
 	public boolean generate_unsat_core() throws Proof_Exception {
 		Context context = input_reader.context;
-		Unsat_Core_Finder unsat_core_finder = new Unsat_Core_Finder(context);
+		API_Unsat_Core_Finder unsat_core_finder = new API_Unsat_Core_Finder(context);
 		if (unsat_core_finder.is_unsat(input_reader.input, input_reader.verbal_output)) {
 			BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
 			input_reader.input = unsat_core;

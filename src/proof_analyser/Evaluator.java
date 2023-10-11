@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -16,7 +16,7 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Status;
 
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Proof_Exception;
 import util.Setup;
@@ -64,7 +64,7 @@ public class Evaluator {
 	// Is provided in the constructor.
 	private Context context;
 
-	private Unsat_Core_Finder unsat_core_finder;
+	private API_Unsat_Core_Finder unsat_core_finder;
 
 	// Expects a Quant_Var_Handler object that is populated appropriately.
 	// Do not call this constructor yourself but use the evaluate method in your
@@ -72,7 +72,7 @@ public class Evaluator {
 	protected Evaluator(Input_Reader input_reader, Proof_Analyser proof_analyser, Quant_Var_Handler quant_vars) {
 		this.verbal_output = input_reader.verbal_output;
 		this.context = input_reader.context;
-		this.unsat_core_finder = new Unsat_Core_Finder(this.context);
+		this.unsat_core_finder = new API_Unsat_Core_Finder(this.context);
 	}
 
 	protected Status status = Status.SATISFIABLE;

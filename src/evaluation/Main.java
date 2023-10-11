@@ -26,7 +26,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 
-import proofanalyser.Proof_Analyser_Framework.Prover;
+import proof_analyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output.Log_Type;

@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -23,7 +23,7 @@ import com.microsoft.z3.Symbol;
 import com.microsoft.z3.Tactic;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;
 import util.Exception_Handler;
 import util.Proof_Exception;

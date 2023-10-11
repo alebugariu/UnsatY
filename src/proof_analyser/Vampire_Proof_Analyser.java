@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 import com.microsoft.z3.Expr;
 
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;
 import util.Proof_Exception;
 import util.Setup;

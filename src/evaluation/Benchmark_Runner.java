@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Callable;
 
-import proofanalyser.Proof_Analyser_Framework;
-import proofanalyser.Proof_Analyser_Framework.Prover;
+import proof_analyser.Proof_Analyser_Framework;
+import proof_analyser.Proof_Analyser_Framework.Prover;
 import util.Proof_Exception;
 import util.Setup;
 import util.String_Utility;

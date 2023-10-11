@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package triggeringterms;
+package triggering_terms;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,9 +19,9 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.microsoft.z3.Expr;
 
-import proofanalyser.Proof_Analyser_Framework;
-import proofanalyser.Proof_Analyser_Framework.Prover;
-import quantvar.Quant_Var_Handler;
+import proof_analyser.Proof_Analyser_Framework;
+import proof_analyser.Proof_Analyser_Framework.Prover;
+import quant_var.Quant_Var_Handler;
 import util.Proof_Exception;
 import util.Setup;
 

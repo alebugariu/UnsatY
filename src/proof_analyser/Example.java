@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proofanalyser;
+package proof_analyser;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -19,8 +19,8 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 
-import quantvar.Quant_Var;
-import quantvar.Quant_Var_Handler;
+import quant_var.Quant_Var;
+import quant_var.Quant_Var_Handler;
 import util.Input_Compatibility;
 import util.Proof_Exception;
 import util.Verbal_Output;
