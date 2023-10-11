@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proof_analyser;
+package proof_analyser.unsat_proof;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -23,6 +23,7 @@ import com.microsoft.z3.Symbol;
 import com.microsoft.z3.Tactic;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
+import proof_analyser.Input_Reader;
 import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;
 import util.Exception_Handler;
@@ -96,7 +97,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 
 	// Expects the input_reader to be already set up appropriately.
 	// Do not call this constructor yourself but use the Proof_Analyser_Framework.
-	protected Z3_Proof_Analyser(Input_Reader input_reader) {
+	public Z3_Proof_Analyser(Input_Reader input_reader) {
 		this.verbal_output = input_reader.verbal_output;
 		this.input_reader = input_reader;
 		this.context = input_reader.context;

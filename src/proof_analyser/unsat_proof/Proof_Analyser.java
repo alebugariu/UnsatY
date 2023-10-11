@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proof_analyser;
+package proof_analyser.unsat_proof;
 
 import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;

@@ -5,8 +5,19 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proof_analyser;
+package proof_analyser.unsat_proof;
 
-public abstract class Unsat_Proof {
+import com.microsoft.z3.Expr;
 
+public class Z3_Unsat_Proof implements Unsat_Proof {
+	
+	private Expr<?> proof;
+	
+	public Z3_Unsat_Proof(Expr<?> proof) {
+		this.proof = proof;
+	}
+
+	public Expr<?> getProofExpression(){
+		return proof;
+	}
 }

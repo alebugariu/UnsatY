@@ -19,6 +19,7 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 
+import proof_analyser.unsat_proof.Proof_Analyser;
 import quant_var.Quant_Var;
 import quant_var.Quant_Var_Handler;
 import util.Input_Compatibility;

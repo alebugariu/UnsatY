@@ -16,6 +16,8 @@ import java.util.Set;
 
 import com.microsoft.z3.Expr;
 
+import proof_analyser.unsat_proof.Proof_Analyser;
+import proof_analyser.unsat_proof.Vampire_Unsat_Proof;
 import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;
 import util.Proof_Exception;

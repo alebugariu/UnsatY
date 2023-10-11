@@ -83,17 +83,17 @@ public class Input_Reader {
 	// Takes care of printing results and intermediate steps.
 	// Is initialized in the constructor based on the Output_Type and PrintStream
 	// provided there.
-	protected Verbal_Output verbal_output;
+	public Verbal_Output verbal_output;
 
 	// "The main interaction with Z3 happens via the Context. It maintains all data
 	// structures related to terms and formulas that are created relative to them."
 	// - from the Z3 API.
 	// Is null before the method z3_setup has been called.
-	protected Context context;
+	public Context context;
 
 	// Contains the contents of the z3_input_file parsed by the Z3 SMT-LIBv2 parser.
 	// Is null before the method z3_setup has been called.
-	protected BoolExpr[] input;
+	public BoolExpr[] input;
 
 	// For each quantified variable in the input, we create a Quant_Var object.
 	// There, we remember all the information about this quantified variable
@@ -105,7 +105,7 @@ public class Input_Reader {
 	// adding information to and later also getting information from them.
 	// Is null before the method z3_setup has been called.
 	// Is empty before the method analyze_input has been called.
-	protected Quant_Var_Handler quant_vars;
+	public Quant_Var_Handler quant_vars;
 
 	// In a Proof_Analyser object, we then use quant_vars to collect information
 	// about quantifier instantiations (more details provided there).
@@ -207,7 +207,7 @@ public class Input_Reader {
 	// - All quantified variables have unique names.
 	// - There are no existential quantifiers.
 	// Do not call this method yourself but use the Proof_Analyser_Framework.
-	protected void analyze_input() throws Proof_Exception {
+	public void analyze_input() throws Proof_Exception {
 		// Regardless of which prover we will use later, we use the input parsed by the
 		// Z3 API to collect our desired information. For simplicity we handle the
 		// quantifiers and the names with two separate searches through the z3_program.

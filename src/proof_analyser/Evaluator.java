@@ -16,6 +16,8 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Status;
 
+import proof_analyser.unsat_core.API_Unsat_Core_Finder;
+import proof_analyser.unsat_proof.Proof_Analyser;
 import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Proof_Exception;

@@ -19,7 +19,7 @@ import java.util.Set;
 
 import com.microsoft.z3.Expr;
 
-import proof_analyser.Vampire_Unsat_Proof;
+import proof_analyser.unsat_proof.Vampire_Unsat_Proof;
 import util.Verbal_Output.Log_Type;
 
 /*

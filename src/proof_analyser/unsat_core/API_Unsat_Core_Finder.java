@@ -5,7 +5,7 @@
  *   
  * Copyright (c) 2021-2023 ETH Zurich.
  *******************************************************************************/
-package proof_analyser;
+package proof_analyser.unsat_core;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -18,7 +18,7 @@ import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output;
 
-public class API_Unsat_Core_Finder {
+public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
 
 	private Context context;
 	private Solver solver;
