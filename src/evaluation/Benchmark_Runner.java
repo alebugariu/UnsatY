@@ -105,14 +105,14 @@ public class Benchmark_Runner implements Callable<Void> {
 			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
-			System.out.println("Started Calculations: " + dtf.format(now));
+			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(now));
 			framework.setup();
 			if (framework.generate_unsat_core()) {
 				framework.generate_proof();
 				now = LocalDateTime.now();
-				System.out.println("Unsat proof sucessfully generated: " + dtf.format(now));
+				System.out.println("Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				if (framework.construct_potential_example()) {
-					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY.");
+					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
 					framework.minimize_example();
 					if (Setup.log_type == Log_Type.full) {
 						log.println("------------------------------------------");
@@ -120,7 +120,7 @@ public class Benchmark_Runner implements Callable<Void> {
 					}
 					framework.minimize_input();
 				} else {
-					System.out.println("EXAMPLE CONSTURCTION FAILED.");
+					System.out.println("EXAMPLE CONSTURCTION FAILED for " + input_file.toString());
 				}
 				if (Setup.log_type == Log_Type.full) {
 					log.println("------------------------------------------");
@@ -132,14 +132,14 @@ public class Benchmark_Runner implements Callable<Void> {
 				System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
 				System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 			} else {
-				System.out.println("UNSAT CORE CONSTURCTION FAILED.");
+				System.out.println("UNSAT CORE CONSTURCTION FAILED for " + input_file.toString());
 			}
 			now = LocalDateTime.now();
-			System.out.println("Finished Calculations: " + dtf.format(now));
+			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(now));
 			System.out.println();
-		} catch (Proof_Exception e) {
+		} catch (Exception e) {
 			String error_message = e.getMessage();
-			System.out.println("FAIL: " + error_message);
+			System.out.println("FAIL for " + input_file.toString() + ": " + error_message);
 			System.out.println();
 		}
 		framework.close_context();
