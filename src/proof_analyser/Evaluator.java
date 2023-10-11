@@ -17,6 +17,8 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Status;
 
 import proof_analyser.unsat_core.API_Unsat_Core_Finder;
+import proof_analyser.unsat_core.Command_Line_Unsat_Core_Finder;
+import proof_analyser.unsat_core.Unsat_Core_Finder;
 import proof_analyser.unsat_proof.Proof_Analyser;
 import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
@@ -66,7 +68,7 @@ public class Evaluator {
 	// Is provided in the constructor.
 	private Context context;
 
-	private API_Unsat_Core_Finder unsat_core_finder;
+	private Unsat_Core_Finder unsat_core_finder;
 
 	// Expects a Quant_Var_Handler object that is populated appropriately.
 	// Do not call this constructor yourself but use the evaluate method in your
@@ -74,7 +76,12 @@ public class Evaluator {
 	protected Evaluator(Input_Reader input_reader, Proof_Analyser proof_analyser, Quant_Var_Handler quant_vars) {
 		this.verbal_output = input_reader.verbal_output;
 		this.context = input_reader.context;
-		this.unsat_core_finder = new API_Unsat_Core_Finder(this.context);
+		if(Setup.API_unsat_core) {
+			this.unsat_core_finder = new API_Unsat_Core_Finder(this.context);
+		}
+		else {
+			this.unsat_core_finder = new Command_Line_Unsat_Core_Finder();
+		}
 	}
 
 	protected Status status = Status.SATISFIABLE;
@@ -106,9 +113,7 @@ public class Evaluator {
 			example.recovery_strategy_default_values();
 			example_file = example.make_new_example("potential_example_recover_1");
 			recovery = 1;
-			BoolExpr[] parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null,
-					null, null);
-			if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
+			if (!unsat_core_finder.is_unsat(example_file, verbal_output)) {
 				dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 				now = LocalDateTime.now();
 				System.out.println("Started Recovery 2: " + dtf.format(now));
@@ -116,9 +121,7 @@ public class Evaluator {
 				example.recover_strategy_syntactically_appearing_concrete_values();
 				example_file = example.make_new_example("potential_example_recover_2");
 				recovery = 2;
-				parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null, null,
-						null);
-				if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
+				if (!unsat_core_finder.is_unsat(example_file, verbal_output)) {
 					dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 					now = LocalDateTime.now();
 					System.out.println("Started Recovery 3: " + dtf.format(now));
@@ -126,9 +129,7 @@ public class Evaluator {
 					example.recover_strategy_off_by_one();
 					example_file = example.make_new_example("potential_example_recover_3");
 					recovery = 3;
-					parsed_potential_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null,
-							null, null);
-					if (!unsat_core_finder.is_unsat(parsed_potential_example, verbal_output)) {
+					if (!unsat_core_finder.is_unsat(example_file, verbal_output)) {
 						return false;
 					}
 				}

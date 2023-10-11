@@ -19,11 +19,14 @@ import com.microsoft.z3.Expr;
 import com.microsoft.z3.Status;
 
 import proof_analyser.unsat_core.API_Unsat_Core_Finder;
+import proof_analyser.unsat_core.Command_Line_Unsat_Core_Finder;
+import proof_analyser.unsat_core.Unsat_Core_Finder;
 import proof_analyser.unsat_proof.Proof_Analyser;
 import proof_analyser.unsat_proof.Z3_Proof_Analyser;
 import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Proof_Exception;
+import util.Setup;
 import util.String_Utility;
 
 /*
@@ -111,21 +114,28 @@ public class Proof_Analyser_Framework {
 
 	public boolean generate_unsat_core() throws Proof_Exception {
 		Context context = input_reader.context;
-		API_Unsat_Core_Finder unsat_core_finder = new API_Unsat_Core_Finder(context);
+		Unsat_Core_Finder unsat_core_finder;
+		if (Setup.API_unsat_core) {
+			unsat_core_finder = new API_Unsat_Core_Finder(context);
+		} else {
+			unsat_core_finder = new Command_Line_Unsat_Core_Finder();
+		}
 		if (unsat_core_finder.is_unsat(input_reader.input, input_reader.verbal_output)) {
 			BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
 			input_reader.input = unsat_core;
-			String unsat_core_assertions = input_reader.context.benchmarkToSMTString("", "", "unsat", "", unsat_core, context.mkBool(true));
+			String unsat_core_assertions = input_reader.context.benchmarkToSMTString("", "", "unsat", "", unsat_core,
+					context.mkBool(true));
 			FileWriter fileWriter;
 			try {
-				fileWriter = new FileWriter("temp" + File.separator + String_Utility.get_file_name(input_file) + "_unsat_core.smt2", false);
+				fileWriter = new FileWriter(
+						"temp" + File.separator + String_Utility.get_file_name(input_file) + "_unsat_core.smt2", false);
 				fileWriter.write(unsat_core_assertions);
 				fileWriter.close();
 				return true;
 			} catch (IOException e) {
 				e.printStackTrace();
 				return false;
-			} 
+			}
 		}
 		return false;
 	}

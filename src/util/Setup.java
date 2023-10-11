@@ -26,6 +26,8 @@ public class Setup {
 	public static final String sat_random_seed = ":sat.random_seed";
 	public static final String smt_random_seed = ":smt.random_seed";
 	public static final String nlsat_seed = ":nlsat.seed";
+	
+	public static final boolean API_unsat_core = true; 
 
 	// Returns the current value of sat_random_seed and restores it to the default.
 	public static String get_sat_random_seed() {

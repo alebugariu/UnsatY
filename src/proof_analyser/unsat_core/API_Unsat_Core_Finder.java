@@ -7,6 +7,8 @@
  *******************************************************************************/
 package proof_analyser.unsat_core;
 
+import java.io.File;
+
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Params;
@@ -75,6 +77,12 @@ public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
 		}
 		// Unreachable.
 		return false;
+	}
+
+	@Override
+	public Boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
+		return this.is_unsat(context.parseSMTLIB2File(smt_file.getAbsolutePath(), null, null,
+				null, null), verbal_output);
 	}
 
 }
