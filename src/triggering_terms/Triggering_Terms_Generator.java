@@ -35,18 +35,17 @@ import util.Setup;
 
 public class Triggering_Terms_Generator {
 
-	private static String base_path = "test" + File.separator + "files";
 
 	public static void main(String[] args) throws Proof_Exception, IOException {
-		if (args.length != 3) {
-			System.out.println("Please provide the input file/folder, the prover [Z3, Vampire], and the path to Z3!");
+		if (args.length != 2) {
+			System.out.println("Please provide the input file/folder and the prover [Z3, Vampire]!");
 			return;
 		}
 
 		String file_name = args[0];
-		File input = new File(base_path + File.separator + file_name);
+		File input = new File(file_name);
 		if (!input.exists()) {
-			System.out.println("Invalid file/folder name: " + base_path + File.separator + file_name);
+			System.out.println("Invalid file/folder name: " + file_name);
 			return;
 		}
 
@@ -61,18 +60,17 @@ public class Triggering_Terms_Generator {
 			return;
 		}
 
-		String z3_path = args[2];
 		if (input.isDirectory()) {
 			for (File input_file : input.listFiles()) {
-				construct_triggering_terms_from_proof(input_file, prover, z3_path);
+				construct_triggering_terms_from_proof(input_file, prover);
 			}
 		} else {
-			construct_triggering_terms_from_proof(input, prover, z3_path);
+			construct_triggering_terms_from_proof(input, prover);
 		}
 
 	}
 
-	private static void construct_triggering_terms_from_proof(File input_file, Prover prover, String z3_path)
+	private static void construct_triggering_terms_from_proof(File input_file, Prover prover)
 			throws Proof_Exception, IOException {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, System.out);
 		framework.setup();
@@ -94,7 +92,7 @@ public class Triggering_Terms_Generator {
 			return;
 		}
 
-		run_ematching(output_file, z3_path);
+		run_ematching(output_file);
 	}
 
 	private static File generate_triggering_terms(File input_file, List<Expr<?>> pattern_function_applications,
@@ -108,7 +106,7 @@ public class Triggering_Terms_Generator {
 				temp_file.createNewFile();
 			}
 			PrintStream output = new PrintStream(temp_file);
-			output.println("(set-option :AUTO_CONFIG false)\n" + "(set-option :smt.MBQI false)");
+			output.println("(set-option :auto_config false)\n" + "(set-option :smt.mbqi false)");
 			output.println("(set-option " + Setup.sat_random_seed + " " + Setup.get_sat_random_seed() + ")");
 			output.println("(set-option " + Setup.smt_random_seed + " " + Setup.get_smt_random_seed() + ")");
 			output.println("(set-option " + Setup.nlsat_seed + " " + Setup.get_nlsat_seed() + ")");
@@ -134,10 +132,10 @@ public class Triggering_Terms_Generator {
 		}
 	}
 
-	private static void run_ematching(File file, String z3_path) {
+	private static void run_ematching(File file) {
 		try {
 			String file_name = file.getCanonicalPath();
-			String command = z3_path + "z3 " + file_name;
+			String command = "z3 " + file_name;
 			Process z3Process = Runtime.getRuntime().exec(command);
 			BufferedReader output = new BufferedReader(new InputStreamReader(z3Process.getInputStream()));
 			String result = "";
