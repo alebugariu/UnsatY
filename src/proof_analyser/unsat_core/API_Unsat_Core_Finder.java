@@ -55,7 +55,7 @@ public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
 		return solver.getReasonUnknown();
 	}
 
-	public Boolean is_unsat(BoolExpr[] formula, Verbal_Output verbal_output) throws Proof_Exception {
+	public boolean is_unsat(BoolExpr[] formula, Verbal_Output verbal_output) throws Proof_Exception {
 		// Note that we add the formula as an argument of the
 		// check method rather than via solver.add(formula), because the
 		// latter approach always produces empty unsat-cores.
@@ -80,7 +80,7 @@ public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
 	}
 
 	@Override
-	public Boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
+	public boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
 		return this.is_unsat(context.parseSMTLIB2File(smt_file.getAbsolutePath(), null, null,
 				null, null), verbal_output);
 	}

@@ -7,10 +7,8 @@
  *******************************************************************************/
 package triggering_terms;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Scanner;
@@ -24,6 +22,7 @@ import proof_analyser.Proof_Analyser_Framework.Prover;
 import quant_var.Quant_Var_Handler;
 import util.Proof_Exception;
 import util.Setup;
+import util.Z3_Utility;
 
 /*
  * This class can be used to create triggering terms based on function
@@ -34,7 +33,6 @@ import util.Setup;
  */
 
 public class Triggering_Terms_Generator {
-
 
 	public static void main(String[] args) throws Proof_Exception, IOException {
 		if (args.length != 2) {
@@ -72,12 +70,14 @@ public class Triggering_Terms_Generator {
 
 	private static void construct_triggering_terms_from_proof(File input_file, Prover prover)
 			throws Proof_Exception, IOException {
+		System.out.println("Processing file: " + input_file);
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, System.out);
 		framework.setup();
 		framework.generate_proof();
 		boolean success = framework.construct_potential_example();
 		if (!success) {
 			System.out.println("We were not able to construct an example from the proof");
+			System.out.println();
 			return;
 		}
 
@@ -133,24 +133,11 @@ public class Triggering_Terms_Generator {
 	}
 
 	private static void run_ematching(File file) {
-		try {
-			String file_name = file.getCanonicalPath();
-			String command = "z3 " + file_name;
-			Process z3Process = Runtime.getRuntime().exec(command);
-			BufferedReader output = new BufferedReader(new InputStreamReader(z3Process.getInputStream()));
-			String result = "";
-			String line = output.readLine();
-			while (line != null) {
-				result += line + "\n";
-				line = output.readLine();
-			}
-			if (result.startsWith("unsat")) {
-				System.out.println(file_name + " refuted via E-matching!");
-			} else {
-				System.out.println("E-matching returned: " + result + " for " + file_name);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		String result = Z3_Utility.run_command(file);
+		if (result.startsWith("unsat")) {
+			System.out.println(file + " refuted via E-matching!");
+		} else {
+			System.out.println("E-matching returned: " + result + " for " + file);
 		}
 	}
 }

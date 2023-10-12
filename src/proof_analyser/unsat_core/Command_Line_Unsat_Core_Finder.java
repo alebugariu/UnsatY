@@ -10,15 +10,15 @@ import util.Verbal_Output;
 public class Command_Line_Unsat_Core_Finder implements Unsat_Core_Finder {
 
 	@Override
-	public Boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
+	public boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
 		// TODO Auto-generated method stub
-		return null;
+		return false;
 	}
 
 	@Override
-	public Boolean is_unsat(BoolExpr[] formula, Verbal_Output verbal_output) throws Proof_Exception {
+	public boolean is_unsat(BoolExpr[] formula, Verbal_Output verbal_output) throws Proof_Exception {
 		// TODO Auto-generated method stub
-		return null;
+		return false;
 	}
 
 	@Override
