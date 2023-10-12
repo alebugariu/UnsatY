@@ -19,6 +19,13 @@ public class Command_Line_Result {
 
 	@Override
 	public String toString() {
-		return "Standard output: " + output + "Error message: " + error;
+		String as_string = "";
+		if (!output.isEmpty()) {
+			as_string += output;
+		}
+		if (!error.isEmpty()) {
+			as_string += error;
+		}
+		return as_string;
 	}
 }
