@@ -306,7 +306,9 @@ public class Input_Compatibility {
 					verbal_output.add_to_buffer("[INFO]", "Added the following line to the input: " + seeds.get(seed));
 				}
 			}
-			verbal_output.print_buffer();
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.print_buffer();
+			}
 			return modified_input;
 		} catch (FileNotFoundException e) {
 			if (Setup.log_type == Log_Type.full) {

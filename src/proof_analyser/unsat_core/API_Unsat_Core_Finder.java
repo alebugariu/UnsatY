@@ -19,14 +19,14 @@ import util.Exception_Handler;
 import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output;
+import util.Verbal_Output.Log_Type;
 
-public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
+public class API_Unsat_Core_Finder extends Unsat_Core_Finder {
 
-	private Context context;
 	private Solver solver;
 
 	public API_Unsat_Core_Finder(Context context) {
-		this.context = context;
+		super(context);
 		// Enable unsat-core generation (which we did not need before) and disable proof
 		// generation
 		this.context.updateParamValue("unsat_core", "true");
@@ -62,15 +62,21 @@ public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
 		// See https://stackoverflow.com/questions/32595806/z3-java-api-get-unsat-core.
 		Status status = check(formula);
 		if (status.equals(Status.UNSATISFIABLE)) {
-			verbal_output.add_to_buffer("[SUCCESS]", "Z3 returned unsat.");
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.add_to_buffer("[SUCCESS]", "Z3 returned unsat.");
+			}
 			return true;
-		} 
+		}
 		if (status.equals(Status.SATISFIABLE)) {
-			verbal_output.add_to_buffer("[PROBLEM]", "Z3 returned sat.");
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.add_to_buffer("[PROBLEM]", "Z3 returned sat.");
+			}
 			return false;
 		}
 		if (status.equals(Status.UNKNOWN)) {
-			verbal_output.add_to_buffer("[PROBLEM]", "Z3 returned unknown.");
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.add_to_buffer("[PROBLEM]", "Z3 returned unknown.");
+			}
 			Exception_Handler.throw_proof_exception("Z3 returned unknown because: " + get_reason_unknown(),
 					verbal_output, Status.UNKNOWN);
 			return false;
@@ -81,8 +87,8 @@ public class API_Unsat_Core_Finder implements Unsat_Core_Finder{
 
 	@Override
 	public boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
-		return this.is_unsat(context.parseSMTLIB2File(smt_file.getAbsolutePath(), null, null,
-				null, null), verbal_output);
+		return this.is_unsat(context.parseSMTLIB2File(smt_file.getAbsolutePath(), null, null, null, null),
+				verbal_output);
 	}
 
 }

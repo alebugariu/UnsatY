@@ -2,8 +2,12 @@ package util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 
 public class Command_Line_Utility {
 
@@ -12,8 +16,7 @@ public class Command_Line_Utility {
 			String file_name = file.getCanonicalPath();
 			String[] process_args = new String[] { "z3", "-T:" + String.valueOf(Setup.z3_timout), file_name };
 			return run_process(process_args);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -40,6 +43,18 @@ public class Command_Line_Utility {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public static void write_formula_to_file(BoolExpr[] formula, Context context, String status, String smt_file) {
+		String formula_as_string = context.benchmarkToSMTString("", "", status, "", formula, context.mkBool(true));
+		FileWriter fileWriter;
+		try {
+			fileWriter = new FileWriter(smt_file, false);
+			fileWriter.write(formula_as_string);
+			fileWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

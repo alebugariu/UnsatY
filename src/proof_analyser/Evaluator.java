@@ -80,7 +80,7 @@ public class Evaluator {
 			this.unsat_core_finder = new API_Unsat_Core_Finder(this.context);
 		}
 		else {
-			this.unsat_core_finder = new Command_Line_Unsat_Core_Finder();
+			this.unsat_core_finder = new Command_Line_Unsat_Core_Finder(this.context);
 		}
 	}
 
