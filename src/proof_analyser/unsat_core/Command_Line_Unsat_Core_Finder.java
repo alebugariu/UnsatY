@@ -28,7 +28,7 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 			Scanner scanner = new Scanner(smt_file);
 			String tmp_file = "temp" + File.separator + String_Utility.get_file_name(smt_file) + "_get_ucore.smt2";
 			PrintStream output = new PrintStream(tmp_file);
-			
+
 			output.println("(set-option :produce-unsat-cores true)");
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
@@ -36,8 +36,7 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 					// the benchmarks from the evaluation of the FM paper used E-matching, now we
 					// need to enable MBQI
 					output.println("(set-option :smt.mbqi true)");
-				}
-				else if (!line.contains("set-option :produce-proofs") && !line.contains("get-proof")) {
+				} else if (!line.contains("set-option :produce-proofs") && !line.contains("get-proof")) {
 					output.println(line);
 				}
 			}
@@ -47,6 +46,9 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 
 			Command_Line_Result result = Command_Line_Utility.run_z3(new File(tmp_file));
 			if (result.output.startsWith("unsat")) {
+				String unsat_core_string = result.output.replace("unsat", "").trim();
+				unsat_core_string = unsat_core_string.substring(1, unsat_core_string.length() - 1); // remove the enclosing ()
+				String[] assertion_names = unsat_core_string.split(" ");
 				return true;
 			}
 		} catch (FileNotFoundException e) {
@@ -57,8 +59,9 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 
 	@Override
 	public boolean is_unsat(BoolExpr[] formula, Verbal_Output verbal_output) throws Proof_Exception {
-		// TODO Auto-generated method stub
-		return false;
+		String tmp_file = "temp" + File.separator + "get_ucore.smt2";
+		Command_Line_Utility.write_formula_to_file(formula, context, "unsat", tmp_file);
+		return is_unsat(new File(tmp_file), verbal_output);
 	}
 
 	@Override
