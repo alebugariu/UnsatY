@@ -10,6 +10,10 @@ package proof_analyser.unsat_core;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import com.microsoft.z3.BoolExpr;
@@ -33,8 +37,11 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 	public boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
 		try {
 			Scanner scanner = new Scanner(smt_file);
-			String tmp_file = "temp" + File.separator + String_Utility.get_file_name(smt_file) + "_get_ucore.smt2";
+			String smt_file_name = String_Utility.get_file_name(smt_file);
+			String tmp_file = "temp" + File.separator + smt_file_name + "_get_ucore.smt2";
 			PrintStream output = new PrintStream(tmp_file);
+
+			Map<String, String> assertions_map = new HashMap<String, String>();
 
 			output.println("(set-option :produce-unsat-cores true)");
 			while (scanner.hasNextLine()) {
@@ -46,6 +53,11 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 				} else if (!line.contains("set-option :produce-proofs") && !line.contains("get-proof")) {
 					output.println(line);
 				}
+				if (line.contains("assert")) {
+					String name = String_Utility.get_name(line);
+					assert (name != null);
+					assertions_map.put(line, name);
+				}
 			}
 			output.println("(get-unsat-core)");
 			scanner.close();
@@ -54,8 +66,30 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 			Command_Line_Result result = Command_Line_Utility.run_z3(new File(tmp_file));
 			if (result.output.startsWith("unsat")) {
 				String unsat_core_string = result.output.replace("unsat", "").trim();
-				unsat_core_string = unsat_core_string.substring(1, unsat_core_string.length() - 1); // remove the enclosing ()
-				String[] assertion_names = unsat_core_string.split(" ");
+				// remove the enclosing ()
+				unsat_core_string = unsat_core_string.substring(1, unsat_core_string.length() - 1);
+				List<String> assertion_names = Arrays.asList(unsat_core_string.split(" "));
+				
+				scanner = new Scanner(new File(tmp_file));
+				String unsat_core_file = "temp" + File.separator + smt_file_name + "_unsat_core.smt2";
+				output = new PrintStream(unsat_core_file);
+				while (scanner.hasNextLine()) {
+					String line = scanner.nextLine();
+					if (line.contains("assert")) {
+						String name = assertions_map.get(line);
+						if(assertion_names.contains(name)) {  // is part of the unsat core
+							output.println(line);
+						}
+					}
+					else {
+						output.println(line);
+					}
+				}
+				scanner.close();
+				output.close();
+				
+				unsat_core = context.parseSMTLIB2File(unsat_core_file, null, null, null, null);
+				
 				return true;
 			}
 		} catch (FileNotFoundException e) {
