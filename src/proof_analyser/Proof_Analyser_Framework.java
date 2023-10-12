@@ -115,12 +115,15 @@ public class Proof_Analyser_Framework {
 	public boolean generate_unsat_core() throws Proof_Exception {
 		Context context = input_reader.context;
 		Unsat_Core_Finder unsat_core_finder;
+		File input_file;
 		if (Setup.API_unsat_core) {
 			unsat_core_finder = new API_Unsat_Core_Finder(context);
+			input_file = input_reader.get_input_file(); // the file modified for the ZPI
 		} else {
 			unsat_core_finder = new Command_Line_Unsat_Core_Finder();
+			input_file = input_reader.get_initial_input_file(); // the original file
 		}
-		if (unsat_core_finder.is_unsat(input_reader.input, input_reader.verbal_output)) {
+		if (unsat_core_finder.is_unsat(input_file, input_reader.verbal_output)) {
 			BoolExpr[] unsat_core = unsat_core_finder.get_unsat_core();
 			input_reader.input = unsat_core;
 			String unsat_core_assertions = input_reader.context.benchmarkToSMTString("", "", "unsat", "", unsat_core,

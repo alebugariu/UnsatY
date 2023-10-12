@@ -6,12 +6,15 @@ import com.microsoft.z3.BoolExpr;
 
 import util.Proof_Exception;
 import util.Verbal_Output;
+import util.Command_Line_Result;
+import util.Command_Line_Utility;
 
 public class Command_Line_Unsat_Core_Finder implements Unsat_Core_Finder {
 
 	@Override
 	public boolean is_unsat(File smt_file, Verbal_Output verbal_output) throws Proof_Exception {
-		// TODO Auto-generated method stub
+		Command_Line_Result result = Command_Line_Utility.run_z3(smt_file);
+		System.out.println(result);
 		return false;
 	}
 

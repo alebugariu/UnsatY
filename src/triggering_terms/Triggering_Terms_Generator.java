@@ -22,7 +22,8 @@ import proof_analyser.Proof_Analyser_Framework.Prover;
 import quant_var.Quant_Var_Handler;
 import util.Proof_Exception;
 import util.Setup;
-import util.Z3_Utility;
+import util.Command_Line_Result;
+import util.Command_Line_Utility;
 
 /*
  * This class can be used to create triggering terms based on function
@@ -133,11 +134,12 @@ public class Triggering_Terms_Generator {
 	}
 
 	private static void run_ematching(File file) {
-		String result = Z3_Utility.run_command(file);
-		if (result.startsWith("unsat")) {
+		Command_Line_Result result = Command_Line_Utility.run_z3(file);
+		if (result.output.startsWith("unsat")) {
 			System.out.println(file + " refuted via E-matching!");
 		} else {
 			System.out.println("E-matching returned: " + result + " for " + file);
 		}
+		System.out.println();
 	}
 }

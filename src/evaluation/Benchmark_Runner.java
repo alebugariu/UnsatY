@@ -7,10 +7,8 @@
  *******************************************************************************/
 package evaluation;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +16,8 @@ import java.util.concurrent.Callable;
 
 import proof_analyser.Proof_Analyser_Framework;
 import proof_analyser.Proof_Analyser_Framework.Prover;
+import util.Command_Line_Result;
+import util.Command_Line_Utility;
 import util.Proof_Exception;
 import util.Setup;
 import util.String_Utility;
@@ -30,8 +30,7 @@ public class Benchmark_Runner implements Callable<Void> {
 	private PrintStream log;
 	private String preprocessor;
 
-	public Benchmark_Runner(File input_file, Prover prover, String preprocessor)
-			throws Proof_Exception {
+	public Benchmark_Runner(File input_file, Prover prover, String preprocessor) throws Proof_Exception {
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
 			this.input_file = input_file;
@@ -63,39 +62,23 @@ public class Benchmark_Runner implements Callable<Void> {
 		String file_name = String_Utility.get_file_name(input_file);
 		String parent_folder = input_file.getParentFile().getName();
 		String file_path = input_file.getAbsolutePath();
-		try {
-			System.out.println("Preprocessing " + file_name);
-			String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
-					+ File.separator + "test_runner.py";
-			Process python_process = new ProcessBuilder("python3", preprocessing_script, "PatternAugmenter",
-					"--timeout", "600", "--location", file_path).start();
+		System.out.println("Preprocessing " + file_name);
+		String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
+				+ File.separator + "test_runner.py";
+		String[] process_args = new String[] { "python3", preprocessing_script, "--timeout", "600", "--location",
+				file_path };
+		Command_Line_Result result = Command_Line_Utility.run_process(process_args);
 
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(python_process.getErrorStream()));
-			BufferedReader stdOutput = new BufferedReader(new InputStreamReader(python_process.getInputStream()));
-
-			String error_message = "";
-			String s;
-			while ((s = stdError.readLine()) != null) {
-				error_message += s + "\n";
-			}
-			if (!error_message.isEmpty()) {
-				throw new Proof_Exception("Error during preprocessing: " + error_message);
-			}
-
-			String output = "";
-			while ((s = stdOutput.readLine()) != null) {
-				output += s + "\n";
-			}
-			if (output.contains("crash") && !output.contains("crashed in 0 cases")) {
-				throw new Proof_Exception("Error during preprocessing: " + output);
-			}
-			String new_file_path = file_path
-					.replace(parent_folder, parent_folder + File.separator + "pattern_augmenter")
-					.replace(file_name, file_name + "_std_unique_aug-gt_unsat-full");
-			return new File(new_file_path);
-		} catch (IOException e) {
-			throw new Proof_Exception("Error during preprocessing: " + e.getMessage());
+		if (!result.error.isEmpty()) {
+			throw new Proof_Exception("Error during preprocessing: " + result.error);
 		}
+
+		if (result.output.contains("crash") && !result.output.contains("crashed in 0 cases")) {
+			throw new Proof_Exception("Error during preprocessing: " + result.output);
+		}
+		String new_file_path = file_path.replace(parent_folder, parent_folder + File.separator + "pattern_augmenter")
+				.replace(file_name, file_name + "_std_unique_aug-gt_unsat-full");
+		return new File(new_file_path);
 	}
 
 	@Override
@@ -110,7 +93,8 @@ public class Benchmark_Runner implements Callable<Void> {
 			if (framework.generate_unsat_core()) {
 				framework.generate_proof();
 				now = LocalDateTime.now();
-				System.out.println("Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
+				System.out.println(
+						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				if (framework.construct_potential_example()) {
 					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
 					framework.minimize_example();
