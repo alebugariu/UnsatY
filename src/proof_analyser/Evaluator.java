@@ -16,7 +16,6 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
 import proof_analyser.unsat_core.API_Unsat_Core_Finder;
-import proof_analyser.unsat_core.Command_Line_Unsat_Core_Finder;
 import proof_analyser.unsat_core.Unsat_Core_Finder;
 import proof_analyser.unsat_proof.Proof_Analyser;
 import quant_var.Quant_Var_Handler;
@@ -75,21 +74,15 @@ public class Evaluator {
 	protected Evaluator(Input_Reader input_reader, Proof_Analyser proof_analyser, Quant_Var_Handler quant_vars) {
 		this.verbal_output = input_reader.verbal_output;
 		this.context = input_reader.context;
-		if(Setup.API_unsat_core) {
-			this.unsat_core_finder = new API_Unsat_Core_Finder(this.context);
-		}
-		else {
-			this.unsat_core_finder = new Command_Line_Unsat_Core_Finder(this.context);
-		}
+		this.unsat_core_finder = new API_Unsat_Core_Finder(this.context); // the Command_Line_Unsat_Core_Finder because at this point the assertions are no longer named
 	}
 
 	protected Boolean minimization;
 	protected int recovery;
 
 	protected Boolean validate(Example example, File example_file) {
-		BoolExpr[] parsed_example = context.parseSMTLIB2File(example_file.getAbsolutePath(), null, null, null, null);
 		try {
-			if (unsat_core_finder.is_unsat(parsed_example, verbal_output)) {
+			if (unsat_core_finder.is_unsat(example_file, verbal_output)) {
 				return true;
 			}
 		} catch (Proof_Exception e) {

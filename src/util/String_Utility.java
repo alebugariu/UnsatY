@@ -263,8 +263,8 @@ public class String_Utility {
 				String regex = "\\(! .*? :named .*?\\)";
 				String match = match_first(regex, assertion);
 				String match_regex = ":named .*?\\)";
-				match = match_first(match_regex, match);
-				String name = match.substring(7, match.length() - 2);
+				match = cleanup_spaces(match_first(match_regex, match));
+				String name = match.substring(7, match.length() - 1);
 				return name;
 			}
 		} catch (Proof_Exception e) {

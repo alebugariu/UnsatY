@@ -78,7 +78,7 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 					if (line.contains("assert")) {
 						String name = assertions_map.get(line);
 						if(assertion_names.contains(name)) {  // is part of the unsat core
-							output.println(line);
+							output.println(String_Utility.remove_names(line));
 						}
 					}
 					else {
