@@ -149,11 +149,8 @@ public class Input_Compatibility {
 	}
 
 	// Reads the input_file. Combines related lines in a single expression. Removes
-	// comments, names of expressions (so that "! [formula] :named [symbol]" becomes
-	// just "[formula]") and multiple successive spaces. We do not need these things
-	// for proving the input with Z3 or with Vampire.
-	// Further handles ensures that the input file and the Z3 API use the same
-	// random seeds.
+	// comments and multiple successive spaces. Further handles ensures that the
+	// input file and the Z3 API use the same random seeds.
 	// Returns a list containing each relevant expression of the SMT-LIBv2 input.
 	// Throws a Proof_Exception if it does not find the input_file.
 	public static List<String> read_and_make_generally_compatible(File input_file, Verbal_Output verbal_output)
@@ -270,8 +267,7 @@ public class Input_Compatibility {
 						}
 					}
 				}
-				// Next, we remove names of expressions.
-				String new_line = String_Utility.remove_names(line);
+				String new_line = line;
 				if (new_line.contains("declare-fun") && new_line.contains("()")) {
 					// We rewrite function-declarations without arguments to constant-declarations
 					// to avoid confusion later in the evaluation. This helps us avoid duplicate

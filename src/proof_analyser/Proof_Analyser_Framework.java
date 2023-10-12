@@ -14,7 +14,6 @@ import java.util.List;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
-import com.microsoft.z3.Status;
 
 import proof_analyser.unsat_core.API_Unsat_Core_Finder;
 import proof_analyser.unsat_core.Command_Line_Unsat_Core_Finder;
@@ -147,10 +146,6 @@ public class Proof_Analyser_Framework {
 	public Boolean minimize_input() {
 		success = input_reader.minimize(example);
 		return success;
-	}
-
-	public Status get_status() {
-		return evaluator.status;
 	}
 
 	public Boolean get_minimization_success() {

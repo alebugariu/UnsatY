@@ -108,12 +108,10 @@ public class Benchmark_Runner implements Callable<Void> {
 				}
 				if (Setup.log_type == Log_Type.full) {
 					log.println("------------------------------------------");
-					log.print("[STATUS: " + framework.get_status() + "]");
-					log.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+					log.print("[MINIMIZATION: " + framework.get_minimization_success() + "]");
 					log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 				}
-				System.out.print("[STATUS: " + framework.get_status() + "]");
-				System.out.print(", [MINIMIZATION: " + framework.get_minimization_success() + "]");
+				System.out.print("[MINIMIZATION: " + framework.get_minimization_success() + "]");
 				System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 			} else {
 				System.out.println("UNSAT CORE CONSTURCTION FAILED for " + input_file.toString());

@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Status;
 
 import proof_analyser.unsat_core.API_Unsat_Core_Finder;
 import proof_analyser.unsat_core.Command_Line_Unsat_Core_Finder;
@@ -84,7 +83,6 @@ public class Evaluator {
 		}
 	}
 
-	protected Status status = Status.SATISFIABLE;
 	protected Boolean minimization;
 	protected int recovery;
 
@@ -179,8 +177,6 @@ public class Evaluator {
 			minimization = true;
 			return true;
 		}
-		// Minimization fail.
-		status = Status.UNSATISFIABLE;
 		return true;
 	}
 }
