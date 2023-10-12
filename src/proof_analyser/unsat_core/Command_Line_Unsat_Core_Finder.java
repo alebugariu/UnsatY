@@ -65,7 +65,7 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 
 			Command_Line_Result result = Command_Line_Utility.run_z3(new File(tmp_file));
 			if (result.output.startsWith("unsat")) {
-				String unsat_core_string = result.output.replace("unsat", "").trim();
+				String unsat_core_string = result.output.replace("unsat", "").replace("(:reason-unknown \"unknown\")", "").trim();
 				// remove the enclosing ()
 				unsat_core_string = unsat_core_string.substring(1, unsat_core_string.length() - 1);
 				List<String> assertion_names = Arrays.asList(unsat_core_string.split(" "));
