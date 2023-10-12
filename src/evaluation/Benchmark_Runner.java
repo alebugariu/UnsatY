@@ -29,8 +29,10 @@ public class Benchmark_Runner implements Callable<Void> {
 	private Prover prover;
 	private PrintStream log;
 	private String preprocessor;
+	private boolean ematching;
 
-	public Benchmark_Runner(File input_file, Prover prover, String preprocessor) throws Proof_Exception {
+	public Benchmark_Runner(File input_file, Prover prover, String preprocessor, boolean ematching)
+			throws Proof_Exception {
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
 			this.input_file = input_file;
@@ -38,6 +40,7 @@ public class Benchmark_Runner implements Callable<Void> {
 			this.input_file = preprocess(input_file);
 		}
 		this.prover = prover;
+		this.ematching = ematching;
 		if (Setup.log_type == Log_Type.full) {
 			set_printstream_to_new_file(this.input_file);
 		}
@@ -103,8 +106,11 @@ public class Benchmark_Runner implements Callable<Void> {
 						log.print(framework.get_user_presentation());
 					}
 					framework.minimize_input();
+					if (ematching && framework.synthesize_triggering_terms()) {
+						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
+					}
 				} else {
-					System.out.println("EXAMPLE CONSTURCTION FAILED for " + input_file.toString());
+					System.out.println("EXAMPLE CONSTRUCTION FAILED for " + input_file.toString());
 				}
 				if (Setup.log_type == Log_Type.full) {
 					log.println("------------------------------------------");
@@ -114,7 +120,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				System.out.print("[MINIMIZATION: " + framework.get_minimization_success() + "]");
 				System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 			} else {
-				System.out.println("UNSAT CORE CONSTURCTION FAILED for " + input_file.toString());
+				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + input_file.toString());
 			}
 			now = LocalDateTime.now();
 			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(now));

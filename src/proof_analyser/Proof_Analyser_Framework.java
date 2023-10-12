@@ -9,11 +9,9 @@ package proof_analyser;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.List;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
 
 import proof_analyser.unsat_core.API_Unsat_Core_Finder;
 import proof_analyser.unsat_core.Command_Line_Unsat_Core_Finder;
@@ -21,6 +19,7 @@ import proof_analyser.unsat_core.Unsat_Core_Finder;
 import proof_analyser.unsat_proof.Proof_Analyser;
 import proof_analyser.unsat_proof.Z3_Proof_Analyser;
 import quant_var.Quant_Var_Handler;
+import triggering_terms.Triggering_Terms_Generator;
 import util.Exception_Handler;
 import util.Proof_Exception;
 import util.Setup;
@@ -159,14 +158,11 @@ public class Proof_Analyser_Framework {
 		input_reader.context.close();
 	}
 
-	// The method below are used to generate triggering terms for E-Matching.
-
-	public List<Expr<?>> get_patterns() {
-		return input_reader.get_patterns();
-	}
-
-	public Quant_Var_Handler get_quant_vars() {
-		return input_reader.quant_vars;
+	// The method below is used to generate triggering terms for E-Matching.
+	
+	public Boolean synthesize_triggering_terms() throws Proof_Exception {
+		Triggering_Terms_Generator generator = new Triggering_Terms_Generator();
+		return generator.synthesisize_triggering_terms(input_file, input_reader.get_patterns(), input_reader.quant_vars);
 	}
 
 }

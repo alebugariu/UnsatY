@@ -50,6 +50,9 @@ public class Main {
 		Option preprocessOpt = new Option("pre", true,
 				"absolute path to the tool used to preprocess the inputs (transform them into NNF, ensure that all quantified variables have unique names, etc.)");
 		options.addOption(preprocessOpt);
+		
+		Option ematchingOpt = new Option("ematching", false, "synthesize triggering terms for E-matching from the unsat proofs");
+		options.addOption(ematchingOpt);
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -89,6 +92,9 @@ public class Main {
 		if (cmd.hasOption("pre")) {
 			preprocessor = cmd.getOptionValue("pre");
 		}
+		
+		boolean ematching = cmd.hasOption("ematching");
+		
 
 		if (cmd.hasOption("folder")) {
 
@@ -103,7 +109,7 @@ public class Main {
 				System.exit(1);
 			}
 			Collection<File> files = FileUtils.listFiles(folder, new String[] { "smt2" }, true);
-			evaluate(files, prover, preprocessor);
+			evaluate(files, prover, preprocessor, ematching);
 			FileUtils.deleteDirectory(tmpFolder);
 			return;
 		}
@@ -122,19 +128,19 @@ public class Main {
 			}
 			Collection<File> files = new ArrayList<File>();
 			files.add(file);
-			evaluate(files, prover, preprocessor);
+			evaluate(files, prover, preprocessor, ematching);
 			FileUtils.deleteDirectory(tmpFolder);
 		}
 	}
 
-	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor)
+	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor, boolean ematching)
 			throws Proof_Exception {
 		int nr_threads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);
 		List<Future<Void>> threads_map = new ArrayList<Future<Void>>();
 
 		for (File benchmark : benchmarks) {
-			threads_map.add(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor));
+			threads_map.add(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, ematching));
 		}
 		for (Future<Void> future : threads_map) {
 			try {

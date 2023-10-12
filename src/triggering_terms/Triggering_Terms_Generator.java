@@ -17,8 +17,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.microsoft.z3.Expr;
 
-import proof_analyser.Proof_Analyser_Framework;
-import proof_analyser.Proof_Analyser_Framework.Prover;
 import quant_var.Quant_Var_Handler;
 import util.Proof_Exception;
 import util.Setup;
@@ -35,69 +33,17 @@ import util.Command_Line_Utility;
 
 public class Triggering_Terms_Generator {
 
-	public static void main(String[] args) throws Proof_Exception, IOException {
-		if (args.length != 2) {
-			System.out.println("Please provide the input file/folder and the prover [Z3, Vampire]!");
-			return;
-		}
+	public boolean synthesisize_triggering_terms(File input_file, List<Expr<?>> patterns,
+			Quant_Var_Handler quant_vars) throws Proof_Exception {
 
-		String file_name = args[0];
-		File input = new File(file_name);
-		if (!input.exists()) {
-			System.out.println("Invalid file/folder name: " + file_name);
-			return;
-		}
-
-		String prover_name = args[1];
-		Prover prover = null;
-		if (prover_name.toLowerCase().equals("z3")) {
-			prover = Prover.z3;
-		} else if (prover_name.toLowerCase().equals("vampire")) {
-			prover = Prover.vampire;
-		} else {
-			System.out.println("Invalid prover: " + prover_name);
-			return;
-		}
-
-		if (input.isDirectory()) {
-			for (File input_file : input.listFiles()) {
-				construct_triggering_terms_from_proof(input_file, prover);
-			}
-		} else {
-			construct_triggering_terms_from_proof(input, prover);
-		}
-
-	}
-
-	private static void construct_triggering_terms_from_proof(File input_file, Prover prover)
-			throws Proof_Exception, IOException {
-		System.out.println("Processing file: " + input_file);
-		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, System.out);
-		framework.setup();
-		framework.generate_proof();
-		boolean success = framework.construct_potential_example();
-		if (!success) {
-			System.out.println("We were not able to construct an example from the proof");
-			System.out.println();
-			return;
-		}
-
-		// Note: we do not minimize the example, since the minimization with MBQI may
-		// remove values for some quantified variables which are relevant for E-matching
-
-		List<Expr<?>> pattern_function_applications = framework.get_patterns();
-		File output_file = generate_triggering_terms(input_file, pattern_function_applications,
-				framework.get_quant_vars());
+		File output_file = generate_triggering_terms(input_file, patterns, quant_vars);
 		if (output_file == null) {
-			System.out.println("We were not able to generate the triggering terms");
-			return;
+			return false;
 		}
-
-		run_ematching(output_file);
+		return refuted_by_ematching(output_file);
 	}
 
-	private static File generate_triggering_terms(File input_file, List<Expr<?>> pattern_function_applications,
-			Quant_Var_Handler quant_vars) {
+	private File generate_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars) throws Proof_Exception {
 		try {
 			String temp_file_path = "temp" + File.separator + FilenameUtils.getBaseName(input_file.getName())
 					+ "_ematching.smt2";
@@ -120,7 +66,7 @@ public class Triggering_Terms_Generator {
 				}
 			}
 			output.println();
-			for (String triggering_term : quant_vars.create_triggering_terms(pattern_function_applications)) {
+			for (String triggering_term : quant_vars.create_triggering_terms(patterns)) {
 				output.println(triggering_term);
 			}
 			output.println("(check-sat)");
@@ -128,18 +74,15 @@ public class Triggering_Terms_Generator {
 			scanner.close();
 			return temp_file;
 		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			throw new Proof_Exception("Failed to generate the triggering terms because " + e.getMessage());
 		}
 	}
 
-	private static void run_ematching(File file) {
+	private boolean refuted_by_ematching(File file) throws Proof_Exception {
 		Command_Line_Result result = Command_Line_Utility.run_z3(file);
-		if (result.output.startsWith("unsat")) {
-			System.out.println(file + " refuted via E-matching!");
-		} else {
-			System.out.println("E-matching returned: " + result + " for " + file);
-		}
-		System.out.println();
+		if(result.output.startsWith("unsat")) {
+			return true;
+		} 
+		throw new Proof_Exception("E-matching returned: " + result + " for " + file);
 	}
 }
