@@ -162,7 +162,9 @@ public class Proof_Analyser_Framework {
 	
 	public Boolean synthesize_triggering_terms() throws Proof_Exception {
 		Triggering_Terms_Generator generator = new Triggering_Terms_Generator();
-		return generator.synthesisize_triggering_terms(input_file, input_reader.get_patterns(), input_reader.quant_vars);
+		Quant_Var_Handler quant_vars = input_reader.quant_vars;
+		quant_vars.further_declarations.removeAll(input_reader.declarations);
+		return generator.synthesisize_triggering_terms(input_file, input_reader.get_patterns(), quant_vars);
 	}
 
 }

@@ -16,6 +16,7 @@ import java.util.Scanner;
 import org.apache.commons.io.FilenameUtils;
 
 import com.microsoft.z3.Expr;
+import com.microsoft.z3.FuncDecl;
 
 import quant_var.Quant_Var_Handler;
 import util.Proof_Exception;
@@ -57,9 +58,18 @@ public class Triggering_Terms_Generator {
 			output.println("(set-option " + Setup.sat_random_seed + " " + Setup.get_sat_random_seed() + ")");
 			output.println("(set-option " + Setup.smt_random_seed + " " + Setup.get_smt_random_seed() + ")");
 			output.println("(set-option " + Setup.nlsat_seed + " " + Setup.get_nlsat_seed() + ")");
+			
 			Scanner scanner = new Scanner(input_file);
+			boolean first_assertion = true;
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
+				if(line.contains("assert") && first_assertion) {
+					// add the additional declarations before the assertions
+					for (FuncDecl<?> further_declaration : quant_vars.further_declarations) {
+						output.println(further_declaration.toString());
+						first_assertion = false;
+					}
+				}
 				if (!line.contains("set-option") && !line.startsWith(";") && !line.contains("check-sat")
 						&& !line.contains("get-proof") && !line.contains("(get-info :reason-unknown)")) {
 					output.println(line);

@@ -259,10 +259,10 @@ public class Quant_Var {
 
 	// Returns a list of declarations of uninterpreted functions and constants that
 	// occur in the input_line.
-	protected List<FuncDecl<?>> make_further_declarations() {
+	protected Set<FuncDecl<?>> make_further_declarations() {
 		// We need this since our values may include uninterpreted functions or
 		// constants that are declared by/in the proof but do not appear in the input.
-		List<FuncDecl<?>> declarations = new LinkedList<FuncDecl<?>>();
+		Set<FuncDecl<?>> declarations = new LinkedHashSet<FuncDecl<?>>();
 		// All uninterpreted functions that use this quantified variable as an argument
 		// are already present in f_decls, no matter whether they have been defined in
 		// the input or in the unsat-proof.
@@ -280,13 +280,10 @@ public class Quant_Var {
 
 	// Recursively adds the declarations of all constants that occur in expression
 	// to declarations.
-	private void possibly_add_declarations(Expr<?> expression, List<FuncDecl<?>> declarations) {
+	private void possibly_add_declarations(Expr<?> expression, Set<FuncDecl<?>> declarations) {
 		if (expression.isConst() && expression.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
-			// If the value is an uninterpreted constant, then we add its declaration (if
-			// the entry is not already present).
-			if (!declarations.contains(expression.getFuncDecl())) {
+			// If the value is an uninterpreted constant, then we add its declaration
 				declarations.add(expression.getFuncDecl());
-			}
 		}
 		if (expression.isApp()) {
 			// If the value is an application, then we recursively look at its arguments to

@@ -163,6 +163,7 @@ public class Evaluator {
 				verbal_output.add_all_to_buffer("\t", e.getStackTrace());
 			}
 			Exception_Handler.throw_proof_exception("Failed to write the minimized example to file.", verbal_output);
+			return false;
 		}
 
 		if (!example.is_the_same(unsat_core)) {
