@@ -110,7 +110,7 @@ public class Input_Reader {
 	// In a Proof_Analyser object, we then use quant_vars to collect information
 	// about quantifier instantiations (more details provided there).
 
-	// Collects all declarations from the input.
+	// Collects all declarations of uninterpreted functions from the input.
 	// Is null before the method z3_setup has been called.
 	// Is empty before the method analyze_input has been called.
 	protected Set<FuncDecl<?>> declarations;

@@ -10,8 +10,10 @@ package triggering_terms;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -34,8 +36,8 @@ import util.Command_Line_Utility;
 
 public class Triggering_Terms_Generator {
 
-	public boolean synthesisize_triggering_terms(File input_file, List<Expr<?>> patterns,
-			Quant_Var_Handler quant_vars) throws Proof_Exception {
+	public boolean synthesisize_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+			throws Proof_Exception {
 
 		File output_file = generate_triggering_terms(input_file, patterns, quant_vars);
 		if (output_file == null) {
@@ -44,7 +46,8 @@ public class Triggering_Terms_Generator {
 		return refuted_by_ematching(output_file);
 	}
 
-	private File generate_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars) throws Proof_Exception {
+	private File generate_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+			throws Proof_Exception {
 		try {
 			String temp_file_path = "temp" + File.separator + FilenameUtils.getBaseName(input_file.getName())
 					+ "_ematching.smt2";
@@ -58,20 +61,28 @@ public class Triggering_Terms_Generator {
 			output.println("(set-option " + Setup.sat_random_seed + " " + Setup.get_sat_random_seed() + ")");
 			output.println("(set-option " + Setup.smt_random_seed + " " + Setup.get_smt_random_seed() + ")");
 			output.println("(set-option " + Setup.nlsat_seed + " " + Setup.get_nlsat_seed() + ")");
-			
+
+			Set<String> declarations = new LinkedHashSet<String>();
+
 			Scanner scanner = new Scanner(input_file);
 			boolean first_assertion = true;
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
-				if(line.contains("assert") && first_assertion) {
+				if (line.contains("assert") && first_assertion) {
 					// add the additional declarations before the assertions
 					for (FuncDecl<?> further_declaration : quant_vars.further_declarations) {
-						output.println(further_declaration.toString());
-						first_assertion = false;
+						String declaration_str = further_declaration.toString();
+						if (!declarations.contains(declaration_str)) {
+							output.println(declaration_str);
+						}
 					}
+					first_assertion = false;
 				}
 				if (!line.contains("set-option") && !line.startsWith(";") && !line.contains("check-sat")
 						&& !line.contains("get-proof") && !line.contains("(get-info :reason-unknown)")) {
+					if(line.contains("declare")) {
+						declarations.add(line);
+					}
 					output.println(line);
 				}
 			}
@@ -90,9 +101,9 @@ public class Triggering_Terms_Generator {
 
 	private boolean refuted_by_ematching(File file) throws Proof_Exception {
 		Command_Line_Result result = Command_Line_Utility.run_z3(file);
-		if(result.output.startsWith("unsat")) {
+		if (result.output.startsWith("unsat")) {
 			return true;
-		} 
+		}
 		throw new Proof_Exception("E-matching returned: " + result + " for " + file);
 	}
 }
