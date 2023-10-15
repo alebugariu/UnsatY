@@ -64,9 +64,12 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 			output.close();
 
 			Command_Line_Result result = Command_Line_Utility.run_z3(new File(tmp_file));
+			result.output = result.output.replace("unsupported\n", "");
 			if (result.output.startsWith("unsat")) {
 				String unsat_core_string = result.output.replace("unsat", "").replace("(:reason-unknown \"unknown\")", "").trim();
 				// remove the enclosing ()
+				assert (unsat_core_string.charAt(0) == '(');
+				assert (unsat_core_string.charAt(unsat_core_string.length() - 1) == ')');
 				unsat_core_string = unsat_core_string.substring(1, unsat_core_string.length() - 1);
 				List<String> assertion_names = Arrays.asList(unsat_core_string.split(" "));
 				
@@ -92,6 +95,7 @@ public class Command_Line_Unsat_Core_Finder extends Unsat_Core_Finder {
 				
 				return true;
 			}
+			throw new Proof_Exception(result.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

@@ -101,6 +101,7 @@ public class Triggering_Terms_Generator {
 
 	private boolean refuted_by_ematching(File file) throws Proof_Exception {
 		Command_Line_Result result = Command_Line_Utility.run_z3(file);
+		result.output = result.output.replace("unsupported\n", "");
 		if (result.output.startsWith("unsat")) {
 			return true;
 		}

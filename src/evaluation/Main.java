@@ -11,7 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -137,19 +138,19 @@ public class Main {
 			throws Proof_Exception {
 		int nr_threads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);
-		List<Future<Void>> threads_map = new ArrayList<Future<Void>>();
+		Map<Future<Void>, File> threads_map = new HashMap<Future<Void>, File>();
 
 		for (File benchmark : benchmarks) {
-			threads_map.add(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, ematching));
+			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, ematching), benchmark);
 		}
-		for (Future<Void> future : threads_map) {
+		for (Future<Void> future : threads_map.keySet()) {
 			try {
 				future.get(Setup.timeout, TimeUnit.SECONDS);
 			} catch (Exception e) {
 				if (!future.isDone()) {
 					future.cancel(true);
 				}
-				e.printStackTrace();
+				System.out.println("Timeout reached while processing the file " + threads_map.get(future));
 			}
 		}
 		executor.shutdown();
