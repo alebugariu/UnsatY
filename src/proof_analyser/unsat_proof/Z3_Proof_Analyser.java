@@ -20,7 +20,6 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Sort;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Tactic;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
 import proof_analyser.Input_Reader;
@@ -110,23 +109,13 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	@Override
 	public void generate_unsat_proof() throws Proof_Exception {
 		// First, we create a solver and set it up appropriately.
-		// The following tactics enables proof generation with MBQI (tactic "smt" is equivalent to "(check-sat-using smt)" in the input file)
-		// and ensure on-par performance with command line
-		// See https://github.com/Z3Prover/z3/issues/5490 for further information.
-		Tactic tactic = context.andThen(context.mkTactic("solve-eqs"), context.mkTactic("simplify"),
-				context.mkTactic("normalize-bounds"), context.mkTactic("propagate-values"), context.mkTactic("smt"));
-		Solver solver = context.mkSolver(tactic);
+		Solver solver = context.mkSolver();
 		Params solver_settings = context.mkParams();
 		solver_settings.add("auto-config", false);
 		solver_settings.add("mbqi", true);
-		solver_settings.add("ematching", false);
 		solver_settings.add("proof", true);
 		solver_settings.add("timeout", Setup.z3_timout);
 		solver_settings.add("max_memory", Setup.z3_memory_limit);
-		// The Z3 API does not allow us to specify seeds in the context, and here in the
-		// solver settings we can only set one random_seed.
-		// Note that the getter methods of Setup have side-effects!
-		solver_settings.add("smt.random_seed", Integer.parseInt(Setup.get_smt_random_seed()));
 		solver.setParameters(solver_settings);
 		// Next, we want to use the solver to check whether the input is unsatisfiable.
 		// If that's the case, then we can generate an unsat-proof and look for
