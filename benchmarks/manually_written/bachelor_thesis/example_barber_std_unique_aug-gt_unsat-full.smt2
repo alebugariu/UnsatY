@@ -11,3 +11,5 @@
 (declare-const barber man)
 (assert (! (forall ((x0py0 man)) (! (or (= (shave x0py0) x0py0) (= (shave x0py0) barber)) :pattern ((shave x0py0)) )) :named A0))
 (assert (! (forall ((x1py0 man)) (! (or (not (= (shave x1py0) barber)) (not (= (shave x1py0) x1py0))) :pattern ((shave x1py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

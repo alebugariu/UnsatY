@@ -10,3 +10,5 @@
 (declare-fun isShavedBy (Man) Man)
 (declare-const barber Man)
 (assert (! (forall ((xpy0 Man)) (! (and (or (= (isShavedBy xpy0) xpy0) (= (isShavedBy xpy0) barber)) (or (not (= (isShavedBy xpy0) xpy0)) (not (= (isShavedBy xpy0) barber)))) :pattern ((isShavedBy xpy0)) )) :named A0))
+(check-sat)
+(get-info :reason-unknown)

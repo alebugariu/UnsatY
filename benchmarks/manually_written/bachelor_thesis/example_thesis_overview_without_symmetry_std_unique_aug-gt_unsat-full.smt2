@@ -9,3 +9,5 @@
 (declare-sort RMode 0)
 (assert (! (forall ((x0py0 Int)(x1py0 Int)(x2py0 Int)) (! (or (<= x0py0 (- 1)) (<= x1py0 2) (and (not (<= (f x0py0 x1py0) 7)) (<= (f x1py0 x2py0) 42))) :pattern ((f x0py0 x1py0) (f x1py0 x2py0)) )) :named A0))
 (assert (! (forall ((x3py0 Int)(x4py0 Int)) (! (or (<= 1 x3py0) (<= 4 x4py0) (= (f x3py0 x4py0) 6)) :pattern ((f x3py0 x4py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

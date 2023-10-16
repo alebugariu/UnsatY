@@ -16,3 +16,5 @@
 (assert (! (forall ((x!1py1 Int)) (! (or (z3name!0 x!1py1) (not (= (h (f (g x!1py1)) 0) 0))) :pattern ((z3name!0 x!1py1)) )) :named A0_2))
 (assert (! (not (fourth_fun false)) :named A1))
 (assert (! (not (= (h (f (g 5)) 0) 0)) :named A2))
+(check-sat)
+(get-info :reason-unknown)

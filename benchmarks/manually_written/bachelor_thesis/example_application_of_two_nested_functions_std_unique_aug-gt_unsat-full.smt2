@@ -10,3 +10,5 @@
 (declare-fun g (Int) Int)
 (assert (! (forall ((x0py0 Int)) (! (not (<= (f (g x0py0)) 0)) :pattern ((g x0py0)) )) :named A0))
 (assert (! (forall ((x1py0 Int)) (! (or (<= x1py0 0) (not (<= 0 (f (g x1py0))))) :pattern ((g x1py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

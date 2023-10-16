@@ -10,3 +10,5 @@
 (declare-fun f (Int Int Int) Bool)
 (assert (! (forall ((x0py0 Int)(x1py0 Int)(x2py0 Int)) (! (not (<= 13 (+ x0py0 (* (- 1) x1py0) (* (- 1) x2py0)))) :pattern ((f x0py0 x1py0 x2py0)) )) :named A0))
 (assert (! (= a 42) :named A1))
+(check-sat)
+(get-info :reason-unknown)

@@ -10,3 +10,5 @@
 (declare-fun alive (cat) Bool)
 (assert (! (forall ((x0py0 cat)) (! (alive x0py0) :pattern ((alive x0py0)) )) :named A0))
 (assert (! (forall ((x1py0 cat)) (! (not (alive x1py0)) :pattern ((alive x1py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

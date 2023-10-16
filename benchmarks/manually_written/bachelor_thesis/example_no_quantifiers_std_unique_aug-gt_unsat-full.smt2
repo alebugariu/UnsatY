@@ -9,3 +9,5 @@
 (declare-sort RMode 0)
 (declare-const x1 Int)
 (assert (! false :named A0))
+(check-sat)
+(get-info :reason-unknown)

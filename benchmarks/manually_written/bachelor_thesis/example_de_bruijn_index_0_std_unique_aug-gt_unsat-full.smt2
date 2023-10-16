@@ -8,3 +8,5 @@
 (declare-sort RegExStr 0)
 (declare-sort RMode 0)
 (assert (! (forall ((x0py0 Bool)(x1py0 Bool)(x2py0 Bool)(x3py0 Bool)) (! x0py0 :pattern ((f x0py0 x1py0 x2py0 x3py0)) )) :named A0))
+(check-sat)
+(get-info :reason-unknown)

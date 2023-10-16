@@ -8,3 +8,5 @@
 (declare-sort RegExStr 0)
 (declare-sort RMode 0)
 (assert (! (forall ((x0py0 Int)(y0py0 Int)) (! (= (+ x0py0 y0py0) 3) :pattern ((f x0py0 y0py0)) )) :named A0))
+(check-sat)
+(get-info :reason-unknown)

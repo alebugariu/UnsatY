@@ -10,3 +10,5 @@
 (assert (! (forall ((x0py0 Int)(x1py0 Int)) (! (or (<= x0py0 (- 1)) (<= x1py0 2) (not (<= (f x0py0 x1py0) 7))) :pattern ((f x0py0 x1py0)) )) :named A0))
 (assert (! (forall ((x2py0 Int)(x3py0 Int)) (! (or (<= 1 x2py0) (<= 4 x3py0) (= (f x2py0 x3py0) 6)) :pattern ((f x2py0 x3py0)) )) :named A1))
 (assert (! (forall ((x4py0 Int)(x5py0 Int)) (! (= (f x4py0 x5py0) (f x5py0 x4py0)) :pattern ((f x4py0 x5py0)) :pattern ((f x5py0 x4py0)) )) :named A2))
+(check-sat)
+(get-info :reason-unknown)

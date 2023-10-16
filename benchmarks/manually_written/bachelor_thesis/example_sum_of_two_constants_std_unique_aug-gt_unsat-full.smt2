@@ -11,3 +11,5 @@
 (assert (! (not (<= x 0)) :named A0))
 (assert (! (not (<= y 0)) :named A1))
 (assert (! (<= (+ x y) 0) :named A2))
+(check-sat)
+(get-info :reason-unknown)

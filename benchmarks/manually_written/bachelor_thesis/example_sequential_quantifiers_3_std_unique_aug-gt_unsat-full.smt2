@@ -10,3 +10,5 @@
 (declare-fun x0!0 () Int)
 (assert (! (or (<= 0 (f x0!0 x0!0)) (and (forall ((x1py0 Int)(x2py0 Int)) (! (<= 0 (f x1py0 x2py0)) :pattern ((f x1py0 x2py0)) )) (forall ((x3py0 Int)) (! (= (f 19 x3py0) 17) :pattern ((f 19 x3py0)) )))) :named A0))
 (assert (! (forall ((x0py0 Int)) (! (not (<= 0 (f x0py0 x0py0))) :pattern ((f x0py0 x0py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)
