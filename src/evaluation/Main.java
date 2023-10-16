@@ -54,8 +54,9 @@ public class Main {
 		Option preprocessOpt = new Option("pre", true,
 				"absolute path to the tool used to preprocess the inputs (transform them into NNF, ensure that all quantified variables have unique names, etc.)");
 		options.addOption(preprocessOpt);
-		
-		Option ematchingOpt = new Option("ematching", false, "synthesize triggering terms for E-matching from the unsat proofs");
+
+		Option ematchingOpt = new Option("ematching", false,
+				"synthesize triggering terms for E-matching from the unsat proofs");
 		options.addOption(ematchingOpt);
 
 		CommandLineParser parser = new DefaultParser();
@@ -96,11 +97,12 @@ public class Main {
 		if (cmd.hasOption("pre")) {
 			preprocessor = cmd.getOptionValue("pre");
 		}
-		
+
 		boolean ematching = cmd.hasOption("ematching");
 		File active_pids_file = new File(Command_Line_Utility.active_pids);
-		FileUtils.delete(active_pids_file);
-		
+		if (active_pids_file.exists()) {
+			FileUtils.delete(active_pids_file);
+		}
 
 		if (cmd.hasOption("folder")) {
 
@@ -134,9 +136,9 @@ public class Main {
 			files.add(file);
 			evaluate(files, prover, preprocessor, ematching);
 		}
-		
+
 		FileUtils.deleteDirectory(tmpFolder);
-		assert(active_pids_file.length() == 0);
+		assert (active_pids_file.length() == 0);
 		FileUtils.delete(active_pids_file);
 	}
 
@@ -147,7 +149,8 @@ public class Main {
 		Map<Future<Void>, File> threads_map = new HashMap<Future<Void>, File>();
 
 		for (File benchmark : benchmarks) {
-			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, ematching), benchmark);
+			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, ematching),
+					benchmark);
 		}
 		for (Future<Void> future : threads_map.keySet()) {
 			try {
@@ -162,7 +165,7 @@ public class Main {
 				}
 				File file = threads_map.get(future);
 				System.out.println("Timeout reached while processing the file " + file);
-				if(ematching || !Setup.API_unsat_core) {
+				if (ematching || !Setup.API_unsat_core) {
 					Command_Line_Utility.stop_processes(file);
 				}
 			}
