@@ -13,10 +13,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -146,7 +148,11 @@ public class Main {
 		for (Future<Void> future : threads_map.keySet()) {
 			try {
 				future.get(Setup.timeout, TimeUnit.SECONDS);
-			} catch (Exception e) {
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			} catch (TimeoutException e) {
 				if (!future.isDone()) {
 					future.cancel(true);
 				}

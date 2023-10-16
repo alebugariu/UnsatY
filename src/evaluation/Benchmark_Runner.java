@@ -89,6 +89,7 @@ public class Benchmark_Runner implements Callable<Void> {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log);
 		try {
 			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
+			System.out.flush();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
 			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(now));
