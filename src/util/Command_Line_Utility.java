@@ -60,7 +60,7 @@ public class Command_Line_Utility {
 		}
 	}
 
-	private static void add_pid(long pid, String benchmark) throws IOException {
+	private static synchronized void add_pid(long pid, String benchmark) throws IOException {
 		String current_process = benchmark + " " + String.valueOf(pid) + System.lineSeparator();
 
 		FileWriter writer = new FileWriter(active_pids, true);
@@ -68,7 +68,7 @@ public class Command_Line_Utility {
 		writer.close();
 	}
 
-	private static void remove_pid(long pid, String benchmark) throws IOException {
+	private static synchronized void remove_pid(long pid, String benchmark) throws IOException {
 		List<String> lines = Files.readAllLines(Paths.get(active_pids));
 		String line_to_remove = benchmark + " " + String.valueOf(pid);
 		lines.remove(line_to_remove);
