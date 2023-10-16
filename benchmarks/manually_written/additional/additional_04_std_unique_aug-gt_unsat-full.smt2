@@ -12,3 +12,5 @@
 (declare-fun P (U) Bool)
 (assert (! (forall ((x0py0 U)) (! (not (P x0py0)) :pattern ((f x0py0)) )) :named A0))
 (assert (! (forall ((x1py0 U)) (! (P x1py0) :pattern ((g x1py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

@@ -11,4 +11,4 @@
 ;(assert (__dummy__ (f 0))) 
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

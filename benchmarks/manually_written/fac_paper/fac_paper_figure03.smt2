@@ -63,6 +63,6 @@
 ;                                     (int_2_U 1) x (int_2_U 0)) (int_2_U 0) x)))
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)
 
 ;Solved by: Optset(top_level=False, similarity_threshold=0)

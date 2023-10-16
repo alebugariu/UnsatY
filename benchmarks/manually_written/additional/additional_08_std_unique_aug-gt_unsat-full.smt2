@@ -11,3 +11,5 @@
 (assert (! (forall ((x0py0 Int)) (! (not (<= (f x0py0) (f (+ (- 1) x0py0)))) :pattern ((g x0py0)) )) :named A0))
 (assert (! (= (f 0) 1) :named A1))
 (assert (! (= (f 2) 0) :named A2))
+(check-sat)
+(get-info :reason-unknown)

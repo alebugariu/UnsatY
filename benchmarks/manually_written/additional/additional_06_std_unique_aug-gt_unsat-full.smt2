@@ -13,3 +13,5 @@
 (assert (! (forall ((d0py0 Int)) (! (or (not (P d0py0)) (forall ((e0py0 Int)(f0py0 Int)) (! (R e0py0 d0py0) :pattern ((Q e0py0 f0py0 d0py0)) ))) :pattern ((P d0py0)) )) :named A1))
 (assert (! (forall ((z1py0 Int)) (! (P z1py0) :pattern ((P z1py0)) )) :named A2))
 (assert (! (forall ((y2py0 Int)(z2py0 Int)) (! (not (R y2py0 z2py0)) :pattern ((R y2py0 z2py0)) )) :named A3))
+(check-sat)
+(get-info :reason-unknown)

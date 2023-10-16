@@ -9,3 +9,5 @@
 (declare-sort RMode 0)
 (assert (! (forall ((x0py0 Bool)(y0py0 Bool)) (! x0py0 :pattern ((f x0py0 y0py0)) )) :named A0))
 (assert (! (forall ((x1py0 Bool)(y1py0 Bool)) (! (f x1py0 y1py0) :pattern ((f x1py0 y1py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

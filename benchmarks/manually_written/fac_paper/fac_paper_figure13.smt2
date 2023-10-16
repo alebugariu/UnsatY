@@ -16,6 +16,6 @@
                                    ; (the solver applies f on both sides and triggers another instantiation)
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)
 
 ;Solved by: Optset(top_level=False)

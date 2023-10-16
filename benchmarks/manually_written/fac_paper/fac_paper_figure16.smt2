@@ -8,4 +8,4 @@
 (assert (! (forall ((a Int) (b Int) (size Int)) (! (<= (* (both_ptr a b size) size) (+ a (* (- 1) b))) :pattern ( (both_ptr a b size)))) :named A0))
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

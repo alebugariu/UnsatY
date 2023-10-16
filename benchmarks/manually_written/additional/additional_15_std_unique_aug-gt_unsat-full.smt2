@@ -10,3 +10,5 @@
 (declare-fun a () Int)
 (assert (! (forall ((x0py0 Int)(y0py0 Int)) (! (or (<= x0py0 a) (= x0py0 y0py0)) :pattern ((f x0py0 y0py0)) )) :named A0))
 (assert (! (forall ((x1py0 Int)(y1py0 Int)) (! (or (not (<= x1py0 a)) (= x1py0 (* (- 1) y1py0))) :pattern ((f x1py0 y1py0)) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

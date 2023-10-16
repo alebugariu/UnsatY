@@ -13,3 +13,5 @@
 (assert (! (forall ((x0py0 U)(y0py0 U)) (! (or (= x0py0 y0py0) (= (f x0py0 y0py0) 0)) :pattern ((f x0py0 y0py0)) )) :named A0))
 (assert (! (forall ((x1py0 U)(y1py0 U)) (! (or (not (= x1py0 a)) (not (= y1py0 b)) (= (f x1py0 y1py0) 1)) :pattern ((f x1py0 y1py0)) )) :named A1))
 (assert (! (not (= a b)) :named A2))
+(check-sat)
+(get-info :reason-unknown)

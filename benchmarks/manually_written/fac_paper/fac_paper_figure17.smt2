@@ -32,4 +32,4 @@
 ;(assert (dummy (sum empty 0 0) (sum empty 1 0)))
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

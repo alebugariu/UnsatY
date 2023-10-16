@@ -13,3 +13,5 @@
 (assert (! (forall ((x1py0 Int)) (! (= (f (g x1py0)) x1py0) :pattern ((f (g x1py0))) )) :named A1))
 (assert (! (not (<= x2 6)) :named A2))
 (assert (! (not (<= 8 x2)) :named A3))
+(check-sat)
+(get-info :reason-unknown)

@@ -29,3 +29,5 @@
 (assert (! (forall ((val@@4py0 T@U)(m@@4py0 T@U)(x0@@4py0 T@U)(x1@@4py0 T@U)(y0@@2py0 T@U)(y1@@2py0 T@U)) (! (or (= x0@@4py0 y0@@2py0) (= (MapType1Select (MapType1Store m@@4py0 x0@@4py0 x1@@4py0 val@@4py0) y0@@2py0 y1@@2py0) (MapType1Select m@@4py0 y0@@2py0 y1@@2py0))) :pattern ((MapType1Select (MapType1Store m@@4py0 x0@@4py0 x1@@4py0 val@@4py0) y0@@2py0 y1@@2py0)) )) :named A3))
 (assert (! (= (type ZeroPMask) (MapType1Type RefType boolType)) :named B2))
 (assert (! (= (type QPMask@0) (MapType1Type RefType realType)) :named B3))
+(check-sat)
+(get-info :reason-unknown)

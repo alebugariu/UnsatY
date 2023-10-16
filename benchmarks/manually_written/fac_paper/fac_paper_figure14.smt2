@@ -25,4 +25,4 @@
 ;(assert (dummy (isEmpty EmptyList) (contained EmptyList 0)))
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

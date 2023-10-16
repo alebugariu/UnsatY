@@ -11,3 +11,5 @@
 (declare-fun k () Int)
 (assert (! (forall ((x0py0 Int)) (! (P x0py0) :pattern ((Q x0py0)) )) :named A0))
 (assert (! (not (P k)) :named A1))
+(check-sat)
+(get-info :reason-unknown)

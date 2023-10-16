@@ -14,4 +14,4 @@
 ;(assert (__dummy__ (len (next 7))))
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

@@ -10,4 +10,4 @@
 ;(assert (__dummy__ (_div -3 4)))
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

@@ -12,4 +12,4 @@
 ;(assert (__dummy__ (f (g 7)))) 
 
 (check-sat)
-(get-proof)
+(get-info :reason-unknown)

@@ -44,3 +44,5 @@
 (assert (! (forall ((m@@17py0py0 T@U)(u@@11py0py0 T@U)(v@@40py0py0 T@U)) (! (or (not (= (type m@@17py0py0) (MapType (type u@@11py0py0) (type v@@40py0py0)))) (= (Map@sharp@Values (Map@sharp@Build m@@17py0py0 u@@11py0py0 v@@40py0py0)) (Set@sharp@UnionOne (Map@sharp@Values m@@17py0py0) v@@40py0py0))) :pattern ((Map@sharp@Values (Map@sharp@Build m@@17py0py0 u@@11py0py0 v@@40py0py0))) )) :named A12))
 (assert (! (forall ((arg0@@63py0py0 T@U)(arg1@@19py0py0 T@U)) (! (= (type (Set@sharp@UnionOne arg0@@63py0py0 arg1@@19py0py0)) (MapType0Type (type arg1@@19py0py0) boolType)) :pattern ((Set@sharp@UnionOne arg0@@63py0py0 arg1@@19py0py0)) )) :named A13))
 (assert (! (forall ((a@@4py0py0 T@U)(x@@20py0py0 T@U)) (! (or (= (Set@sharp@Card (Set@sharp@UnionOne a@@4py0py0 x@@20py0py0)) (Set@sharp@Card a@@4py0py0)) (not (= (type a@@4py0py0) (MapType0Type (type x@@20py0py0) boolType))) (not (U_2_bool (MapSelect a@@4py0py0 x@@20py0py0)))) :pattern ((Set@sharp@Card (Set@sharp@UnionOne a@@4py0py0 x@@20py0py0))) )) :named A14))
+(check-sat)
+(get-info :reason-unknown)
