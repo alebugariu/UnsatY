@@ -155,7 +155,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	public Quant_Var_Handler extract_quantifier_instantiations() throws Proof_Exception {
 
 		input_reader.analyze_input();
-		find_quantifier_instantiations(new Expr<?>[] { proof.getProofExpression() });
+		find_quantifier_instantiations(proof.getProofExpression());
 		// Print what we encountered while looking at the unsat-proof.
 		if (Setup.log_type == Log_Type.full) {
 			verbal_output.print_prove(quant_vars);
@@ -165,33 +165,32 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 
 	// Recursively looks for quantifier instantiations in the expressions and gives
 	// them to quant_vars.
-	private void find_quantifier_instantiations(Expr<?>[] expressions) {
+	private void find_quantifier_instantiations(Expr<?> expression) {
 		// Quantifier instantiations are marked as Z3_OP_PR_QUANT_INST.
-		for (Expr<?> current_expression : expressions) {
-			if (current_expression.isApp()) {
-				// We therefore only care about expressions that are applications of functions,
-				// because isProofQuantInst only returns true if so does isApp.
-				if (current_expression.isProofQuantInst()) {
+		if (expression.isApp()) {
+			// We therefore only care about expressions that are applications of functions,
+			// because isProofQuantInst only returns true if so does isApp.
+			if (expression.isProofQuantInst()) {
+				if (Setup.log_type == Log_Type.full) {
+					verbal_output.add_to_buffer("[INFO]", "Found a quantifier instantiation: " + expression + ".");
+				}
+				// We now want to get the (quantified variable, concrete value) pairs and give
+				// them to quant_vars.
+				try {
+					dive_into_quantifier_instantiation(expression);
+				} catch (Proof_Exception e) {
+					// The quantifier did not have the expected Or-Not form.
 					if (Setup.log_type == Log_Type.full) {
-						verbal_output.add_to_buffer("[INFO]",
-								"Found a quantifier instantiation: " + current_expression + ".");
-					}
-					// We now want to get the (quantified variable, concrete value) pairs and give
-					// them to quant_vars.
-					try {
-						dive_into_quantifier_instantiation(current_expression);
-					} catch (Proof_Exception e) {
-						// The quantifier did not have the expected Or-Not form.
-						if (Setup.log_type == Log_Type.full) {
-							verbal_output.add_to_buffer("[INFO]", "We therefore skip this quantifer instantiation.");
-						}
+						verbal_output.add_to_buffer("[INFO]", "We therefore skip this quantifer instantiation.");
 					}
 				}
-				if (current_expression.getNumArgs() > 0) {
-					// No matter whether the current_expression is marked as Z3_OP_PR_QUANT_INST or
-					// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
-					// its arguments, which we therefore recursively look at.
-					find_quantifier_instantiations(current_expression.getArgs());
+			}
+			// No matter whether the current_expression is marked as Z3_OP_PR_QUANT_INST or
+			// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
+			// its arguments, which we therefore recursively look at.
+			for (Expr<?> arg : expression.getArgs()) {
+				if (arg.toString().contains("quant-inst")) {
+					find_quantifier_instantiations(arg);
 				}
 			}
 		}
@@ -303,7 +302,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// expected_variable_index, we can return true since tracking_indexes contains
 			// all the information we need to reconstruct the path we used to get here.
 			return true;
-		} else if (current_expression.isApp()) {
+		}
+		if (current_expression.isApp()) {
 			// If the current_expression is an application, it is definitely no variable but
 			// the variable we are looking for may be somewhere in its arguments, which we
 			// therefore recursively look at.
