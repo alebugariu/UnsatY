@@ -315,15 +315,18 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				sub_expressions = ((Quantifier) current_expression).getArgs();
 			}
 			for (int i = 0; i < sub_expressions.length; i++) {
-				tracking_indexes.add(i);
-				if (track_function_applications_until_quantified_variable(expected_variable_index, sub_expressions[i],
-						tracking_indexes)) {
-					// If this recursive call returns true, then we found our variable and
-					// tracking_indexes contains all the information we need to reconstruct the path
-					// we used to get there.
-					return true;
+				Expr<?> sub_expression = sub_expressions[i];
+				if (sub_expression.toString().contains(":var")) {
+					tracking_indexes.add(i);
+					if (track_function_applications_until_quantified_variable(expected_variable_index,
+							sub_expression, tracking_indexes)) {
+						// If this recursive call returns true, then we found our variable and
+						// tracking_indexes contains all the information we need to reconstruct the path
+						// we used to get there.
+						return true;
+					}
+					tracking_indexes.remove(tracking_indexes.size() - 1);
 				}
-				tracking_indexes.remove(tracking_indexes.size() - 1);
 			}
 		}
 		// If we reach this part of the code, then we didn't find our variable.
