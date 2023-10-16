@@ -30,6 +30,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 
 import proof_analyser.Proof_Analyser_Framework.Prover;
+import util.Command_Line_Utility;
 import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output.Log_Type;
@@ -113,11 +114,9 @@ public class Main {
 			}
 			Collection<File> files = FileUtils.listFiles(folder, new String[] { "smt2" }, true);
 			evaluate(files, prover, preprocessor, ematching);
-			FileUtils.deleteDirectory(tmpFolder);
-			return;
 		}
 
-		if (cmd.hasOption("file")) {
+		else if (cmd.hasOption("file")) {
 
 			String fileName = cmd.getOptionValue("file");
 			File file = new File(fileName);
@@ -132,8 +131,12 @@ public class Main {
 			Collection<File> files = new ArrayList<File>();
 			files.add(file);
 			evaluate(files, prover, preprocessor, ematching);
-			FileUtils.deleteDirectory(tmpFolder);
 		}
+		
+		FileUtils.deleteDirectory(tmpFolder);
+		File active_pids_file = new File(Command_Line_Utility.active_pids);
+		assert(active_pids_file.length() == 0);
+		FileUtils.delete(active_pids_file);
 	}
 
 	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor, boolean ematching)
@@ -156,7 +159,11 @@ public class Main {
 				if (!future.isDone()) {
 					future.cancel(true);
 				}
-				System.out.println("Timeout reached while processing the file " + threads_map.get(future));
+				File file = threads_map.get(future);
+				System.out.println("Timeout reached while processing the file " + file);
+				if(ematching || !Setup.API_unsat_core) {
+					Command_Line_Utility.stop_processes(file);
+				}
 			}
 		}
 		executor.shutdown();

@@ -70,7 +70,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				+ File.separator + "test_runner.py";
 		String[] process_args = new String[] { "python3", preprocessing_script, "--timeout", "600", "--location",
 				file_path };
-		Command_Line_Result result = Command_Line_Utility.run_process(process_args);
+		Command_Line_Result result = Command_Line_Utility.run_process(process_args, input_file.getAbsolutePath());
 
 		if (!result.error.isEmpty()) {
 			throw new Proof_Exception("Error during preprocessing: " + result.error);
