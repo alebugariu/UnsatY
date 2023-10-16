@@ -127,6 +127,7 @@ public class Benchmark_Runner implements Callable<Void> {
 			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(now));
 			System.out.println();
 		} catch (Exception e) {
+			Command_Line_Utility.stop_processes(input_file);
 			String error_message = e.getMessage();
 			System.out.println("FAIL for " + input_file.toString() + ": " + error_message);
 			System.out.println();
