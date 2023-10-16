@@ -68,7 +68,7 @@ public class Benchmark_Runner implements Callable<Void> {
 		System.out.println("Preprocessing " + file_name);
 		String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
 				+ File.separator + "test_runner.py";
-		String[] process_args = new String[] { "python3", preprocessing_script, "--timeout", "600", "--location",
+		String[] process_args = new String[] { "python3", preprocessing_script, "PatternAugmenter", "--timeout", "600", "--location",
 				file_path };
 		Command_Line_Result result = Command_Line_Utility.run_process(process_args, input_file.getAbsolutePath());
 
