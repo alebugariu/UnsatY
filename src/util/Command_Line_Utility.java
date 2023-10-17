@@ -92,7 +92,7 @@ public class Command_Line_Utility {
 		}
 	}
 	
-	public static void stop_processes(File benchmark) {
+	public static synchronized void stop_processes(File benchmark) {
 		String benchmark_name = String_Utility.get_file_name(benchmark);
 		String ucore_file = benchmark_name + "_z3_input_get_ucore.smt2";
 		String ematching_file = benchmark_name + "_z3_input_ematching.smt2";
