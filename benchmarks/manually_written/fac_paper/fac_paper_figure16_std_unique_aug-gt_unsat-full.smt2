@@ -8,3 +8,5 @@
 (declare-sort RegExStr 0)
 (declare-sort RMode 0)
 (assert (! (forall ((apy0 Int)(bpy0 Int)(sizepy0 Int)) (! (<= (* (both_ptr apy0 bpy0 sizepy0) sizepy0) (+ apy0 (* (- 1) bpy0))) :pattern ((both_ptr apy0 bpy0 sizepy0)) )) :named A0))
+(check-sat)
+(get-info :reason-unknown)

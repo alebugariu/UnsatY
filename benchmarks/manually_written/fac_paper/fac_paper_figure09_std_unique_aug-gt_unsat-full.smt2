@@ -8,3 +8,5 @@
 (declare-sort RegExStr 0)
 (declare-sort RMode 0)
 (assert (! (forall ((xpy0 Int)(ypy0 Int)) (! (= (to_real (_div xpy0 ypy0)) (/ (to_real xpy0) (to_real ypy0))) :pattern ((_div xpy0 ypy0)) )) :named A0))
+(check-sat)
+(get-info :reason-unknown)

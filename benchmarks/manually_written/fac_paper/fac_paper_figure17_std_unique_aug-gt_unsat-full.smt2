@@ -15,3 +15,5 @@
 (assert (! (forall ((xs1py0 ISeq)(l1py0 Int)(h1py0 Int)) (! (or (not (<= h1py0 l1py0)) (= (sum_syn xs1py0 l1py0 h1py0) 0)) :pattern ((sum xs1py0 l1py0 h1py0)) )) :named A1))
 (assert (! (forall ((xs2py0 ISeq)(l2py0 Int)(h2py0 Int)) (! (or (not (<= l2py0 h2py0)) (= (sum_syn xs2py0 l2py0 h2py0) (+ (sum_syn xs2py0 (+ 1 l2py0) h2py0) (seq.nth xs2py0 l2py0)))) :pattern ((sum xs2py0 l2py0 h2py0)) )) :named A2))
 (assert (! (= (seq.nth empty 0) (- 1)) :named A3))
+(check-sat)
+(get-info :reason-unknown)

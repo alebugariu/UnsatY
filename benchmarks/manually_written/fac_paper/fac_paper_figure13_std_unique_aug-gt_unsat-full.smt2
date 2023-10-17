@@ -10,3 +10,5 @@
 (declare-fun g (Int) Int)
 (assert (! (forall ((x0py0 Int)) (! (= (f (g x0py0)) x0py0) :pattern ((f (g x0py0))) )) :named A0))
 (assert (! (= (g 2020) (g 2021)) :named A1))
+(check-sat)
+(get-info :reason-unknown)

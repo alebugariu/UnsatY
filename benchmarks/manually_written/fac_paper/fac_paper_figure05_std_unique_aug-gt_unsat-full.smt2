@@ -10,3 +10,5 @@
 (declare-fun g (Int) Int)
 (assert (! (forall ((x0py0 Int)) (! (not (= (f x0py0) 7)) :pattern ((f x0py0)) )) :named A0))
 (assert (! (forall ((x1py0 Int)) (! (= (f (g x1py0)) x1py0) :pattern ((f (g x1py0))) )) :named A1))
+(check-sat)
+(get-info :reason-unknown)

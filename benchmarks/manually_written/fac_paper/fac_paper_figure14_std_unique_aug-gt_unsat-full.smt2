@@ -17,3 +17,5 @@
 (assert (! (forall ((l2py0 L)) (! (or (not (isEmpty l2py0)) (forall ((el2py0 Int)) (! (not (contained l2py0 el2py0)) :pattern ((contained l2py0 el2py0)) ))) :pattern ((isEmpty l2py0)) )) :named A2))
 (assert (! (forall ((l3py0 L)(el3py0 Int)) (! (or (contained l3py0 el3py0) (= (indexOf l3py0 el3py0) (- 1))) :pattern ((contained l3py0 el3py0)) )) :named A3))
 (assert (! (forall ((l4py0 L)(el4py0 Int)) (! (<= 0 (indexOf l4py0 el4py0)) :pattern ((indexOf l4py0 el4py0)) )) :named A4))
+(check-sat)
+(get-info :reason-unknown)

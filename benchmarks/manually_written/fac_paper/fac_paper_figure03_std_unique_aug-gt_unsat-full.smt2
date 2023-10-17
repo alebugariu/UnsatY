@@ -30,3 +30,5 @@
 (assert (! (forall ((arg4py0 Int)) (! (= (type (int_2_U arg4py0)) intType) :pattern ((int_2_U arg4py0)) )) :named A4))
 (assert (! (forall ((arg5py0 Bool)) (! (= (type (bool_2_U arg5py0)) boolType) :pattern ((bool_2_U arg5py0)) )) :named A5))
 (assert (! (forall ((arg6py0 Int)) (! (= (U_2_int (int_2_U arg6py0)) arg6py0) :pattern ((int_2_U arg6py0)) )) :named A6))
+(check-sat)
+(get-info :reason-unknown)
