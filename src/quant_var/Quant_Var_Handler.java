@@ -873,7 +873,8 @@ public class Quant_Var_Handler {
 				List<String> additional_triggering_terms = new LinkedList<String>();
 				for (int val_index = 0; val_index < concrete_values.size(); val_index++) {
 					for (int index = 0; index < possible_triggering_terms.size(); index++) {
-						String new_triggering_term = possible_triggering_terms.get(index).replace(varName,
+						String regex = "\\b" + varName + "\\b";
+						String new_triggering_term = possible_triggering_terms.get(index).replaceAll(regex,
 								concrete_values.get(val_index).toString());
 						additional_triggering_terms.add(new_triggering_term);
 					}
