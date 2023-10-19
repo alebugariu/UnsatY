@@ -745,11 +745,15 @@ public class Quant_Var_Handler {
 
 	// *****************************************************************************
 	// Recovery-related methods.
+	
+	private void instantiate_with_default_value(Quant_Var quant_var) {
+		quant_var.add_concrete_value(Default_Values.get_constant(context, quant_var.get_type()));
+	}
 
 	public void add_default_values() {
 		for (Quant_Var quant_var : quant_vars) {
 			if (!quant_var.is_explicitly_instantiated) {
-				quant_var.add_concrete_value(Default_Values.get_constant(context, quant_var.get_type()));
+				instantiate_with_default_value(quant_var);
 			}
 		}
 	}
@@ -840,25 +844,15 @@ public class Quant_Var_Handler {
 		return null;
 	}
 
-	private boolean all_vars_instantiated(List<Expr<?>> vars) {
-		for (Expr<?> aVar : vars) {
-			String varName = aVar.toString();
-			Quant_Var quantVar = get_quant_var_with_name(varName);
-			if (quantVar == null || quantVar.concrete_values.size() == 0) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	public List<String> create_triggering_terms(List<Expr<?>> pattern_function_applications) {
 		List<String> dummies = new LinkedList<String>();
 		List<String> triggering_terms = new LinkedList<String>();
+		
 		for (Expr<?> function_application : pattern_function_applications) {
 
 			List<Expr<?>> vars = new ArrayList<Expr<?>>();
 			collect_variables(function_application, vars);
-			if (vars.size() == 0 || !all_vars_instantiated(vars)) {
+			if (vars.size() == 0) {
 				continue; // this pattern is not relevant for the contradiction
 			}
 
@@ -869,6 +863,14 @@ public class Quant_Var_Handler {
 			for (Expr<?> aVar : vars) {
 				String varName = aVar.toString();
 				Quant_Var quant_var = get_quant_var_with_name(varName);
+				if (!quant_var.is_explicitly_instantiated) {
+					instantiate_with_default_value(quant_var);
+					Expr<?> additional_constant = quant_var.concrete_values.get(0);
+					FuncDecl<Sort> additional_constant_decl = context.mkConstDecl(additional_constant.toString(), quant_var.get_type());
+					if(!dummies.contains(additional_constant_decl.toString())) {
+						dummies.add(additional_constant_decl.toString());
+					}
+				}
 				List<Expr<?>> concrete_values = quant_var.concrete_values;
 				List<String> additional_triggering_terms = new LinkedList<String>();
 				for (int val_index = 0; val_index < concrete_values.size(); val_index++) {
