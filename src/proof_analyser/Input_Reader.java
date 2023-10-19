@@ -164,7 +164,7 @@ public class Input_Reader {
 				// make_z3_compatible defined in the class Input_Compability.
 				put("proof", "true");
 				put("model", "false");
-				//put("rlimit", String.valueOf(Setup.z3_rlimit));
+				// put("rlimit", String.valueOf(Setup.z3_rlimit));
 				// The seeds cannot be added to the context (Z3 API does not allow it), but will
 				// be added to the solver in the Z3_Proof_Analyser.
 			}
@@ -455,6 +455,10 @@ public class Input_Reader {
 
 	private void collect_patterns(Expr<?>[] expressions, List<Expr<?>> accumulator) {
 		for (Expr<?> expression : expressions) {
+			String expr_as_string = expression.toString();
+			if (!(expr_as_string.contains("forall") && (expr_as_string.contains("pattern")))) {
+				continue;
+			}
 			if (expression.isQuantifier()) {
 				Quantifier quantifier = (Quantifier) expression;
 				if (quantifier.getNumPatterns() > 0) {
@@ -464,6 +468,8 @@ public class Input_Reader {
 						find_function_applications_in_pattern(quantifier, pattern_arguments, accumulator);
 					}
 				}
+				// check for nested quantifiers
+				collect_patterns(new Expr<?>[] { quantifier.getBody() }, accumulator);
 			} else if (expression.isApp()) {
 				collect_patterns(expression.getArgs(), accumulator);
 			}
