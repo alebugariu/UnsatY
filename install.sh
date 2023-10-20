@@ -46,7 +46,5 @@ export PYTHONPATH=$ROOT/pysmt
 # compile our tool:
 cd $PATH_UNSATY
 mkdir -p classes
-javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:$PATH_SMTSolvers/z3-4.12.2/build/com.microsoft.z3.jar" -sourcepath src src/evaluation/Main.java
+javac -d classes -cp "jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:jars/commons-lang3-3.13.0.jar:$PATH_SMTSolvers/z3-4.12.2/build/com.microsoft.z3.jar" -sourcepath src src/evaluation/Main.java
 chmod +x run.sh
-
-export PATH=$PATH:$PATH_SMTSolvers/z3-4.8.10/bin
