@@ -16,9 +16,9 @@ import util.Proof_Exception;
 
 public class Concurrency_Handler {
 
-	public static Future<Void> process_file(ExecutorService executor, File file, Prover prover, String preprocessor, boolean ematching)
-			throws Proof_Exception {
-		Benchmark_Runner runner = new Benchmark_Runner(file, prover, preprocessor, ematching);
+	public static Future<Void> process_file(ExecutorService executor, File file, Statistics statistics, Prover prover,
+			String preprocessor, boolean ematching) throws Proof_Exception {
+		Benchmark_Runner runner = new Benchmark_Runner(file, statistics, prover, preprocessor, ematching);
 		Future<Void> future = executor.submit(runner);
 		return future;
 	}

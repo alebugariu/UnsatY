@@ -26,13 +26,15 @@ import util.Verbal_Output.Log_Type;
 public class Benchmark_Runner implements Callable<Void> {
 
 	private File input_file;
+	private Statistics statistics;
 	private Prover prover;
 	private PrintStream log;
 	private String preprocessor;
 	private boolean ematching;
 
-	public Benchmark_Runner(File input_file, Prover prover, String preprocessor, boolean ematching)
-			throws Proof_Exception {
+	public Benchmark_Runner(File input_file, Statistics statistics, Prover prover, String preprocessor,
+			boolean ematching) throws Proof_Exception {
+		this.statistics = statistics;
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
 			this.input_file = input_file;
@@ -68,8 +70,8 @@ public class Benchmark_Runner implements Callable<Void> {
 		System.out.println("Preprocessing " + file_name);
 		String preprocessing_script = preprocessor + File.separator + "src" + File.separator + "frontend"
 				+ File.separator + "test_runner.py";
-		String[] process_args = new String[] { "python3", preprocessing_script, "PatternAugmenter", "--timeout", "600", "--location",
-				file_path };
+		String[] process_args = new String[] { "python3", preprocessing_script, "PatternAugmenter", "--timeout", "600",
+				"--location", file_path };
 		Command_Line_Result result = Command_Line_Utility.run_process(process_args, input_file.getAbsolutePath());
 
 		if (!result.error.isEmpty()) {
@@ -95,11 +97,14 @@ public class Benchmark_Runner implements Callable<Void> {
 			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(now));
 			framework.setup();
 			if (framework.generate_unsat_core()) {
+				statistics.unsat_core_success++;
 				framework.generate_proof();
+				statistics.proof_generation_success++;
 				now = LocalDateTime.now();
 				System.out.println(
 						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				if (framework.construct_potential_example()) {
+					statistics.example_construction_success++;
 					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
 					framework.minimize_example();
 					if (Setup.log_type == Log_Type.full) {
@@ -109,6 +114,7 @@ public class Benchmark_Runner implements Callable<Void> {
 					framework.minimize_input();
 					if (ematching && framework.synthesize_triggering_terms()) {
 						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
+						statistics.ematching_success++;
 					}
 				} else {
 					System.out.println("EXAMPLE CONSTRUCTION FAILED for " + input_file.toString());
@@ -118,8 +124,9 @@ public class Benchmark_Runner implements Callable<Void> {
 					log.print("[MINIMIZATION: " + framework.get_minimization_success() + "]");
 					log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 				}
-				System.out.print("[MINIMIZATION: " + framework.get_minimization_success() + "]");
-				System.out.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
+				if (framework.get_minimization_success()) {
+					statistics.example_minimization++;
+				}
 			} else {
 				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + input_file.toString());
 			}

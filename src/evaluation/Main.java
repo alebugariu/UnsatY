@@ -147,9 +147,10 @@ public class Main {
 		int nr_threads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);
 		Map<Future<Void>, File> threads_map = new HashMap<Future<Void>, File>();
+		Statistics statistics = new Statistics(benchmarks.size());
 
 		for (File benchmark : benchmarks) {
-			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, prover, preprocessor, ematching),
+			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, statistics, prover, preprocessor, ematching),
 					benchmark);
 		}
 		for (Future<Void> future : threads_map.keySet()) {
@@ -171,5 +172,6 @@ public class Main {
 			}
 		}
 		executor.shutdown();
+		statistics.print_summary();
 	}
 }
