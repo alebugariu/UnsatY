@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.microsoft.z3.BoolSort;
 import com.microsoft.z3.Context;
@@ -745,7 +746,7 @@ public class Quant_Var_Handler {
 
 	// *****************************************************************************
 	// Recovery-related methods.
-	
+
 	private void instantiate_with_default_value(Quant_Var quant_var) {
 		quant_var.add_concrete_value(Default_Values.get_constant(context, quant_var.get_type()));
 	}
@@ -847,7 +848,7 @@ public class Quant_Var_Handler {
 	public List<String> create_triggering_terms(List<Expr<?>> pattern_function_applications) {
 		List<String> dummies = new LinkedList<String>();
 		List<String> triggering_terms = new LinkedList<String>();
-		
+
 		for (Expr<?> function_application : pattern_function_applications) {
 
 			List<Expr<?>> vars = new ArrayList<Expr<?>>();
@@ -861,13 +862,14 @@ public class Quant_Var_Handler {
 			possible_triggering_terms.add(string_function_application);
 
 			for (Expr<?> aVar : vars) {
-				String varName = aVar.toString();
-				Quant_Var quant_var = get_quant_var_with_name(varName);
+				String var_name = aVar.toString();
+				Quant_Var quant_var = get_quant_var_with_name(var_name);
 				if (!quant_var.is_explicitly_instantiated) {
 					instantiate_with_default_value(quant_var);
 					Expr<?> additional_constant = quant_var.concrete_values.get(0);
-					FuncDecl<Sort> additional_constant_decl = context.mkConstDecl(additional_constant.toString(), quant_var.get_type());
-					if(!dummies.contains(additional_constant_decl.toString())) {
+					FuncDecl<Sort> additional_constant_decl = context.mkConstDecl(additional_constant.toString(),
+							quant_var.get_type());
+					if (!dummies.contains(additional_constant_decl.toString())) {
 						dummies.add(additional_constant_decl.toString());
 					}
 				}
@@ -875,9 +877,22 @@ public class Quant_Var_Handler {
 				List<String> additional_triggering_terms = new LinkedList<String>();
 				for (int val_index = 0; val_index < concrete_values.size(); val_index++) {
 					for (int index = 0; index < possible_triggering_terms.size(); index++) {
-						String regex = "\\b" + varName + "\\b";
-						String new_triggering_term = possible_triggering_terms.get(index).replaceAll(regex,
-								concrete_values.get(val_index).toString());
+						String possible_triggering_term = possible_triggering_terms.get(index);
+						if (!possible_triggering_term.contains(var_name)) {
+							additional_triggering_terms.add(possible_triggering_term);
+							continue;
+						}
+						String concrete_val = concrete_values.get(val_index).toString();
+						String new_triggering_term = "";
+						int counter = 0;
+						String[] words = possible_triggering_term.split(" ");
+						int nr_words = words.length;
+						for (String word : words) {
+							new_triggering_term += word.replace(var_name, concrete_val);
+							if (counter != nr_words - 1) {
+								new_triggering_term += " ";
+							}
+						}
 						additional_triggering_terms.add(new_triggering_term);
 					}
 				}
