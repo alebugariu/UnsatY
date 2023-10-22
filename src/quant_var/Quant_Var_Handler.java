@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.microsoft.z3.BoolSort;
@@ -883,16 +884,9 @@ public class Quant_Var_Handler {
 							continue;
 						}
 						String concrete_val = concrete_values.get(val_index).toString();
-						String new_triggering_term = "";
-						int counter = 0;
-						String[] words = possible_triggering_term.split(" ");
-						int nr_words = words.length;
-						for (String word : words) {
-							new_triggering_term += word.replace(var_name, concrete_val);
-							if (counter != nr_words - 1) {
-								new_triggering_term += " ";
-							}
-						}
+						Pattern pattern =  Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(var_name) + "(?=$|\\s|\\W)");
+				        Matcher matcher = pattern.matcher(possible_triggering_term);
+						String new_triggering_term = matcher.replaceAll(concrete_val);
 						additional_triggering_terms.add(new_triggering_term);
 					}
 				}
