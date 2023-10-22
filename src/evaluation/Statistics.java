@@ -3,14 +3,15 @@ package evaluation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Statistics {
 
-	public int unsat_core_success;
-	public int proof_generation_success;
-	public int example_construction_success;
-	public int example_minimization;
-	public int ematching_success;
+	public AtomicInteger unsat_core_success;
+	public AtomicInteger proof_generation_success;
+	public AtomicInteger example_construction_success;
+	public AtomicInteger example_minimization;
+	public AtomicInteger ematching_success;
 
 	public List<Integer> formulas;
 	public List<Integer> quantifiers;
@@ -21,10 +22,15 @@ public class Statistics {
 
 	public Statistics(int benchmarks) {
 		this.benchmarks = benchmarks;
-		this.formulas = new ArrayList<Integer>();
-		this.quantifiers = new ArrayList<Integer>();
-		this.unsat_core_formulas = new ArrayList<Integer>();
-		this.unsat_core_quantifiers = new ArrayList<Integer>();
+		this.unsat_core_success = new AtomicInteger(0);
+		this.proof_generation_success = new AtomicInteger(0);
+		this.example_construction_success = new AtomicInteger(0);
+		this.example_minimization = new AtomicInteger(0);
+		this.ematching_success = new AtomicInteger(0);
+		this.formulas = Collections.synchronizedList(new ArrayList<Integer>());
+		this.quantifiers = Collections.synchronizedList(new ArrayList<Integer>());
+		this.unsat_core_formulas = Collections.synchronizedList(new ArrayList<Integer>());
+		this.unsat_core_quantifiers = Collections.synchronizedList(new ArrayList<Integer>());
 	}
 
 	public void print_summary() {

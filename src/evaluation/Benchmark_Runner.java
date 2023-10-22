@@ -99,16 +99,16 @@ public class Benchmark_Runner implements Callable<Void> {
 			statistics.formulas.add(framework.get_number_of_formulas());
 			statistics.quantifiers.add(framework.get_number_of_quantifiers());
 			if (framework.generate_unsat_core()) {
-				statistics.unsat_core_success++;
+				statistics.unsat_core_success.incrementAndGet();
 				statistics.unsat_core_formulas.add(framework.get_number_of_formulas());
 				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
 				framework.generate_proof();
-				statistics.proof_generation_success++;
+				statistics.proof_generation_success.incrementAndGet();
 				now = LocalDateTime.now();
 				System.out.println(
 						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				if (framework.construct_potential_example()) {
-					statistics.example_construction_success++;
+					statistics.example_construction_success.incrementAndGet();
 					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
 					framework.minimize_example();
 					if (Setup.log_type == Log_Type.full) {
@@ -118,7 +118,7 @@ public class Benchmark_Runner implements Callable<Void> {
 					framework.minimize_input();
 					if (ematching && framework.synthesize_triggering_terms()) {
 						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
-						statistics.ematching_success++;
+						statistics.ematching_success.incrementAndGet();
 					}
 				} else {
 					System.out.println("EXAMPLE CONSTRUCTION FAILED for " + input_file.toString());
@@ -129,7 +129,7 @@ public class Benchmark_Runner implements Callable<Void> {
 					log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 				}
 				if (framework.get_minimization_success()) {
-					statistics.example_minimization++;
+					statistics.example_minimization.incrementAndGet();
 				}
 			} else {
 				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + input_file.toString());
