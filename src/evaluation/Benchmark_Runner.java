@@ -96,8 +96,12 @@ public class Benchmark_Runner implements Callable<Void> {
 			LocalDateTime now = LocalDateTime.now();
 			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(now));
 			framework.setup();
+			statistics.formulas.add(framework.get_number_of_formulas());
+			statistics.quantifiers.add(framework.get_number_of_quantifiers());
 			if (framework.generate_unsat_core()) {
 				statistics.unsat_core_success++;
+				statistics.unsat_core_formulas.add(framework.get_number_of_formulas());
+				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
 				framework.generate_proof();
 				statistics.proof_generation_success++;
 				now = LocalDateTime.now();

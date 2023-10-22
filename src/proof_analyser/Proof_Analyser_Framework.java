@@ -93,6 +93,18 @@ public class Proof_Analyser_Framework {
 					input_reader.verbal_output);
 		}
 	}
+	
+	public int get_number_of_formulas() {
+		return input_reader.input.length;
+	}
+	
+	public int get_number_of_quantifiers() {
+		int quantifiers = 0;
+		for(BoolExpr assertion: input_reader.input) {
+			quantifiers += assertion.toString().split("forall").length - 1;
+		}
+		return quantifiers;
+	}
 
 	public void generate_proof() throws Proof_Exception {
 		proof_analyser.generate_unsat_proof();

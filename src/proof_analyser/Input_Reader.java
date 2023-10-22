@@ -200,9 +200,6 @@ public class Input_Reader {
 		quant_vars.add_input_file(vampire_input_file);
 	}
 
-	// Counting for evaluation statistics.
-	public int n_quantifiers = 0;
-
 	// Feeds quant_vars with information that we find in the input.
 	// Collects user-defined names in function_names, constant_names and type_names.
 	// Throws a Proof_Exception if the input does not satisfy our assumptions:
@@ -226,8 +223,6 @@ public class Input_Reader {
 		if (Setup.log_type == Log_Type.full) {
 			verbal_output.print_input(initial_input_file, quant_vars);
 		}
-		System.out.println("Number of input formulas: " + input.length);
-		System.out.println("Number of quantifiers: " + n_quantifiers);
 	}
 
 	// Recursively traverses all elements in expressions to find the ones that
@@ -241,7 +236,6 @@ public class Input_Reader {
 		for (Expr<?> expression : expressions) {
 			// Quantified expressions are marked as Z3_QUANTIFIER_AST.
 			if (expression.isQuantifier()) {
-				n_quantifiers++;
 				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[Info]",
 							"Encountered an expression marked as Quantifier in the input: " + expression + ".");
