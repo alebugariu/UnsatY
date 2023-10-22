@@ -77,6 +77,8 @@ public class Quant_Var_Handler {
 	private Map<Quantifier, Quantifier> parent_quantifiers;
 
 	private int dummy_function_counter = 0;
+	
+	private Default_Values defaults;
 
 	public Quantifier get_parent_quantifier(Quantifier quantifier) {
 		if (parent_quantifiers.containsKey(quantifier)) {
@@ -92,6 +94,7 @@ public class Quant_Var_Handler {
 		this.quant_vars = new LinkedList<Quant_Var>();
 		this.quantified_input_formulas = new HashMap<Expr<?>, List<Quantifier>>();
 		this.parent_quantifiers = new HashMap<Quantifier, Quantifier>();
+		this.defaults = new Default_Values();
 	}
 
 	public List<Quant_Var> get_quant_vars() {
@@ -749,7 +752,7 @@ public class Quant_Var_Handler {
 	// Recovery-related methods.
 
 	private void instantiate_with_default_value(Quant_Var quant_var) {
-		quant_var.add_concrete_value(Default_Values.get_constant(context, quant_var.get_type()));
+		quant_var.add_concrete_value(defaults.get_constant(context, quant_var.get_type()));
 	}
 
 	public void add_default_values() {
