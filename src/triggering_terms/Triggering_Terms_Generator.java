@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import com.microsoft.z3.Expr;
@@ -39,17 +40,27 @@ public class Triggering_Terms_Generator {
 	public boolean synthesisize_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
 			throws Proof_Exception {
 
-		File output_file = generate_triggering_terms(input_file, patterns, quant_vars);
+		File output_file = generate_ematching_file(input_file, patterns, quant_vars);
 		if (output_file == null) {
 			return false;
 		}
-		return refuted_by_ematching(output_file);
+		Command_Line_Result result = Command_Line_Utility.run_z3(output_file);
+		result.output = result.output.replace("unsupported\n", "");
+		if (result.output.startsWith("unsat")) {
+			return true;
+		}
+		try {
+			FileUtils.delete(output_file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		throw new Proof_Exception("E-matching returned: " + result + " for " + output_file);
 	}
 
-	private File generate_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+	private File generate_ematching_file(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
 			throws Proof_Exception {
 		try {
-			String temp_file_path = "temp" + File.separator + FilenameUtils.getBaseName(input_file.getName())
+			String temp_file_path = "output" + File.separator + FilenameUtils.getBaseName(input_file.getName())
 					+ "_ematching.smt2";
 			File temp_file = new File(temp_file_path);
 			if (!temp_file.createNewFile()) {
@@ -80,7 +91,7 @@ public class Triggering_Terms_Generator {
 				}
 				if (!line.contains("set-option") && !line.startsWith(";") && !line.contains("check-sat")
 						&& !line.contains("get-proof") && !line.contains("(get-info :reason-unknown)")) {
-					if(line.contains("declare")) {
+					if (line.contains("declare")) {
 						declarations.add(line);
 					}
 					output.println(line);
@@ -97,14 +108,5 @@ public class Triggering_Terms_Generator {
 		} catch (IOException e) {
 			throw new Proof_Exception("Failed to generate the triggering terms because " + e.getMessage());
 		}
-	}
-
-	private boolean refuted_by_ematching(File file) throws Proof_Exception {
-		Command_Line_Result result = Command_Line_Utility.run_z3(file);
-		result.output = result.output.replace("unsupported\n", "");
-		if (result.output.startsWith("unsat")) {
-			return true;
-		}
-		throw new Proof_Exception("E-matching returned: " + result + " for " + file);
 	}
 }
