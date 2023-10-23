@@ -17,6 +17,7 @@ public class Statistics {
 	public List<Integer> quantifiers;
 	public List<Integer> unsat_core_formulas;
 	public List<Integer> unsat_core_quantifiers;
+	public List<Integer> time; // in milliseconds
 
 	private int benchmarks;
 
@@ -31,6 +32,7 @@ public class Statistics {
 		this.quantifiers = Collections.synchronizedList(new ArrayList<Integer>());
 		this.unsat_core_formulas = Collections.synchronizedList(new ArrayList<Integer>());
 		this.unsat_core_quantifiers = Collections.synchronizedList(new ArrayList<Integer>());
+		this.time = Collections.synchronizedList(new ArrayList<Integer>());
 	}
 
 	public void print_summary() {
@@ -49,6 +51,8 @@ public class Statistics {
 		System.out.println("Successful example construction: " + example_construction_success);
 		System.out.println("Example minimization performed: " + example_minimization);
 		System.out.println("Successful triggering terms generation: " + ematching_success);
+		System.out.println(
+				"Processing time in milliseconds (min-max): " + Collections.min(time) + "-" + Collections.max(time));
 	}
 
 }

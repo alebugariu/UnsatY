@@ -10,6 +10,7 @@ package evaluation;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Callable;
@@ -93,8 +94,8 @@ public class Benchmark_Runner implements Callable<Void> {
 			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
 			System.out.flush();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-			LocalDateTime now = LocalDateTime.now();
-			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(now));
+			LocalDateTime start_time = LocalDateTime.now();
+			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(start_time));
 			framework.setup();
 			statistics.formulas.add(framework.get_number_of_formulas());
 			statistics.quantifiers.add(framework.get_number_of_quantifiers());
@@ -104,7 +105,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
 				framework.generate_proof();
 				statistics.proof_generation_success.incrementAndGet();
-				now = LocalDateTime.now();
+				LocalDateTime now = LocalDateTime.now();
 				System.out.println(
 						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				if (framework.construct_potential_example()) {
@@ -134,9 +135,10 @@ public class Benchmark_Runner implements Callable<Void> {
 			} else {
 				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + input_file.toString());
 			}
-			now = LocalDateTime.now();
-			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(now));
+			LocalDateTime end_time = LocalDateTime.now();
+			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(end_time));
 			System.out.println();
+			statistics.time.add((int)Duration.between(start_time, end_time).toMillis());
 		} catch (Proof_Exception e) {
 			Command_Line_Utility.stop_processes(input_file);
 			String error_message = e.getMessage();
