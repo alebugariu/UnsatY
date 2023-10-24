@@ -99,10 +99,6 @@ public class Main {
 		}
 
 		boolean ematching = cmd.hasOption("ematching");
-		File active_pids_file = new File(Command_Line_Utility.active_pids);
-		if (active_pids_file.exists()) {
-			FileUtils.delete(active_pids_file);
-		}
 
 		if (cmd.hasOption("folder")) {
 
@@ -138,8 +134,7 @@ public class Main {
 		}
 
 		FileUtils.deleteDirectory(tmpFolder);
-		assert (active_pids_file.length() == 0);
-		FileUtils.delete(active_pids_file);
+		assert (Command_Line_Utility.processes.size() == 0);
 	}
 
 	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor, boolean ematching)
