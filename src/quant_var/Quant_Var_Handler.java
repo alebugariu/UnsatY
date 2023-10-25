@@ -889,7 +889,7 @@ public class Quant_Var_Handler {
 						String concrete_val = concrete_values.get(val_index).toString();
 						Pattern pattern =  Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(var_name) + "(?=$|\\s|\\W)");
 				        Matcher matcher = pattern.matcher(possible_triggering_term);
-						String new_triggering_term = matcher.replaceAll(concrete_val);
+						String new_triggering_term = matcher.replaceAll(Matcher.quoteReplacement(concrete_val));
 						additional_triggering_terms.add(new_triggering_term);
 					}
 				}
