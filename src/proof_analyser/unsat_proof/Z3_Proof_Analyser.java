@@ -316,7 +316,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			}
 			for (int i = 0; i < sub_expressions.length; i++) {
 				Expr<?> sub_expression = sub_expressions[i];
-				if (sub_expression.toString().contains(":var")) {
+				if (sub_expression.toString().contains(":var " + expected_variable_index)) {
 					tracking_indexes.add(i);
 					if (track_function_applications_until_quantified_variable(expected_variable_index,
 							sub_expression, tracking_indexes)) {

@@ -36,23 +36,25 @@ public class Statistics {
 	}
 
 	public void print_summary() {
-		System.out.println("Results summary");
-		System.out.println("Total number of benchmarks: " + benchmarks);
-		System.out.println(
-				"Number of formulas (min-max): " + Collections.min(formulas) + "-" + Collections.max(formulas));
-		System.out.println("Number of quantifiers (min-max): " + Collections.min(quantifiers) + "-"
-				+ Collections.max(quantifiers));
-		System.out.println("Successful unsat core generation: " + unsat_core_success);
-		System.out.println("Number of unsat core formulas (min-max): " + Collections.min(unsat_core_formulas) + "-"
-				+ Collections.max(unsat_core_formulas));
-		System.out.println("Number of unsat core quantifiers (min-max): " + Collections.min(unsat_core_quantifiers)
-				+ "-" + Collections.max(unsat_core_quantifiers));
-		System.out.println("Successful proof generation: " + proof_generation_success);
-		System.out.println("Successful example construction: " + example_construction_success);
-		System.out.println("Example minimization performed: " + example_minimization);
-		System.out.println("Successful triggering terms generation: " + ematching_success);
-		System.out.println(
-				"Processing time in milliseconds (min-max): " + Collections.min(time) + "-" + Collections.max(time));
+		String summary = "Results summary" + "\n" + "Total number of benchmarks: " + benchmarks + "\n"
+				+ "Number of formulas (min - max): " + (formulas.isEmpty() ? "N/A" : Collections.min(formulas)) + " - "
+				+ (formulas.isEmpty() ? "N/A" : Collections.max(formulas)) + "\n" + "Number of quantifiers (min - max): "
+				+ (quantifiers.isEmpty() ? "N/A" : Collections.min(quantifiers)) + " - "
+				+ (quantifiers.isEmpty() ? "N/A" : Collections.max(quantifiers)) + "\n"
+				+ "Successful unsat core generation: " + unsat_core_success + "\n"
+				+ "Number of unsat core formulas (min - max): "
+				+ (unsat_core_formulas.isEmpty() ? "N/A" : Collections.min(unsat_core_formulas)) + " - "
+				+ (unsat_core_formulas.isEmpty() ? "N/A" : Collections.max(unsat_core_formulas)) + "\n"
+				+ "Number of unsat core quantifiers (min - max): "
+				+ (unsat_core_quantifiers.isEmpty() ? "N/A" : Collections.min(unsat_core_quantifiers)) + " - "
+				+ (unsat_core_quantifiers.isEmpty() ? "N/A" : Collections.max(unsat_core_quantifiers)) + "\n"
+				+ "Successful proof generation: " + proof_generation_success + "\n"
+				+ "Successful example construction: " + example_construction_success + "\n"
+				+ "Example minimization performed: " + example_minimization + "\n"
+				+ "Successful triggering terms generation: " + ematching_success + "\n"
+				+ "Processing time in milliseconds (min - max): " + (time.isEmpty() ? "N/A" : Collections.min(time))
+				+ " - " + (time.isEmpty() ? "N/A" : Collections.max(time));
+		System.out.println(summary);
 	}
 
 }
