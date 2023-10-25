@@ -24,7 +24,8 @@ public class Command_Line_Utility {
 
 	public static Command_Line_Result run_z3(File file) throws Proof_Exception {
 		String file_name = file.getAbsolutePath();
-		String[] process_args = new String[] { "z3", "-T:" + String.valueOf(Setup.z3_timout), file_name };
+		int timeout = Math.min(Setup.timeout, Setup.z3_timout);
+		String[] process_args = new String[] { "z3", "-T:" + String.valueOf(timeout), file_name };
 		return run_process(process_args, file.getName());
 	}
 

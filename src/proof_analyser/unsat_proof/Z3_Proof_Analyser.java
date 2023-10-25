@@ -8,8 +8,10 @@
 package proof_analyser.unsat_proof;
 
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -94,6 +96,12 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// information about quantifier instantiations.
 	private Quant_Var_Handler quant_vars;
 
+	// How many quantifier instantiations were performed in the proof
+	private int quant_inst;
+	// How many quantifier instantiations have been already analyzed
+	private int quant_inst_counter;
+	private Set<Expr<?>> visited_expressions;
+
 	// Expects the input_reader to be already set up appropriately.
 	// Do not call this constructor yourself but use the Proof_Analyser_Framework.
 	public Z3_Proof_Analyser(Input_Reader input_reader) {
@@ -104,6 +112,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Created a Z3_Proof_Analyser object.");
 		}
+		this.quant_inst_counter = 0;
+		this.visited_expressions = new LinkedHashSet<Expr<?>>();
 	}
 
 	@Override
@@ -114,7 +124,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		solver_settings.add("auto-config", false);
 		solver_settings.add("mbqi", true);
 		solver_settings.add("proof", true);
-		solver_settings.add("timeout", Setup.z3_timout);
+		solver_settings.add("timeout", Math.min(Setup.timeout, Setup.z3_timout));
 		solver_settings.add("max_memory", Setup.z3_memory_limit);
 		solver.setParameters(solver_settings);
 		// Next, we want to use the solver to check whether the input is unsatisfiable.
@@ -155,7 +165,9 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	public Quant_Var_Handler extract_quantifier_instantiations() throws Proof_Exception {
 
 		input_reader.analyze_input();
-		find_quantifier_instantiations(proof.getProofExpression());
+		Expr<?> proof_expr = proof.getProofExpression();
+		quant_inst = proof_expr.toString().split("quant-inst").length - 1;
+		find_quantifier_instantiations(proof_expr);
 		// Print what we encountered while looking at the unsat-proof.
 		if (Setup.log_type == Log_Type.full) {
 			verbal_output.print_prove(quant_vars);
@@ -165,8 +177,17 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 
 	// Recursively looks for quantifier instantiations in the expressions and gives
 	// them to quant_vars.
-	private void find_quantifier_instantiations(Expr<?> expression) {
+	private void find_quantifier_instantiations(Expr<?> expression) throws Proof_Exception {
 		// Quantifier instantiations are marked as Z3_OP_PR_QUANT_INST.
+		if (Thread.currentThread().isInterrupted()) {
+			throw new Proof_Exception("Interrupted while finding quantifier instantations in the proof (only "
+					+ quant_inst_counter + " out of" + quant_inst + " found)");
+		}
+
+		if (quant_inst_counter == quant_inst) {
+			return;
+		}
+		visited_expressions.add(expression);
 		if (expression.isApp()) {
 			// We therefore only care about expressions that are applications of functions,
 			// because isProofQuantInst only returns true if so does isApp.
@@ -174,6 +195,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[INFO]", "Found a quantifier instantiation: " + expression + ".");
 				}
+				quant_inst_counter++;
 				// We now want to get the (quantified variable, concrete value) pairs and give
 				// them to quant_vars.
 				try {
@@ -189,7 +211,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
 			// its arguments, which we therefore recursively look at.
 			for (Expr<?> arg : expression.getArgs()) {
-				if (arg.toString().contains("quant-inst")) {
+				if (arg.toString().contains("quant-inst") && !visited_expressions.contains(arg)) {
 					find_quantifier_instantiations(arg);
 				}
 			}
@@ -318,8 +340,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				Expr<?> sub_expression = sub_expressions[i];
 				if (sub_expression.toString().contains(":var " + expected_variable_index)) {
 					tracking_indexes.add(i);
-					if (track_function_applications_until_quantified_variable(expected_variable_index,
-							sub_expression, tracking_indexes)) {
+					if (track_function_applications_until_quantified_variable(expected_variable_index, sub_expression,
+							tracking_indexes)) {
 						// If this recursive call returns true, then we found our variable and
 						// tracking_indexes contains all the information we need to reconstruct the path
 						// we used to get there.

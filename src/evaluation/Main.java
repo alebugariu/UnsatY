@@ -150,7 +150,7 @@ public class Main {
 		}
 		for (Future<Void> future : threads_map.keySet()) {
 			try {
-				future.get(Setup.timeout, TimeUnit.SECONDS);
+				future.get(Setup.timeout, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {

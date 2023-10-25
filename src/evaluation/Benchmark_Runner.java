@@ -116,6 +116,9 @@ public class Benchmark_Runner implements Callable<Void> {
 						log.println("------------------------------------------");
 						log.print(framework.get_user_presentation());
 					}
+					if (framework.get_minimization_success()) {
+						statistics.example_minimization.incrementAndGet();
+					}
 					framework.minimize_input();
 					if (ematching && framework.synthesize_triggering_terms()) {
 						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
@@ -128,9 +131,6 @@ public class Benchmark_Runner implements Callable<Void> {
 					log.println("------------------------------------------");
 					log.print("[MINIMIZATION: " + framework.get_minimization_success() + "]");
 					log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
-				}
-				if (framework.get_minimization_success()) {
-					statistics.example_minimization.incrementAndGet();
 				}
 			} else {
 				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + input_file.toString());

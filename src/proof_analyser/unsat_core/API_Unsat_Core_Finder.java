@@ -37,7 +37,7 @@ public class API_Unsat_Core_Finder extends Unsat_Core_Finder {
 		solver_settings.add("auto-config", false);
 		solver_settings.add("mbqi", true);
 		solver_settings.add("unsat_core", true);
-		solver_settings.add("timeout", Setup.z3_timout);
+		solver_settings.add("timeout", Math.min(Setup.timeout, Setup.z3_timout));
 		solver_settings.add("max_memory", Setup.z3_memory_limit);
 		this.solver.setParameters(solver_settings);
 	}
