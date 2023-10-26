@@ -100,12 +100,15 @@ public class Benchmark_Runner implements Callable<Void> {
 			statistics.formulas.add(framework.get_number_of_formulas());
 			statistics.quantifiers.add(framework.get_number_of_quantifiers());
 			if (framework.generate_unsat_core()) {
+				LocalDateTime now = LocalDateTime.now();
+				System.out.println(
+						"Unsat core sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				statistics.unsat_core_success.incrementAndGet();
 				statistics.unsat_core_formulas.add(framework.get_number_of_formulas());
 				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
 				framework.generate_proof();
 				statistics.proof_generation_success.incrementAndGet();
-				LocalDateTime now = LocalDateTime.now();
+				now = LocalDateTime.now();
 				System.out.println(
 						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				if (framework.construct_potential_example()) {
