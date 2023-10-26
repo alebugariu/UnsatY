@@ -8,9 +8,11 @@
 package proof_analyser.unsat_proof;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -103,6 +105,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// How many quantifier instantiations have been already analyzed
 	private int quant_inst_counter;
 	private Set<Expr<?>> visited_expressions;
+	private Map<Symbol, List<Integer>> visited_quant_vars;
 
 	// Expects the input_reader to be already set up appropriately.
 	// Do not call this constructor yourself but use the Proof_Analyser_Framework.
@@ -116,6 +119,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		}
 		this.quant_inst_counter = 0;
 		this.visited_expressions = new LinkedHashSet<Expr<?>>();
+		this.visited_quant_vars = new HashMap<Symbol, List<Integer>>();
 	}
 
 	@Override
@@ -289,27 +293,33 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// the "path" we take through the expression on our way towards it. We do this
 			// by memorizing the index (in the arguments of the current expression) of each
 			// sub-expression we "dive" into.
+			Symbol current_quant_var = quantified_variable_names[i];
 			List<Integer> tracking_indexes = new LinkedList<Integer>();
 			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", "Looking for the quantified variable "
 						+ quantified_variable_names[i] + " in " + quantifier + ".");
 			}
-			if (!track_function_applications_until_quantified_variable(len - i - 1, quantifier.getBody(),
-					tracking_indexes)) {
-				if (Setup.log_type == Log_Type.full) {
-					verbal_output.add_to_buffer("[PROBLEM]", "Failed to find the quantified variable "
-							+ quantified_variable_names[i] + " in the quantifier instantiation.");
+			if (visited_quant_vars.containsKey(current_quant_var)) {
+				tracking_indexes = new LinkedList<Integer>(visited_quant_vars.get(current_quant_var)); // make a copy, because repeat_function_applications_until_concrete_value removes elements from the tracking list
+			} else {
+				if (!track_function_applications_until_quantified_variable(len - i - 1, quantifier.getBody(),
+						tracking_indexes)) {
+					if (Setup.log_type == Log_Type.full) {
+						verbal_output.add_to_buffer("[PROBLEM]", "Failed to find the quantified variable "
+								+ quantified_variable_names[i] + " in the quantifier instantiation.");
+					}
+					continue;
 				}
-				continue;
 			}
+			visited_quant_vars.put(current_quant_var, tracking_indexes);
 			// We then take the very same "path" in the instantiated_quantifier to find the
 			// corresponding concrete value, before we give the pair to quant_vars.
 			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
 						"Looking for the concrete value corresponding to the quantified variable "
-								+ quantified_variable_names[i] + " in " + instantiated_quantifier + ".");
+								+ current_quant_var + " in " + instantiated_quantifier + ".");
 			}
-			repeat_function_applications_until_concrete_value(quantified_variable_names[i],
+			repeat_function_applications_until_concrete_value(current_quant_var,
 					quantified_variable_sorts[i], instantiated_quantifier, tracking_indexes);
 		}
 	}

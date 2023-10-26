@@ -99,21 +99,27 @@ public class Benchmark_Runner implements Callable<Void> {
 			framework.setup();
 			statistics.formulas.add(framework.get_number_of_formulas());
 			statistics.quantifiers.add(framework.get_number_of_quantifiers());
-			if (framework.generate_unsat_core()) {
+			if (!Thread.currentThread().isInterrupted() && framework.generate_unsat_core()) {
 				LocalDateTime now = LocalDateTime.now();
 				System.out.println(
 						"Unsat core sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
 				statistics.unsat_core_success.incrementAndGet();
 				statistics.unsat_core_formulas.add(framework.get_number_of_formulas());
 				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
+				if(Thread.currentThread().isInterrupted()) {
+					throw new Proof_Exception("interrupted");
+				}
 				framework.generate_proof();
 				statistics.proof_generation_success.incrementAndGet();
 				now = LocalDateTime.now();
 				System.out.println(
 						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
-				if (framework.construct_potential_example()) {
+				if (!Thread.currentThread().isInterrupted() && framework.construct_potential_example()) {
 					statistics.example_construction_success.incrementAndGet();
 					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
+					if(Thread.currentThread().isInterrupted()) {
+						throw new Proof_Exception("interrupted");
+					}
 					framework.minimize_example();
 					if (Setup.log_type == Log_Type.full) {
 						log.println("------------------------------------------");
@@ -122,8 +128,11 @@ public class Benchmark_Runner implements Callable<Void> {
 					if (framework.get_minimization_success()) {
 						statistics.example_minimization.incrementAndGet();
 					}
+					if(Thread.currentThread().isInterrupted()) {
+						throw new Proof_Exception("interrupted");
+					}
 					framework.minimize_input();
-					if (ematching && framework.synthesize_triggering_terms()) {
+					if (!Thread.currentThread().isInterrupted() && ematching && framework.synthesize_triggering_terms()) {
 						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
 						statistics.ematching_success.incrementAndGet();
 					}
