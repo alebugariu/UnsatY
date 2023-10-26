@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Params;
@@ -318,8 +320,13 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// found, the list tracking_indexes can be used to reconstruct that path.
 	// Returns false if no suitable variable is ever found (should not happen).
 	private Boolean track_function_applications_until_quantified_variable(int expected_variable_index,
-			Expr<?> current_expression, List<Integer> tracking_indexes) {
-		if (current_expression.isVar() && current_expression.getIndex() == (expected_variable_index)) {
+			Expr<?> current_expression, List<Integer> tracking_indexes) throws Proof_Exception {
+
+		if (Thread.currentThread().isInterrupted()) {
+			throw new Proof_Exception("Interrupted while finding the quantified variables in the proof");
+		}
+
+		if (current_expression.isVar() && (current_expression.getIndex() == expected_variable_index)) {
 			// If the current_expression is a variable that references the
 			// expected_variable_index, we can return true since tracking_indexes contains
 			// all the information we need to reconstruct the path we used to get here.
@@ -336,23 +343,30 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				expected_variable_index += ((Quantifier) current_expression).getBoundVariableNames().length;
 				sub_expressions = ((Quantifier) current_expression).getArgs();
 			}
-			for (int i = 0; i < sub_expressions.length; i++) {
-				Expr<?> sub_expression = sub_expressions[i];
-				if (sub_expression.toString().contains(":var " + expected_variable_index)) {
-					tracking_indexes.add(i);
-					if (track_function_applications_until_quantified_variable(expected_variable_index, sub_expression,
-							tracking_indexes)) {
-						// If this recursive call returns true, then we found our variable and
-						// tracking_indexes contains all the information we need to reconstruct the path
-						// we used to get there.
-						return true;
-					}
-					tracking_indexes.remove(tracking_indexes.size() - 1);
-				}
-			}
+			Expr<?> sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
+			int i = ArrayUtils.indexOf(sub_expressions, sub_expression);
+			tracking_indexes.add(i);
+			return track_function_applications_until_quantified_variable(expected_variable_index, sub_expression,
+					tracking_indexes); // Should always return true
 		}
 		// If we reach this part of the code, then we didn't find our variable.
 		return false;
+	}
+
+	private Expr<?> shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index) {
+		Expr<?> subexpr = null;
+		int length = Integer.MAX_VALUE;
+		for (Expr<?> sub_expression : sub_expressions) {
+			String as_string = sub_expression.toString();
+			if (as_string.contains(":var " + expected_var_index)) {
+				int current_length = as_string.length();
+				if (length > current_length) {
+					subexpr = sub_expression;
+					length = current_length;
+				}
+			}
+		}
+		return subexpr;
 	}
 
 	// Recursively traverses the current_expression according to the contents of
@@ -360,7 +374,13 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// matches the quantified_variable_sort, we give it to quant_vars so that it can
 	// be added as a possible concrete value for quantified_variable_name.
 	private void repeat_function_applications_until_concrete_value(Symbol quantified_variable_name,
-			Sort quantified_variable_sort, Expr<?> current_expression, List<Integer> tracking_indexes) {
+			Sort quantified_variable_sort, Expr<?> current_expression, List<Integer> tracking_indexes)
+			throws Proof_Exception {
+
+		if (Thread.currentThread().isInterrupted()) {
+			throw new Proof_Exception("Interrupted while finding the concrete values in the proof");
+		}
+
 		if (tracking_indexes.isEmpty() || !current_expression.isApp()) {
 			// If tracking_indexes is empty, then we should have reached our goal. That is,
 			// the current_expression should be a concrete value that matches the
