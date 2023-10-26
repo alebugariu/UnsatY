@@ -181,7 +181,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		// Quantifier instantiations are marked as Z3_OP_PR_QUANT_INST.
 		if (Thread.currentThread().isInterrupted()) {
 			throw new Proof_Exception("Interrupted while finding quantifier instantations in the proof (only "
-					+ quant_inst_counter + " out of" + quant_inst + " found)");
+					+ quant_inst_counter + " out of " + quant_inst + " found)");
 		}
 
 		if (quant_inst_counter == quant_inst) {

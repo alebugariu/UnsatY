@@ -10,6 +10,7 @@ package proof_analyser;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -28,7 +29,6 @@ import com.microsoft.z3.Pattern;
 import com.microsoft.z3.Quantifier;
 import com.microsoft.z3.Sort;
 import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 import com.microsoft.z3.enumerations.Z3_sort_kind;
 
@@ -443,11 +443,12 @@ public class Input_Reader {
 
 	protected List<Expr<?>> get_patterns() {
 		List<Expr<?>> pattern_function_applications = new LinkedList<Expr<?>>();
-		collect_patterns(input, null, pattern_function_applications);
+		collect_patterns(input, new ArrayList<Quantifier>(), pattern_function_applications);
 		return pattern_function_applications;
 	}
 
-	private void collect_patterns(Expr<?>[] expressions, Quantifier parent_quantifier, List<Expr<?>> accumulator) {
+	private void collect_patterns(Expr<?>[] expressions, List<Quantifier> parent_quantifiers,
+			List<Expr<?>> accumulator) {
 		for (Expr<?> expression : expressions) {
 			String expr_as_string = expression.toString();
 			if (!(expr_as_string.contains("forall") && (expr_as_string.contains("pattern")))) {
@@ -459,29 +460,36 @@ public class Input_Reader {
 					Pattern[] patterns = quantifier.getPatterns();
 					for (Pattern pattern : patterns) {
 						Expr<?>[] pattern_arguments = pattern.getTerms();
-						find_function_applications_in_pattern(quantifier, parent_quantifier, pattern_arguments,
+						find_function_applications_in_pattern(quantifier, parent_quantifiers, pattern_arguments,
 								accumulator);
 					}
 				}
 				// check for nested quantifiers
-				collect_patterns(new Expr<?>[] { quantifier.getBody() }, quantifier, accumulator);
+				parent_quantifiers.add(quantifier);
+				collect_patterns(new Expr<?>[] { quantifier.getBody() }, parent_quantifiers, accumulator);
 			} else if (expression.isApp()) {
-				collect_patterns(expression.getArgs(), parent_quantifier, accumulator);
+				collect_patterns(expression.getArgs(), parent_quantifiers, accumulator);
 			}
 		}
 	}
 
-	private void find_function_applications_in_pattern(Quantifier quantifier, Quantifier parent_quantifier,
+	private void find_function_applications_in_pattern(Quantifier quantifier, List<Quantifier> parent_quantifiers,
 			Expr<?>[] patterns, List<Expr<?>> accumulator) {
 		for (Expr<?> pattern : patterns) {
 			if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
 				Expr<?> function_application;
-				if (parent_quantifier == null) {
+				if (parent_quantifiers.isEmpty()) {
 					function_application = replace_quant_vars_with_constants(pattern, quantifier);
-				}
-				else {
-					Symbol[] variables = ArrayUtils.addAll(parent_quantifier.getBoundVariableNames(), quantifier.getBoundVariableNames());
-					Sort[] types = ArrayUtils.addAll(parent_quantifier.getBoundVariableSorts(), quantifier.getBoundVariableSorts());
+				} else {
+					Symbol[] variables = parent_quantifiers.get(0).getBoundVariableNames();
+					Sort[] types = parent_quantifiers.get(0).getBoundVariableSorts();
+					for (int i = 1; i < parent_quantifiers.size(); i++) {
+						Quantifier parent_quantifier = parent_quantifiers.get(i);
+						variables = ArrayUtils.addAll(variables, parent_quantifier.getBoundVariableNames());
+						types = ArrayUtils.addAll(types, parent_quantifier.getBoundVariableSorts());
+					}
+					variables = ArrayUtils.addAll(variables, quantifier.getBoundVariableNames());
+					types = ArrayUtils.addAll(types, quantifier.getBoundVariableSorts());
 					function_application = replace_vars_with_constants(pattern, variables, types);
 				}
 				if (!accumulator.contains(function_application)) {
