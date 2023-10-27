@@ -62,7 +62,9 @@ public class Quant_Var_Handler {
 	// Contains all Quant_Var objects that are maintained.
 	// Is initialized in the constructor.
 	// Elements are continuously added and modified by the methods below.
-	private List<Quant_Var> quant_vars;
+	private Set<Quant_Var> quant_vars;
+
+	private Map<String, Quant_Var> names_to_quant_vars;
 
 	// Maps the quantified formulas from the input to a list of Quantifiers
 	// appearing in them.
@@ -77,7 +79,7 @@ public class Quant_Var_Handler {
 	private Map<Quantifier, Quantifier> parent_quantifiers;
 
 	private int dummy_function_counter = 0;
-	
+
 	private Default_Values defaults;
 
 	public Quantifier get_parent_quantifier(Quantifier quantifier) {
@@ -91,21 +93,26 @@ public class Quant_Var_Handler {
 		this.verbal_output = verbal_output;
 		this.context = context;
 		this.input_reader = input_reader;
-		this.quant_vars = new LinkedList<Quant_Var>();
+		this.quant_vars = new LinkedHashSet<Quant_Var>();
+		this.names_to_quant_vars = new HashMap<String, Quant_Var>();
 		this.quantified_input_formulas = new HashMap<Expr<?>, List<Quantifier>>();
 		this.parent_quantifiers = new HashMap<Quantifier, Quantifier>();
 		this.defaults = new Default_Values();
 	}
 
-	public List<Quant_Var> get_quant_vars() {
+	public Set<Quant_Var> get_quant_vars() {
 		return quant_vars;
+	}
+	
+	public boolean exists(String quant_var_name) {
+		return names_to_quant_vars.containsKey(quant_var_name);
 	}
 
 	// *****************************************************************************
 	// Input-related methods and fields.
 
 	// Creates a fresh Quant_Var object from scratch and adds it to quant_vars.
-	// Adds the input_formula to they keyset of quantified_input_formulas (if not
+	// Adds the input_formula to the keyset of quantified_input_formulas (if not
 	// already present) and the quantifier to its values.
 	// Returns true if the string representation of the name is unique and therefore
 	// this quantified variable satisfies our assumptions.
@@ -126,9 +133,11 @@ public class Quant_Var_Handler {
 			}
 		}
 		// If our assumptions are satisfied, we create add a fresh Quant_Var object.
-		Quant_Var quant_var = new Quant_Var(name, type, input_formula, number_in_input_formula, quantifier, parent,
-				verbal_output);
+		String var_name = name.toString();
+		Quant_Var quant_var = new Quant_Var(var_name, type, input_formula, number_in_input_formula, quantifier,
+				parent, verbal_output);
 		quant_vars.add(quant_var);
+		names_to_quant_vars.put(var_name, quant_var);
 		if (!quantified_input_formulas.keySet().contains(input_formula)) {
 			List<Quantifier> quantifiers = new LinkedList<Quantifier>();
 			quantifiers.add(quantifier);
@@ -301,23 +310,12 @@ public class Quant_Var_Handler {
 	// *****************************************************************************
 	// Z3_Proof_Analyser-related methods.
 
-	// Adds the value to each element in quant_vars whose name is var and that has
-	// the same type.
+	// Adds the value to the quantified variable.
 	// Sets the is_explicitly_instantiated flag for that quant_var.
 	public void add_quantifier_instantiation(Symbol var, Expr<?> value) {
-		for (Quant_Var quant_var : quant_vars) {
-			try {
-				if (quant_var.get_name().equals(var) && quant_var.get_type().equals(value.getSort())) {
-					quant_var.add_concrete_value(value);
-					quant_var.is_explicitly_instantiated = true;
-				}
-			} catch (Z3Exception e) {
-				if (Setup.log_type == Log_Type.full) {
-					verbal_output.add_to_buffer("[PROBLEM]", "Tried to add the concrete value " + value
-							+ " that has unknown type to the quantified variable " + quant_var.get_name() + ".");
-				}
-			}
-		}
+		Quant_Var quant_var = names_to_quant_vars.get(var.toString());
+		quant_var.add_concrete_value(value);
+		quant_var.is_explicitly_instantiated = true;
 	}
 
 	// *****************************************************************************
@@ -616,17 +614,13 @@ public class Quant_Var_Handler {
 			// Then, we get all the constants that correspond to each of the quantified
 			// variables. There are multiple of them if we found multiple possible values
 			// for the corresponding quantified variable.
-			for (Quant_Var quant_var : quant_vars) {
-				if (quant_var.get_name().equals(quantifier_variables[i])) {
-					List<Expr<?>> constants = possible_constants.get(quant_var);
-					// Translate from De-Brujn indexing.
-					quantifier_constants[len - i - 1] = constants;
-					for (Expr<?> constant : constants) {
-						FuncDecl<?> constant_declaration = constant.getFuncDecl();
-						constant_declarations.add(constant_declaration);
-					}
-					break;
-				}
+			Quant_Var quant_var = names_to_quant_vars.get(quantifier_variables[i].toString());
+			List<Expr<?>> constants = possible_constants.get(quant_var);
+			// Translate from De-Brujn indexing.
+			quantifier_constants[len - i - 1] = constants;
+			for (Expr<?> constant : constants) {
+				FuncDecl<?> constant_declaration = constant.getFuncDecl();
+				constant_declarations.add(constant_declaration);
 			}
 		}
 		// By now, we have collected all constants that we should instantiate our
@@ -840,15 +834,6 @@ public class Quant_Var_Handler {
 		}
 	}
 
-	private Quant_Var get_quant_var_with_name(String name) {
-		for (Quant_Var aVar : quant_vars) {
-			if (aVar.get_name().toString().equals(name)) {
-				return aVar;
-			}
-		}
-		return null;
-	}
-
 	public List<String> create_triggering_terms(List<Expr<?>> pattern_function_applications) {
 		List<String> dummies = new LinkedList<String>();
 		List<String> triggering_terms = new LinkedList<String>();
@@ -867,7 +852,7 @@ public class Quant_Var_Handler {
 
 			for (Expr<?> aVar : vars) {
 				String var_name = aVar.toString();
-				Quant_Var quant_var = get_quant_var_with_name(var_name);
+				Quant_Var quant_var = names_to_quant_vars.get(var_name);
 				if (!quant_var.is_explicitly_instantiated) {
 					instantiate_with_default_value(quant_var);
 					Expr<?> additional_constant = quant_var.concrete_values.get(0);
@@ -887,8 +872,8 @@ public class Quant_Var_Handler {
 							continue;
 						}
 						String concrete_val = concrete_values.get(val_index).toString();
-						Pattern pattern =  Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(var_name) + "(?=$|\\s|\\W)");
-				        Matcher matcher = pattern.matcher(possible_triggering_term);
+						Pattern pattern = Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(var_name) + "(?=$|\\s|\\W)");
+						Matcher matcher = pattern.matcher(possible_triggering_term);
 						String new_triggering_term = matcher.replaceAll(Matcher.quoteReplacement(concrete_val));
 						assert (!new_triggering_term.contains(":var"));
 						additional_triggering_terms.add(new_triggering_term);

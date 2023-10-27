@@ -217,7 +217,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
 			// its arguments, which we therefore recursively look at.
 			for (Expr<?> arg : expression.getArgs()) {
-				if (arg.toString().contains("quant-inst") && !visited_expressions.contains(arg)) {
+				if (quant_inst_counter != quant_inst && arg.toString().contains("quant-inst") && !visited_expressions.contains(arg)) {
 					find_quantifier_instantiations(arg);
 				}
 			}
@@ -294,6 +294,9 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// by memorizing the index (in the arguments of the current expression) of each
 			// sub-expression we "dive" into.
 			Symbol current_quant_var = quantified_variable_names[i];
+			if (!quant_vars.exists(current_quant_var.toString())) {
+				continue; // we do not take into account quant-intro
+			}
 			List<Integer> tracking_indexes = new LinkedList<Integer>();
 			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]", "Looking for the quantified variable "
@@ -354,6 +357,9 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				sub_expressions = ((Quantifier) current_expression).getArgs();
 			}
 			Expr<?> sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
+			if(sub_expression == null) {
+				return false;
+			}
 			int i = ArrayUtils.indexOf(sub_expressions, sub_expression);
 			tracking_indexes.add(i);
 			return track_function_applications_until_quantified_variable(expected_variable_index, sub_expression,

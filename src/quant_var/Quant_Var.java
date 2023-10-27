@@ -20,15 +20,11 @@ import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Quantifier;
 import com.microsoft.z3.Sort;
-import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
 import util.Proof_Exception;
-import util.Setup;
 import util.Vampire_Runner;
 import util.Verbal_Output;
-import util.Verbal_Output.Log_Type;
 
 /*
  * This class is used to collect all the info about a quantified variable,
@@ -50,10 +46,10 @@ public class Quant_Var {
 
 	// Name of this quantified variable in the input parsed by the Z3 API.
 	// Is provided in the constructor.
-	private Symbol name;
+	private String name;
 	// Example: x0.
 
-	public Symbol get_name() {
+	public String get_name() {
 		return name;
 	}
 
@@ -110,7 +106,7 @@ public class Quant_Var {
 
 	// Constructor that creates a new Quant_Var object from scratch.
 	// This constructor is called by your Input_Reader object.
-	protected Quant_Var(Symbol name, Sort type, Expr<?> input_line, int number_in_input_formula, Quantifier quantifier,
+	protected Quant_Var(String name, Sort type, Expr<?> input_line, int number_in_input_formula, Quantifier quantifier,
 			Quantifier parent_quantifier, Verbal_Output verbal_output) {
 		this.verbal_output = verbal_output;
 		this.name = name;
@@ -124,7 +120,7 @@ public class Quant_Var {
 	}
 
 	public String toString() {
-		return this.name.toString() + " = " + this.concrete_values.toString();
+		return this.name + " = " + this.concrete_values.toString();
 	}
 
 	// *****************************************************************************
@@ -136,7 +132,7 @@ public class Quant_Var {
 	// if the name of this is equal to the variable (i.e., they have the same string
 	// representation).
 	protected void add_function_application_from_input(FuncDecl<?> f_decl, Expr<?> application, Expr<?> variable) {
-		if (name.toString().equals(variable.toString())) {
+		if (name.equals(variable.toString())) {
 			if (function_applications_with_quantified_variables.containsKey(f_decl)) {
 				if (!function_applications_with_quantified_variables.get(f_decl).contains(application)) {
 					function_applications_with_quantified_variables.get(f_decl).add(application);
@@ -167,16 +163,9 @@ public class Quant_Var {
 
 	// Adds new_value to concrete_values if it is not already present.
 	protected void add_concrete_value(Expr<?> new_value) {
-		try {
-			new_value = new_value.simplify();
-			if (!concrete_values.contains(new_value)) {
-				concrete_values.add(new_value);
-			}
-		} catch (Z3Exception e) {
-			if (Setup.log_type == Log_Type.full) {
-				verbal_output.add_to_buffer("[PROBLEM]", "Tried to add the concrete value " + new_value
-						+ " that has unknown type to the quantified variable " + name + ".");
-			}
+		new_value = new_value.simplify();
+		if (!concrete_values.contains(new_value)) {
+			concrete_values.add(new_value);
 		}
 	}
 
@@ -283,7 +272,7 @@ public class Quant_Var {
 	private void possibly_add_declarations(Expr<?> expression, Set<FuncDecl<?>> declarations) {
 		if (expression.isConst() && expression.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
 			// If the value is an uninterpreted constant, then we add its declaration
-				declarations.add(expression.getFuncDecl());
+			declarations.add(expression.getFuncDecl());
 		}
 		if (expression.isApp()) {
 			// If the value is an application, then we recursively look at its arguments to
