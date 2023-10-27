@@ -83,10 +83,7 @@ public class Quant_Var_Handler {
 	private Default_Values defaults;
 
 	public Quantifier get_parent_quantifier(Quantifier quantifier) {
-		if (parent_quantifiers.containsKey(quantifier)) {
-			return parent_quantifiers.get(quantifier);
-		}
-		return null;
+		return parent_quantifiers.get(quantifier);
 	}
 
 	public Quant_Var_Handler(Verbal_Output verbal_output, Context context, Input_Reader input_reader) {
@@ -103,7 +100,7 @@ public class Quant_Var_Handler {
 	public Set<Quant_Var> get_quant_vars() {
 		return quant_vars;
 	}
-	
+
 	public boolean exists(String quant_var_name) {
 		return names_to_quant_vars.containsKey(quant_var_name);
 	}
@@ -118,24 +115,21 @@ public class Quant_Var_Handler {
 	// this quantified variable satisfies our assumptions.
 	public Boolean add_new_quant_var(Symbol name, Sort type, Expr<?> input_formula, int number_in_input_formula,
 			Quantifier quantifier, Quantifier parent) {
-		String new_name = name.toString();
-		for (Quant_Var quant_var : quant_vars) {
-			String other_name = quant_var.get_name().toString();
-			if (other_name.equals(new_name) && !quant_var.quantifier.equals(quantifier)) {
-				// If the new quantified variable has the same name as another one we already
-				// encountered and they are from different quantifiers, then the input violates
-				// our assumptions.
-				if (Setup.log_type == Log_Type.full) {
-					verbal_output.add_to_buffer("[ERROR]", "The quantified variable " + new_name
-							+ " is used by the input for multiple different quantified variables.");
-				}
-				return false;
+		String var_name = name.toString();
+		Quant_Var quant_var = names_to_quant_vars.get(var_name);
+		if (quant_var != null && !quant_var.quantifier.equals(quantifier)) {
+			// If the new quantified variable has the same name as another one we already
+			// encountered and they are from different quantifiers, then the input violates
+			// our assumptions.
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.add_to_buffer("[ERROR]", "The quantified variable " + var_name
+						+ " is used by the input for multiple different quantified variables.");
 			}
+			return false;
 		}
 		// If our assumptions are satisfied, we create add a fresh Quant_Var object.
-		String var_name = name.toString();
-		Quant_Var quant_var = new Quant_Var(var_name, type, input_formula, number_in_input_formula, quantifier,
-				parent, verbal_output);
+		quant_var = new Quant_Var(var_name, type, input_formula, number_in_input_formula, quantifier, parent,
+				verbal_output);
 		quant_vars.add(quant_var);
 		names_to_quant_vars.put(var_name, quant_var);
 		if (!quantified_input_formulas.keySet().contains(input_formula)) {
