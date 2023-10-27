@@ -8,5 +8,7 @@
 package proof_analyser.unsat_proof;
 
 public interface Unsat_Proof {
+	
+	public int get_size();
 
 }

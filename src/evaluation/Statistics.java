@@ -17,6 +17,7 @@ public class Statistics {
 	public List<Integer> quantifiers;
 	public List<Integer> unsat_core_formulas;
 	public List<Integer> unsat_core_quantifiers;
+	public List<Integer> proof_size; // number of characters
 	public List<Integer> time; // in milliseconds
 
 	private int benchmarks;
@@ -32,6 +33,7 @@ public class Statistics {
 		this.quantifiers = Collections.synchronizedList(new ArrayList<Integer>());
 		this.unsat_core_formulas = Collections.synchronizedList(new ArrayList<Integer>());
 		this.unsat_core_quantifiers = Collections.synchronizedList(new ArrayList<Integer>());
+		this.proof_size = Collections.synchronizedList(new ArrayList<Integer>());
 		this.time = Collections.synchronizedList(new ArrayList<Integer>());
 	}
 
@@ -49,6 +51,9 @@ public class Statistics {
 				+ (unsat_core_quantifiers.isEmpty() ? "N/A" : Collections.min(unsat_core_quantifiers)) + " - "
 				+ (unsat_core_quantifiers.isEmpty() ? "N/A" : Collections.max(unsat_core_quantifiers)) + "\n"
 				+ "Successful proof generation: " + proof_generation_success + "\n"
+				+ "Number of characters in the proof (min - max): " 
+				+ (proof_size.isEmpty() ? "N/A" : Collections.min(proof_size)) + " - "
+				+ (proof_size.isEmpty() ? "N/A" : Collections.max(proof_size)) + "\n"
 				+ "Successful example construction: " + example_construction_success + "\n"
 				+ "Example minimization performed: " + example_minimization + "\n"
 				+ "Successful triggering terms generation: " + ematching_success + "\n"

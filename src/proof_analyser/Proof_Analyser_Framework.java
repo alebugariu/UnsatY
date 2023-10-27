@@ -109,6 +109,10 @@ public class Proof_Analyser_Framework {
 	public void generate_proof() throws Proof_Exception {
 		proof_analyser.generate_unsat_proof();
 	}
+	
+	public int get_proof_size() {
+		return proof_analyser.get_proof_size();
+	}
 
 	public Boolean construct_potential_example() throws Proof_Exception {
 		this.quant_vars = proof_analyser.extract_quantifier_instantiations();

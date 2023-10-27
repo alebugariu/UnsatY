@@ -171,8 +171,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	public Quant_Var_Handler extract_quantifier_instantiations() throws Proof_Exception {
 
 		input_reader.analyze_input();
-		Expr<?> proof_expr = proof.getProofExpression();
-		quant_inst = proof_expr.toString().split("quant-inst").length - 1;
+		quant_inst = proof.as_string().split("quant-inst").length - 1;
+		Expr<?> proof_expr = proof.get_proof_expression();
 		find_quantifier_instantiations(proof_expr);
 		// Print what we encountered while looking at the unsat-proof.
 		if (Setup.log_type == Log_Type.full) {
@@ -442,7 +442,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	@Override
 	public Proof_Concrete_Values collect_concrete_values() {
 		Proof_Concrete_Values concrete_values = new Proof_Concrete_Values();
-		collect_all_concrete_values(new Expr<?>[] { proof.getProofExpression() }, concrete_values);
+		collect_all_concrete_values(new Expr<?>[] { proof.get_proof_expression() }, concrete_values);
 		for (Expr<?> constant : input_reader.constants) {
 			concrete_values.add(constant);
 		}
@@ -491,6 +491,10 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			}
 		}
 		return encountered_only_concrete_values;
+	}
+
+	public int get_proof_size() {
+		return proof.get_size();
 	}
 
 	// *****************************************************************************

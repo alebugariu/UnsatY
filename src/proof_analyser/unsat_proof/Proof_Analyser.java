@@ -18,6 +18,8 @@ import util.Proof_Exception;
 public interface Proof_Analyser {
 	
 	public void generate_unsat_proof() throws Proof_Exception;
+	
+	public int get_proof_size();
 
 	// Uses a prover to generate an unsat-proof for the input.
 	// Searches quantifier instantiations in there.

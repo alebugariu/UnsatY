@@ -307,5 +307,10 @@ public class Vampire_Proof_Analyser implements Proof_Analyser {
 		}
 	}
 
+	@Override
+	public int get_proof_size() {
+		return proof.get_size();
+	}
+
 	// *****************************************************************************
 }

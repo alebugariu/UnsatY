@@ -111,6 +111,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				}
 				framework.generate_proof();
 				statistics.proof_generation_success.incrementAndGet();
+				statistics.proof_size.add(framework.get_proof_size());
 				now = LocalDateTime.now();
 				System.out.println(
 						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));

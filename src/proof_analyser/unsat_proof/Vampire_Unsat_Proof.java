@@ -22,4 +22,12 @@ public class Vampire_Unsat_Proof implements Unsat_Proof {
 		return lines;
 	}
 
+	public int get_size() {
+		int size = 0;
+		for(String line: lines) {
+			size += line.length();
+		}
+		return size;
+	}
+
 }
