@@ -217,7 +217,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
 			// its arguments, which we therefore recursively look at.
 			for (Expr<?> arg : expression.getArgs()) {
-				if (quant_inst_counter != quant_inst && arg.toString().contains("quant-inst") && !visited_expressions.contains(arg)) {
+				if (quant_inst_counter != quant_inst && arg.toString().contains("quant-inst")
+						&& !visited_expressions.contains(arg)) {
 					find_quantifier_instantiations(arg);
 				}
 			}
@@ -303,10 +304,13 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 						+ quantified_variable_names[i] + " in " + quantifier + ".");
 			}
 			if (visited_quant_vars.containsKey(current_quant_var)) {
-				tracking_indexes = new LinkedList<Integer>(visited_quant_vars.get(current_quant_var)); // make a copy, because repeat_function_applications_until_concrete_value removes elements from the tracking list
+				// make a copy, because repeat_function_applications_until_concrete_value
+				// removes elements from the tracking list
+				tracking_indexes = new LinkedList<Integer>(visited_quant_vars.get(current_quant_var));
 			} else {
-				if (!track_function_applications_until_quantified_variable(len - i - 1, quantifier.getBody(),
-						tracking_indexes)) {
+				tracking_indexes = track_function_applications_until_quantified_variable(len - i - 1,
+						quantifier.getBody());
+				if (tracking_indexes == null) {
 					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[PROBLEM]", "Failed to find the quantified variable "
 								+ quantified_variable_names[i] + " in the quantifier instantiation.");
@@ -319,11 +323,11 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// corresponding concrete value, before we give the pair to quant_vars.
 			if (Setup.log_type == Log_Type.full) {
 				verbal_output.add_to_buffer("[INFO]",
-						"Looking for the concrete value corresponding to the quantified variable "
-								+ current_quant_var + " in " + instantiated_quantifier + ".");
+						"Looking for the concrete value corresponding to the quantified variable " + current_quant_var
+								+ " in " + instantiated_quantifier + ".");
 			}
-			repeat_function_applications_until_concrete_value(current_quant_var,
-					quantified_variable_sorts[i], instantiated_quantifier, tracking_indexes);
+			repeat_function_applications_until_concrete_value(current_quant_var, quantified_variable_sorts[i],
+					instantiated_quantifier, tracking_indexes);
 		}
 	}
 
@@ -331,42 +335,38 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// variable that references the expected_variable_index. Remembers the index of
 	// each sub-expression it "dives" into so that once the suitable variable is
 	// found, the list tracking_indexes can be used to reconstruct that path.
-	// Returns false if no suitable variable is ever found (should not happen).
-	private Boolean track_function_applications_until_quantified_variable(int expected_variable_index,
-			Expr<?> current_expression, List<Integer> tracking_indexes) throws Proof_Exception {
+	// Returns null if no suitable variable is ever found (can only happen if that
+	// variable is not relevant).
+	private List<Integer> track_function_applications_until_quantified_variable(int expected_variable_index,
+			Expr<?> current_expression) throws Proof_Exception {
 
-		if (Thread.currentThread().isInterrupted()) {
-			throw new Proof_Exception("Interrupted while finding the quantified variables in the proof");
-		}
-
-		if (current_expression.isVar() && (current_expression.getIndex() == expected_variable_index)) {
+		List<Integer> tracking_indexes = new LinkedList<Integer>();
+		while (!(current_expression.isVar()
+				&& (current_expression.getIndex() == expected_variable_index))) {
+			
+			if (Thread.currentThread().isInterrupted()) {
+				throw new Proof_Exception("Interrupted while finding the quantified variables in the proof");
+			}
+			
 			// If the current_expression is a variable that references the
-			// expected_variable_index, we can return true since tracking_indexes contains
+			// expected_variable_index, we can return, since tracking_indexes contains
 			// all the information we need to reconstruct the path we used to get here.
-			return true;
-		}
-		if (current_expression.isApp()) {
-			// If the current_expression is an application, it is definitely no variable but
-			// the variable we are looking for may be somewhere in its arguments, which we
-			// therefore recursively look at.
-			Expr<?>[] sub_expressions = current_expression.getArgs();
-			if (current_expression.isQuantifier()) {
-				// As already mentioned, we need to update the index according to the number of
-				// quantified variables in the nested Quantifier.
-				expected_variable_index += ((Quantifier) current_expression).getBoundVariableNames().length;
-				sub_expressions = ((Quantifier) current_expression).getArgs();
+
+			if (current_expression.isApp()) {
+				Expr<?>[] sub_expressions = current_expression.getArgs();
+				Expr<?> sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
+				if (sub_expression == null) {
+					System.out.println("Probably the variable is within a nested quantifier");
+					return null;
+				}
+				int i = ArrayUtils.indexOf(sub_expressions, sub_expression);
+				tracking_indexes.add(i);
+				current_expression = sub_expression;
+			} else {
+				return null;
 			}
-			Expr<?> sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
-			if(sub_expression == null) {
-				return false;
-			}
-			int i = ArrayUtils.indexOf(sub_expressions, sub_expression);
-			tracking_indexes.add(i);
-			return track_function_applications_until_quantified_variable(expected_variable_index, sub_expression,
-					tracking_indexes); // Should always return true
 		}
-		// If we reach this part of the code, then we didn't find our variable.
-		return false;
+		return tracking_indexes;
 	}
 
 	private Expr<?> shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index) {
@@ -374,7 +374,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		int length = Integer.MAX_VALUE;
 		for (Expr<?> sub_expression : sub_expressions) {
 			String as_string = sub_expression.toString();
-			if (as_string.contains(":var " + expected_var_index)) {
+			if (as_string.contains(":var " + expected_var_index) && !as_string.contains("forall")) {
 				int current_length = as_string.length();
 				if (length > current_length) {
 					subexpr = sub_expression;
