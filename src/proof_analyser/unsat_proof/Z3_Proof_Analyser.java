@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Params;
@@ -32,6 +30,7 @@ import proof_analyser.Input_Reader;
 import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;
 import util.Exception_Handler;
+import util.Expression_Wrapper;
 import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output;
@@ -353,14 +352,14 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 
 			if (current_expression.isApp()) {
 				Expr<?>[] sub_expressions = current_expression.getArgs();
-				Expr<?> sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
+				Expression_Wrapper sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
 				if (sub_expression == null) {
 					System.out.println("Probably the variable is within a nested quantifier");
 					return null;
 				}
-				int i = ArrayUtils.indexOf(sub_expressions, sub_expression);
-				tracking_indexes.add(i);
-				current_expression = sub_expression;
+				tracking_indexes.add(sub_expression.index);
+				expected_variable_index = sub_expression.var_index;
+				current_expression = sub_expression.expr;
 			} else {
 				return null;
 			}
@@ -368,20 +367,26 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		return tracking_indexes;
 	}
 
-	private Expr<?> shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index) {
+	private Expression_Wrapper shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index) {
 		Expr<?> subexpr = null;
 		int length = Integer.MAX_VALUE;
-		for (Expr<?> sub_expression : sub_expressions) {
+		int index = -1;
+		for (int i = 0; i < sub_expressions.length; i++) {
+			Expr<?> sub_expression = sub_expressions[i];
 			String as_string = sub_expression.toString();
 			if (as_string.contains(":var " + expected_var_index) && !as_string.contains("forall")) {
 				int current_length = as_string.length();
 				if (length > current_length) {
 					subexpr = sub_expression;
 					length = current_length;
+					index = i;
 				}
 			}
 		}
-		return subexpr;
+		if(subexpr == null) {
+			return null;
+		}
+		return new Expression_Wrapper(subexpr, index, expected_var_index);
 	}
 
 	// Recursively traverses the current_expression according to the contents of
