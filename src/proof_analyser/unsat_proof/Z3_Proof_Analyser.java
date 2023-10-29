@@ -172,7 +172,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	public Quant_Var_Handler extract_quantifier_instantiations() throws Proof_Exception {
 
 		input_reader.analyze_input();
-		quant_inst = proof.as_string().split("quant-inst").length - 1;
+		quant_inst = StringUtils.countMatches(proof.as_string(), "quant-inst");
 		Expr<?> proof_expr = proof.get_proof_expression();
 		find_quantifier_instantiations(proof_expr);
 		// Print what we encountered while looking at the unsat-proof.
@@ -219,13 +219,9 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// its arguments, which we therefore recursively look at.
 			for (Expr<?> arg : expression.getArgs()) {
 				String arg_as_string = arg.toString();
-				if (quant_inst_counter != quant_inst && arg_as_string.contains("quant-inst")) {
-					if(!visited_expressions.contains(arg)) {
-						find_quantifier_instantiations(arg);
-					}
-					else {
-						quant_inst_counter = quant_inst_counter + StringUtils.countMatches(arg_as_string, "quant-inst");
-					}
+				if (quant_inst_counter != quant_inst && arg_as_string.contains("quant-inst")
+						&& !visited_expressions.contains(arg)) {
+					find_quantifier_instantiations(arg);
 				}
 			}
 		}
@@ -359,7 +355,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 
 			if (current_expression.isApp()) {
 				Expr<?>[] sub_expressions = current_expression.getArgs();
-				Expression_Wrapper sub_expression = shortest_subexpression(sub_expressions, expected_variable_index, tracking_indexes);
+				Expression_Wrapper sub_expression = shortest_subexpression(sub_expressions, expected_variable_index,
+						tracking_indexes);
 				if (sub_expression == null) {
 					return null;
 				}
@@ -371,15 +368,15 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		}
 		return tracking_indexes;
 	}
-	
+
 	private Quantifier get_quantifier(Expr<?> expression, List<Integer> indexes) {
-		if(expression.isQuantifier()) {
-			return (Quantifier)expression;
+		if (expression.isQuantifier()) {
+			return (Quantifier) expression;
 		}
 		Expr<?>[] args = expression.getArgs();
-		for(int i = 0; i < args.length; i++) {
+		for (int i = 0; i < args.length; i++) {
 			Expr<?> expr = args[i];
-			if(expr.toString().contains("forall")) {
+			if (expr.toString().contains("forall")) {
 				indexes.add(i);
 				return get_quantifier(expr, indexes);
 			}
@@ -387,7 +384,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		return null; // should not be reachable
 	}
 
-	private Expression_Wrapper shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index, List<Integer> tracking_indexes) {
+	private Expression_Wrapper shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index,
+			List<Integer> tracking_indexes) {
 		Expr<?> subexpr = null;
 		int length = Integer.MAX_VALUE;
 		int index = -1;
@@ -403,26 +401,25 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 					length = current_length;
 					index = i;
 				}
-			}
-			else if(as_string.contains(":var") && as_string.contains("forall")) {
+			} else if (as_string.contains(":var") && as_string.contains("forall")) {
 				nested_quantifiers.add(sub_expression);
 				nested_quantifiers_indexes.add(i);
 			}
 		}
-		if(subexpr == null) {
-			for(int i = 0; i < nested_quantifiers.size(); i++) {
+		if (subexpr == null) {
+			for (int i = 0; i < nested_quantifiers.size(); i++) {
 				Expr<?> current_expression = nested_quantifiers.get(i);
 				List<Integer> additional_indexes = new LinkedList<Integer>();
 				Quantifier quantifier = get_quantifier(current_expression, additional_indexes);
 				int nr_bounds = quantifier.getNumBound();
 				int expected_index = expected_var_index + nr_bounds;
-				if(quantifier.getBody().toString().contains(":var " + expected_index)) {
+				if (quantifier.getBody().toString().contains(":var " + expected_index)) {
 					tracking_indexes.add(nested_quantifiers_indexes.get(i));
 					tracking_indexes.addAll(additional_indexes);
 					return shortest_subexpression(quantifier.getBody().getArgs(), expected_index, tracking_indexes);
 				}
 			}
-			return null; 
+			return null;
 		}
 		tracking_indexes.add(index);
 		return new Expression_Wrapper(subexpr, expected_var_index);
@@ -449,17 +446,16 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new Proof_Exception("Interrupted while finding the concrete values in the proof");
 			}
-			
+
 			// If there is another entry in tracking_indexes and we are able to do so, then
 			// we "dive" further into the sub_expression of the current_expression indexed
 			// by that entry if that's possible.
 			int next_index = tracking_indexes.remove(0);
 			Expr<?>[] sub_expressions;
-			if(current_expression.isApp()) {
+			if (current_expression.isApp()) {
 				sub_expressions = current_expression.getArgs();
-			}
-			else { // quantifier
-				sub_expressions = ((Quantifier)current_expression).getBody().getArgs();
+			} else { // quantifier
+				sub_expressions = ((Quantifier) current_expression).getBody().getArgs();
 			}
 			if (sub_expressions.length > next_index) {
 				current_expression = sub_expressions[next_index];
