@@ -352,12 +352,10 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 
 			if (current_expression.isApp()) {
 				Expr<?>[] sub_expressions = current_expression.getArgs();
-				Expression_Wrapper sub_expression = shortest_subexpression(sub_expressions, expected_variable_index);
+				Expression_Wrapper sub_expression = shortest_subexpression(sub_expressions, expected_variable_index, tracking_indexes);
 				if (sub_expression == null) {
-					System.out.println("Probably the variable is within a nested quantifier");
 					return null;
 				}
-				tracking_indexes.add(sub_expression.index);
 				expected_variable_index = sub_expression.var_index;
 				current_expression = sub_expression.expr;
 			} else {
@@ -366,11 +364,28 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 		}
 		return tracking_indexes;
 	}
+	
+	private Quantifier get_quantifier(Expr<?> expression, List<Integer> indexes) {
+		if(expression.isQuantifier()) {
+			return (Quantifier)expression;
+		}
+		Expr<?>[] args = expression.getArgs();
+		for(int i = 0; i < args.length; i++) {
+			Expr<?> expr = args[i];
+			if(expr.toString().contains("forall")) {
+				indexes.add(i);
+				return get_quantifier(expr, indexes);
+			}
+		}
+		return null; // should not be reachable
+	}
 
-	private Expression_Wrapper shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index) {
+	private Expression_Wrapper shortest_subexpression(Expr<?>[] sub_expressions, int expected_var_index, List<Integer> tracking_indexes) {
 		Expr<?> subexpr = null;
 		int length = Integer.MAX_VALUE;
 		int index = -1;
+		List<Expr<?>> nested_quantifiers = new LinkedList<Expr<?>>();
+		List<Integer> nested_quantifiers_indexes = new LinkedList<Integer>();
 		for (int i = 0; i < sub_expressions.length; i++) {
 			Expr<?> sub_expression = sub_expressions[i];
 			String as_string = sub_expression.toString();
@@ -382,11 +397,28 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 					index = i;
 				}
 			}
+			else if(as_string.contains(":var") && as_string.contains("forall")) {
+				nested_quantifiers.add(sub_expression);
+				nested_quantifiers_indexes.add(i);
+			}
 		}
 		if(subexpr == null) {
-			return null;
+			for(int i = 0; i < nested_quantifiers.size(); i++) {
+				Expr<?> current_expression = nested_quantifiers.get(i);
+				List<Integer> additional_indexes = new LinkedList<Integer>();
+				Quantifier quantifier = get_quantifier(current_expression, additional_indexes);
+				int nr_bounds = quantifier.getNumBound();
+				int expected_index = expected_var_index + nr_bounds;
+				if(quantifier.getBody().toString().contains(":var " + expected_index)) {
+					tracking_indexes.add(nested_quantifiers_indexes.get(i));
+					tracking_indexes.addAll(additional_indexes);
+					return shortest_subexpression(quantifier.getBody().getArgs(), expected_index, tracking_indexes);
+				}
+			}
+			return null; 
 		}
-		return new Expression_Wrapper(subexpr, index, expected_var_index);
+		tracking_indexes.add(index);
+		return new Expression_Wrapper(subexpr, expected_var_index);
 	}
 
 	// Recursively traverses the current_expression according to the contents of
@@ -397,7 +429,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			Sort quantified_variable_sort, Expr<?> current_expression, List<Integer> tracking_indexes)
 			throws Proof_Exception {
 
-		while (!(tracking_indexes.isEmpty() || !current_expression.isApp())) {
+		while (!tracking_indexes.isEmpty() && (current_expression.isApp() || current_expression.isQuantifier())) {
 			// If tracking_indexes is empty, then we should have reached our goal. That is,
 			// the current_expression should be a concrete value that matches the
 			// quantified_variable_sort. However, it can also happen that tracking_indexes
@@ -415,7 +447,13 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// we "dive" further into the sub_expression of the current_expression indexed
 			// by that entry if that's possible.
 			int next_index = tracking_indexes.remove(0);
-			Expr<?>[] sub_expressions = current_expression.getArgs();
+			Expr<?>[] sub_expressions;
+			if(current_expression.isApp()) {
+				sub_expressions = current_expression.getArgs();
+			}
+			else { // quantifier
+				sub_expressions = ((Quantifier)current_expression).getBody().getArgs();
+			}
 			if (sub_expressions.length > next_index) {
 				current_expression = sub_expressions[next_index];
 			} else {
