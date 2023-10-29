@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Params;
@@ -216,9 +218,14 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
 			// its arguments, which we therefore recursively look at.
 			for (Expr<?> arg : expression.getArgs()) {
-				if (quant_inst_counter != quant_inst && arg.toString().contains("quant-inst")
-						&& !visited_expressions.contains(arg)) {
-					find_quantifier_instantiations(arg);
+				String arg_as_string = arg.toString();
+				if (quant_inst_counter != quant_inst && arg_as_string.contains("quant-inst")) {
+					if(!visited_expressions.contains(arg)) {
+						find_quantifier_instantiations(arg);
+					}
+					else {
+						quant_inst_counter = quant_inst_counter + StringUtils.countMatches(arg_as_string, "quant-inst");
+					}
 				}
 			}
 		}
