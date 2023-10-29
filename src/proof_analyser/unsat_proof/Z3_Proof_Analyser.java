@@ -341,13 +341,12 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			Expr<?> current_expression) throws Proof_Exception {
 
 		List<Integer> tracking_indexes = new LinkedList<Integer>();
-		while (!(current_expression.isVar()
-				&& (current_expression.getIndex() == expected_variable_index))) {
-			
+		while (!(current_expression.isVar() && (current_expression.getIndex() == expected_variable_index))) {
+
 			if (Thread.currentThread().isInterrupted()) {
 				throw new Proof_Exception("Interrupted while finding the quantified variables in the proof");
 			}
-			
+
 			// If the current_expression is a variable that references the
 			// expected_variable_index, we can return, since tracking_indexes contains
 			// all the information we need to reconstruct the path we used to get here.
@@ -393,11 +392,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			Sort quantified_variable_sort, Expr<?> current_expression, List<Integer> tracking_indexes)
 			throws Proof_Exception {
 
-		if (Thread.currentThread().isInterrupted()) {
-			throw new Proof_Exception("Interrupted while finding the concrete values in the proof");
-		}
-
-		if (tracking_indexes.isEmpty() || !current_expression.isApp()) {
+		while (!(tracking_indexes.isEmpty() || !current_expression.isApp())) {
 			// If tracking_indexes is empty, then we should have reached our goal. That is,
 			// the current_expression should be a concrete value that matches the
 			// quantified_variable_sort. However, it can also happen that tracking_indexes
@@ -406,35 +401,39 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// parts of the expression are automatically simplified by Z3. To get around
 			// this problem, we just assume that we have reached our concrete value anyway
 			// and check if the current_expression matches the quantified_variable_sort.
-			if (current_expression.getSort().equals(quantified_variable_sort)) {
-				// If that's the case, we just found our pair of quantified variable and
-				// concrete value.
-				if (Setup.log_type == Log_Type.full) {
-					verbal_output.add_to_buffer("[SUCCESS]", "The quantified variable " + quantified_variable_name
-							+ " is instantiated with the concrete value " + current_expression + ".");
-				}
-				quant_vars.add_quantifier_instantiation(quantified_variable_name, current_expression.simplify());
-			} else {
-				// If that's not the case, then our tracking failed.
-				if (Setup.log_type == Log_Type.full) {
-					verbal_output.add_to_buffer("[PROBLEM]",
-							"Failed tracking: Did not find a suitable concrete value where expected.");
-				}
+
+			if (Thread.currentThread().isInterrupted()) {
+				throw new Proof_Exception("Interrupted while finding the concrete values in the proof");
 			}
-		} else {
+			
 			// If there is another entry in tracking_indexes and we are able to do so, then
 			// we "dive" further into the sub_expression of the current_expression indexed
 			// by that entry if that's possible.
 			int next_index = tracking_indexes.remove(0);
 			Expr<?>[] sub_expressions = current_expression.getArgs();
 			if (sub_expressions.length > next_index) {
-				repeat_function_applications_until_concrete_value(quantified_variable_name, quantified_variable_sort,
-						sub_expressions[next_index], tracking_indexes);
+				current_expression = sub_expressions[next_index];
 			} else {
 				if (Setup.log_type == Log_Type.full) {
 					verbal_output.add_to_buffer("[PROBLEM]",
 							"Failed tracking: Could not dive into a non-existing sub-expression (out-of-bounds index).");
 				}
+				break;
+			}
+		}
+		if (current_expression.getSort().equals(quantified_variable_sort)) {
+			// If that's the case, we just found our pair of quantified variable and
+			// concrete value.
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.add_to_buffer("[SUCCESS]", "The quantified variable " + quantified_variable_name
+						+ " is instantiated with the concrete value " + current_expression + ".");
+			}
+			quant_vars.add_quantifier_instantiation(quantified_variable_name, current_expression);
+		} else {
+			// If that's not the case, then our tracking failed.
+			if (Setup.log_type == Log_Type.full) {
+				verbal_output.add_to_buffer("[PROBLEM]",
+						"Failed tracking: Did not find a suitable concrete value where expected.");
 			}
 		}
 	}
