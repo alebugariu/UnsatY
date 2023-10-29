@@ -218,9 +218,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			// not, it may contain an expression marked as Z3_OP_PR_QUANT_INST somewhere in
 			// its arguments, which we therefore recursively look at.
 			for (Expr<?> arg : expression.getArgs()) {
-				String arg_as_string = arg.toString();
-				if (quant_inst_counter != quant_inst && arg_as_string.contains("quant-inst")
-						&& !visited_expressions.contains(arg)) {
+				if (quant_inst_counter != quant_inst && !visited_expressions.contains(arg)) {
 					find_quantifier_instantiations(arg);
 				}
 			}
@@ -310,8 +308,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 				// removes elements from the tracking list
 				tracking_indexes = new LinkedList<Integer>(visited_quant_vars.get(current_quant_var));
 			} else {
-				tracking_indexes = track_function_applications_until_quantified_variable(len - i - 1,
-						quantifier.getBody());
+				tracking_indexes = track_quantified_variable(len - i - 1, quantifier.getBody());
 				if (tracking_indexes == null) {
 					if (Setup.log_type == Log_Type.full) {
 						verbal_output.add_to_buffer("[PROBLEM]", "Failed to find the quantified variable "
@@ -319,8 +316,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 					}
 					continue;
 				}
+				visited_quant_vars.put(current_quant_var, tracking_indexes);
 			}
-			visited_quant_vars.put(current_quant_var, tracking_indexes);
 			// We then take the very same "path" in the instantiated_quantifier to find the
 			// corresponding concrete value, before we give the pair to quant_vars.
 			if (Setup.log_type == Log_Type.full) {
@@ -328,8 +325,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 						"Looking for the concrete value corresponding to the quantified variable " + current_quant_var
 								+ " in " + instantiated_quantifier + ".");
 			}
-			repeat_function_applications_until_concrete_value(current_quant_var, quantified_variable_sorts[i],
-					instantiated_quantifier, tracking_indexes);
+			find_concrete_value(current_quant_var, quantified_variable_sorts[i], instantiated_quantifier,
+					tracking_indexes);
 		}
 	}
 
@@ -339,8 +336,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// found, the list tracking_indexes can be used to reconstruct that path.
 	// Returns null if no suitable variable is ever found (can only happen if that
 	// variable is not relevant).
-	private List<Integer> track_function_applications_until_quantified_variable(int expected_variable_index,
-			Expr<?> current_expression) throws Proof_Exception {
+	private List<Integer> track_quantified_variable(int expected_variable_index, Expr<?> current_expression)
+			throws Proof_Exception {
 
 		List<Integer> tracking_indexes = new LinkedList<Integer>();
 		while (!(current_expression.isVar() && (current_expression.getIndex() == expected_variable_index))) {
@@ -429,9 +426,8 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 	// tracking_indexes to find a concrete value. If the sort of that concrete value
 	// matches the quantified_variable_sort, we give it to quant_vars so that it can
 	// be added as a possible concrete value for quantified_variable_name.
-	private void repeat_function_applications_until_concrete_value(Symbol quantified_variable_name,
-			Sort quantified_variable_sort, Expr<?> current_expression, List<Integer> tracking_indexes)
-			throws Proof_Exception {
+	private void find_concrete_value(Symbol quantified_variable_name, Sort quantified_variable_sort,
+			Expr<?> current_expression, List<Integer> tracking_indexes) throws Proof_Exception {
 
 		while (!tracking_indexes.isEmpty() && (current_expression.isApp() || current_expression.isQuantifier())) {
 			// If tracking_indexes is empty, then we should have reached our goal. That is,
