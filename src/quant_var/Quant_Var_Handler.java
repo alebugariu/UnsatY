@@ -604,12 +604,14 @@ public class Quant_Var_Handler {
 		Symbol[] quantifier_variables = quantifier.getBoundVariableNames();
 		int len = quantifier_variables.length;
 		List<Expr<?>>[] quantifier_constants = new LinkedList[len];
+		int number_of_values = 0;
 		for (int i = 0; i < len; i++) {
 			// Then, we get all the constants that correspond to each of the quantified
 			// variables. There are multiple of them if we found multiple possible values
 			// for the corresponding quantified variable.
 			Quant_Var quant_var = names_to_quant_vars.get(quantifier_variables[i].toString());
 			List<Expr<?>> constants = possible_constants.get(quant_var);
+			number_of_values = constants.size();
 			// Translate from De-Brujn indexing.
 			quantifier_constants[len - i - 1] = constants;
 			for (Expr<?> constant : constants) {
@@ -617,18 +619,21 @@ public class Quant_Var_Handler {
 				constant_declarations.add(constant_declaration);
 			}
 		}
-		// By now, we have collected all constants that we should instantiate our
-		// quantifiers with. We consider all combinations for doing so.
-		// Example: If the quantifier uses two quantified variables x0 and x1, and we
-		// found two possible values for x0, which we use the constants x00 and x01 for,
-		// and we found one possible value for x1, which we use the constant x1 for,
+		// By now, we have collected all the constants that we should instantiate our
+		// quantifiers with. Example: If the quantifier has two quantified variables x0 
+		// and x1, and the proof contains the instantiations x0 = x00, x1 = x1, and x0 = x01, x1 = x1, 
 		// then we instantiate the quantifier two times, once by replacing the
 		// quantified variable x0 with the constant x00 and once by replacing it with
 		// the constant x01, while we always replace the quantified variable x1 with the
-		// constant x1.
+		// constant x1. 
 		List<Expr<?>> instantiated_quantifiers = new LinkedList<Expr<?>>();
-		instantiate_quantifier_combinations(quantifier, quantifier_constants, instantiated_quantifiers,
-				new Expr<?>[len], 0);
+		for(int i = 0; i < number_of_values; i++) {
+			Expr<?>[] current_constants = new Expr<?>[len];
+			for(int j = 0; j < quantifier_constants.length; j++) {
+				current_constants[j] = quantifier_constants[j].get(i);
+			}
+			instantiated_quantifiers.add(quantifier.getBody().substituteVars(current_constants));
+		}
 		List<Expr<?>> quantifierless_quantifiers = new LinkedList<Expr<?>>();
 		for (Expr<?> instantiated_quantifier : instantiated_quantifiers) {
 			// For each of our instantiated quantifiers, we also need to possibly
@@ -647,28 +652,6 @@ public class Quant_Var_Handler {
 		}
 		return quantifierless_quantifiers;
 
-	}
-
-	// TLDR: Produces combinations of constants to instantiate the quantifier with.
-	// Recursively chooses combinations of entries of quantifier_constants and
-	// finally uses them to replace the quantified variables in the quantifier
-	// (i.e., to instantiate that quantifier)
-	private void instantiate_quantifier_combinations(Quantifier quantifier, List<Expr<?>>[] quantifier_constants,
-			List<Expr<?>> instantiated_quantifiers, Expr<?>[] already_chosen, int i) {
-		if (i == quantifier_constants.length) {
-			// We chose an element of each entry of quantifier_constants, so we can actually
-			// instantiate the quantifier with that combination.
-			instantiated_quantifiers.add(quantifier.getBody().substituteVars(already_chosen));
-		} else {
-			List<Expr<?>> current_constants = quantifier_constants[i];
-			// We consider each element at the current position of quantifier_constants for
-			// instantiating the combinations.
-			for (Expr<?> current_constant : current_constants) {
-				already_chosen[i] = current_constant;
-				instantiate_quantifier_combinations(quantifier, quantifier_constants, instantiated_quantifiers,
-						already_chosen, i + 1);
-			}
-		}
 	}
 
 	// TLDR: Covers nested quantifiers.

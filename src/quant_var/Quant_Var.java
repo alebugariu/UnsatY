@@ -161,12 +161,10 @@ public class Quant_Var {
 	// *****************************************************************************
 	// Proof-related methods.
 
-	// Adds new_value to concrete_values if it is not already present.
+	// Adds new_value to concrete_values.
 	protected void add_concrete_value(Expr<?> new_value) {
 		new_value = new_value.simplify();
-		if (!concrete_values.contains(new_value)) {
-			concrete_values.add(new_value);
-		}
+		concrete_values.add(new_value);
 	}
 
 	// Indicator whether this quantified variable is instantiated in the

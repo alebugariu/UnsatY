@@ -26,6 +26,7 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Sort;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Symbol;
+import com.microsoft.z3.enumerations.Z3_ast_kind;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
 import proof_analyser.Input_Reader;
@@ -195,7 +196,7 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			return;
 		}
 		visited_expressions.add(expression);
-		if (expression.isApp()) {
+		if (expression.getASTKind() == Z3_ast_kind.Z3_APP_AST) {
 			// We therefore only care about expressions that are applications of functions,
 			// because isProofQuantInst only returns true if so does isApp.
 			if (expression.isProofQuantInst()) {
