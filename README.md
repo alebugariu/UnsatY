@@ -5,7 +5,7 @@ This repository provides the implementation for the Bachelor Thesis: ["Explainin
 Given an unsatisfiable SMT formula, our tool (UnsatY) automatically extracts an *example* that explains the contradiction from its refutation proof. UnsatY also minimizes the given SMT formula, such that the contradiction can be easier understood.
 
 # Barber paradox
-Let us consider the [barber paradox](https://en.wikipedia.org/wiki/Barber_paradox), where the barber is the "one who shaves all those, and those only, who do not shave themselves". A possible [SMT encoding](benchmarks/bachelor_thesis/example_barber.smt2) of this paradox is given below:
+Let us consider the [barber paradox](https://en.wikipedia.org/wiki/Barber_paradox), where the barber is the "one who shaves all those, and those only, who do not shave themselves". A possible [SMT encoding](benchmarks/manually_written/bachelor_thesis/example_barber_std_unique_aug-gt_unsat-full.smt2) of this paradox is given below:
 
 ```
 (assert (forall ((x0 man)) (=> (not (= (shave x0) x0)) (= (shave x0) barber)))) ; A0
@@ -21,7 +21,7 @@ The above formula is unsatisfiable, as there does not exist an interpretation fo
 To install the prerequisites:
 
 ```
-sudo apt-get install -y openjdk-11-jdk python build-essential
+sudo apt-get install -y openjdk-11-jdk python python3-pip build-essential git wget unzip curl
 ```
 
 Clone our repository:
@@ -44,6 +44,6 @@ Run the script run.sh, specifying the prover that should be used for generating 
 
 
 ```
-./run.sh -prover Z3 -file "benchmarks/bachelor_thesis/example_barber.smt2"
+./run.sh -prover Z3 -file "benchmarks/manually_written/bachelor_thesis/example_barber_std_unique_aug-gt_unsat-full.smt2"
 ```
 The output is saved in the folder ``output``.
