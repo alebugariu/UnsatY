@@ -11,4 +11,4 @@ RUN apt-get install -y git wget unzip sudo curl
 # Clone our repository and build our tool
 RUN git clone https://github.com/alebugariu/UnsatY.git UnsatY
 RUN cd UnsatY && chmod +x install.sh 
-RUN . UnsatY/install.sh
+RUN cd UnsatY && . ./install.sh
