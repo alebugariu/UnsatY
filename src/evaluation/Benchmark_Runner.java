@@ -106,7 +106,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				statistics.unsat_core_success.incrementAndGet();
 				statistics.unsat_core_formulas.add(framework.get_number_of_formulas());
 				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
-				if(Thread.currentThread().isInterrupted()) {
+				if (Thread.currentThread().isInterrupted()) {
 					throw new Proof_Exception("interrupted");
 				}
 				framework.generate_proof();
@@ -118,7 +118,7 @@ public class Benchmark_Runner implements Callable<Void> {
 				if (!Thread.currentThread().isInterrupted() && framework.construct_potential_example()) {
 					statistics.example_construction_success.incrementAndGet();
 					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
-					if(Thread.currentThread().isInterrupted()) {
+					if (Thread.currentThread().isInterrupted()) {
 						throw new Proof_Exception("interrupted");
 					}
 					framework.minimize_example();
@@ -129,11 +129,12 @@ public class Benchmark_Runner implements Callable<Void> {
 					if (framework.get_minimization_success()) {
 						statistics.example_minimization.incrementAndGet();
 					}
-					if(Thread.currentThread().isInterrupted()) {
+					if (Thread.currentThread().isInterrupted()) {
 						throw new Proof_Exception("interrupted");
 					}
 					framework.minimize_input();
-					if (!Thread.currentThread().isInterrupted() && ematching && framework.synthesize_triggering_terms()) {
+					if (!Thread.currentThread().isInterrupted() && ematching
+							&& framework.synthesize_triggering_terms()) {
 						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
 						statistics.ematching_success.incrementAndGet();
 					}
@@ -151,14 +152,15 @@ public class Benchmark_Runner implements Callable<Void> {
 			LocalDateTime end_time = LocalDateTime.now();
 			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(end_time));
 			System.out.println();
-			statistics.time.add((int)Duration.between(start_time, end_time).toMillis());
+			statistics.time.add((int) Duration.between(start_time, end_time).toMillis());
 		} catch (Proof_Exception e) {
 			Command_Line_Utility.stop_processes(input_file);
 			String error_message = e.getMessage();
 			System.out.println("FAIL for " + input_file.toString() + ": " + error_message);
 			System.out.println();
+		} finally {
+			framework.close_context();
 		}
-		framework.close_context();
 		return null;
 	}
 }

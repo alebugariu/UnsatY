@@ -152,8 +152,12 @@ public class Main {
 			try {
 				future.get(Setup.timeout, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
+				File file = threads_map.get(future);
+				System.out.println("Interrupted exception while processing the file " + file);
 				e.printStackTrace();
 			} catch (ExecutionException e) {
+				File file = threads_map.get(future);
+				System.out.println("Execution exception while processing the file " + file);
 				e.printStackTrace();
 			} catch (TimeoutException e) {
 				if (!future.isDone()) {
