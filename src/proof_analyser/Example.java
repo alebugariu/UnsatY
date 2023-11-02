@@ -124,7 +124,7 @@ public class Example {
 		quant_vars.make_assertions(context);
 		Set<FuncDecl<?>> constant_declarations = quant_vars.constant_declarations;
 		Set<Expr<?>> constant_allocations = quant_vars.constant_allocations;
-		Set<Expr<?>> instantiated_formulas = quant_vars.instantiated_formulas;
+		Set<String> instantiated_formulas = quant_vars.instantiated_formulas;
 		Set<FuncDecl<?>> further_declarations = quant_vars.further_declarations;
 		/*
 		 * Example

@@ -509,7 +509,7 @@ public class Quant_Var_Handler {
 
 	// Contains the input formulas that we instantiate.
 	// Is null before make_assertions has been called.
-	public Set<Expr<?>> instantiated_formulas;
+	public Set<String> instantiated_formulas;
 
 	// Contains further declarations for some expressions in constant_allocations
 	// and instantiated_formulas.
@@ -522,12 +522,12 @@ public class Quant_Var_Handler {
 	// and stores them in constant_declarations, constant_allocations,
 	// instantiated_formulas and further_declarations.
 	// Do not call this method yourself but use your Evaluator object.
-	public void make_assertions(Context context) {
+	public void make_assertions(Context context) throws Proof_Exception {
 		// Initialize our sets and map.
 		make_constants(context);
 		constant_declarations = new LinkedHashSet<FuncDecl<?>>();
 		constant_allocations = new LinkedHashSet<Expr<?>>();
-		instantiated_formulas = new LinkedHashSet<Expr<?>>();
+		instantiated_formulas = new LinkedHashSet<String>();
 		further_declarations = new LinkedHashSet<FuncDecl<?>>();
 		for (Expr<?> quantified_input_formula : quantified_input_formulas.keySet()) {
 			// We instantiate each quantifier that appears in sequence in the input formula
@@ -550,8 +550,8 @@ public class Quant_Var_Handler {
 
 			// Since we sequentially instantiate the quantifiers of the input formula, we
 			// maintain partially instantiated input formulas in a list.
-			List<Expr<?>> partially_instantiated_input_formulas = new LinkedList<Expr<?>>();
-			partially_instantiated_input_formulas.add(quantified_input_formula);
+			List<String> partially_instantiated_input_formulas = new LinkedList<String>();
+			partially_instantiated_input_formulas.add(quantified_input_formula.toString());
 			for (Quantifier quantifier : quantified_input_formulas.get(quantified_input_formula)) {
 				// We must only consider quantified variables that were instantiated, i.e., for
 				// which we have found at least one concrete value.
@@ -561,12 +561,12 @@ public class Quant_Var_Handler {
 					// here. If the parent_quantifier is not null, then it is a nested quantifier.
 					continue;
 				}
-				List<Expr<?>> instantiated_quantifiers = instantiate_quantifier(quantifier, context);
-				List<Expr<?>> further_instantiated_input_formulas = new LinkedList<Expr<?>>();
-				for (Expr<?> instantiated_quantifier : instantiated_quantifiers) {
-					for (Expr<?> partially_instantiated_input_formula : partially_instantiated_input_formulas) {
-						Expr<?> further_instantiated_input_formula = partially_instantiated_input_formula
-								.substitute(quantifier, instantiated_quantifier);
+				List<String> instantiated_quantifiers = instantiate_quantifier(quantifier, context);
+				List<String> further_instantiated_input_formulas = new LinkedList<String>();
+				for (String instantiated_quantifier : instantiated_quantifiers) {
+					for (String partially_instantiated_input_formula : partially_instantiated_input_formulas) {
+						String further_instantiated_input_formula = substitute(partially_instantiated_input_formula,
+								quantifier.toString(), instantiated_quantifier);
 						further_instantiated_input_formulas.add(further_instantiated_input_formula);
 					}
 				}
@@ -598,7 +598,12 @@ public class Quant_Var_Handler {
 	// constants from possible_constants.
 	// Also considers nested quantifiers.
 	// Returns a list of instantiated quantifiers.
-	private List<Expr<?>> instantiate_quantifier(Quantifier quantifier, Context context) {
+	private List<String> instantiate_quantifier(Quantifier quantifier, Context context) throws Proof_Exception {
+
+		if (Thread.currentThread().isInterrupted()) {
+			throw new Proof_Exception("Interrupted while instantiating the quantifiers");
+		}
+
 		// First, we want to get all the quantified variables that appear in the
 		// quantifier.
 		Symbol[] quantifier_variables = quantifier.getBoundVariableNames();
@@ -620,26 +625,28 @@ public class Quant_Var_Handler {
 			}
 		}
 		// By now, we have collected all the constants that we should instantiate our
-		// quantifiers with. Example: If the quantifier has two quantified variables x0 
-		// and x1, and the proof contains the instantiations x0 = x00, x1 = x1, and x0 = x01, x1 = x1, 
+		// quantifiers with. Example: If the quantifier has two quantified variables x0
+		// and x1, and the proof contains the instantiations x0 = x00, x1 = x1, and x0 =
+		// x01, x1 = x1,
 		// then we instantiate the quantifier two times, once by replacing the
 		// quantified variable x0 with the constant x00 and once by replacing it with
 		// the constant x01, while we always replace the quantified variable x1 with the
-		// constant x1. 
+		// constant x1.
 		List<Expr<?>> instantiated_quantifiers = new LinkedList<Expr<?>>();
-		for(int i = 0; i < number_of_values; i++) {
+		for (int i = 0; i < number_of_values; i++) {
 			Expr<?>[] current_constants = new Expr<?>[len];
-			for(int j = 0; j < quantifier_constants.length; j++) {
+			for (int j = 0; j < quantifier_constants.length; j++) {
 				current_constants[j] = quantifier_constants[j].get(i);
 			}
 			instantiated_quantifiers.add(quantifier.getBody().substituteVars(current_constants));
 		}
-		List<Expr<?>> quantifierless_quantifiers = new LinkedList<Expr<?>>();
+		List<String> quantifierless_quantifiers = new LinkedList<String>();
 		for (Expr<?> instantiated_quantifier : instantiated_quantifiers) {
 			// For each of our instantiated quantifiers, we also need to possibly
 			// instantiate nested quantifiers (if there are any).
-			List<Expr<?>> instantiated_nested_quantifiers = possibly_instantiate_nested_quantifiers(
-					instantiated_quantifier, instantiated_quantifier, context);
+			String quantifier_as_string = instantiated_quantifier.toString();
+			List<String> instantiated_nested_quantifiers = possibly_instantiate_nested_quantifiers(
+					instantiated_quantifier, quantifier_as_string, context);
 			if (instantiated_nested_quantifiers != null) {
 				// If there are nested quantifiers, we again instantiate them with all possible
 				// combinations of concrete values and therefore possibly get multiple
@@ -647,7 +654,7 @@ public class Quant_Var_Handler {
 				quantifierless_quantifiers.addAll(instantiated_nested_quantifiers);
 			} else {
 				// Otherwise, we just remember the initial instantiated quantifier.
-				quantifierless_quantifiers.add(instantiated_quantifier);
+				quantifierless_quantifiers.add(quantifier_as_string);
 			}
 		}
 		return quantifierless_quantifiers;
@@ -661,27 +668,33 @@ public class Quant_Var_Handler {
 	// we find by doing so is used to replace the nested quantifier in the
 	// instantiated_quantifier.
 	// Returns null if no nested quantifier is found.
-	private List<Expr<?>> possibly_instantiate_nested_quantifiers(Expr<?> current_expression,
-			Expr<?> instantiated_quantifier, Context context) {
-		List<Expr<?>> out = new LinkedList<Expr<?>>();
+	private List<String> possibly_instantiate_nested_quantifiers(Expr<?> current_expression,
+			String instantiated_quantifier, Context context) throws Proof_Exception {
+
+		if (Thread.currentThread().isInterrupted()) {
+			throw new Proof_Exception("Interrupted while instantiating nested quantifiers");
+		}
+
+		List<String> out = new LinkedList<String>();
 		if (current_expression.isQuantifier()) {
-			List<Expr<?>> instantiated_sub_quantifiers = instantiate_quantifier((Quantifier) current_expression,
+			List<String> instantiated_sub_quantifiers = instantiate_quantifier((Quantifier) current_expression,
 					context);
-			for (Expr<?> instantiated_sub_quantifier : instantiated_sub_quantifiers) {
-				out.add(instantiated_quantifier.substitute(current_expression, instantiated_sub_quantifier));
+			for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
+				out.add(substitute(instantiated_quantifier, current_expression.toString(),
+						instantiated_sub_quantifier));
 			}
 			return out;
 		} else if (current_expression.isApp()) {
 			out.add(instantiated_quantifier);
 			Boolean instantiated_something = false;
 			for (Expr<?> sub_expression : current_expression.getArgs()) {
-				List<Expr<?>> instantiated_sub_quantifiers = possibly_instantiate_nested_quantifiers(sub_expression,
-						sub_expression, context);
+				List<String> instantiated_sub_quantifiers = possibly_instantiate_nested_quantifiers(sub_expression,
+						sub_expression.toString(), context);
 				if (instantiated_sub_quantifiers != null) {
-					List<Expr<?>> new_out = new LinkedList<Expr<?>>();
-					for (Expr<?> instantiated_sub_quantifier : instantiated_sub_quantifiers) {
-						for (Expr<?> candidate : out) {
-							new_out.add(candidate.substitute(sub_expression, instantiated_sub_quantifier));
+					List<String> new_out = new LinkedList<String>();
+					for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
+						for (String candidate : out) {
+							new_out.add(substitute(candidate, sub_expression.toString(), instantiated_sub_quantifier));
 							instantiated_something = true;
 						}
 					}
@@ -849,9 +862,7 @@ public class Quant_Var_Handler {
 							continue;
 						}
 						String concrete_val = concrete_values.get(val_index).toString();
-						Pattern pattern = Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(var_name) + "(?=$|\\s|\\W)");
-						Matcher matcher = pattern.matcher(possible_triggering_term);
-						String new_triggering_term = matcher.replaceAll(Matcher.quoteReplacement(concrete_val));
+						String new_triggering_term = substitute(possible_triggering_term, var_name, concrete_val);
 						assert (!new_triggering_term.contains(":var"));
 						additional_triggering_terms.add(new_triggering_term);
 					}
@@ -873,6 +884,13 @@ public class Quant_Var_Handler {
 			}
 		}
 		return dummies;
+	}
+
+	public String substitute(String source, String replaced, String replacement) {
+		Pattern pattern = Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(replaced) + "(?=$|\\s|\\W)");
+		Matcher matcher = pattern.matcher(source);
+		return matcher.replaceAll(Matcher.quoteReplacement(replacement));
+
 	}
 
 // *****************************************************************************

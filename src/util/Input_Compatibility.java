@@ -327,7 +327,7 @@ public class Input_Compatibility {
 	// - All instantiated quantifiers in quantifier_instantiations.
 	public static File make_example(File input_file, Verbal_Output verbal_output, String output_file_name,
 			Set<FuncDecl<?>> constant_declarations, Set<Expr<?>> constant_allocations,
-			Set<Expr<?>> quantifier_instantiations, Set<FuncDecl<?>> further_declarations) throws Proof_Exception {
+			Set<String> quantifier_instantiations, Set<FuncDecl<?>> further_declarations) throws Proof_Exception {
 		// We differ between declarations and assertions, because we want to ensure that
 		// everything was declared before it may be possibly used in some assertion.
 		Set<String> sort_declaration_print_buffer = new LinkedHashSet<String>();
@@ -390,8 +390,8 @@ public class Input_Compatibility {
 		// Finally, we have instantiated quantifiers that substitute the quantified
 		// variables with all the possible combinations of constants corresponding to
 		// each of those quantified variables.
-		for (Expr<?> quantifier_instantiation : quantifier_instantiations) {
-			String line = String_Utility.remove_line_breaks("(assert " + quantifier_instantiation.toString() + ")");
+		for (String quantifier_instantiation : quantifier_instantiations) {
+			String line = String_Utility.remove_line_breaks("(assert " + quantifier_instantiation + ")");
 			assertion_print_buffer.add(line);
 		}
 		// Then, we are set to actually create that evaluation file and fill it.
