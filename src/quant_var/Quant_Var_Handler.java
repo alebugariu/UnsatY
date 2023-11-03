@@ -683,15 +683,17 @@ public class Quant_Var_Handler {
 		if (current_expression.isApp()) {
 			out.add(instantiated_quantifier);
 			for (Expr<?> sub_expression : current_expression.getArgs()) {
-				List<String> instantiated_sub_quantifiers = instantiate_nested_quantifiers(sub_expression,
-						sub_expression.toString(), context);
-				List<String> new_out = new LinkedList<String>();
-				for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
-					for (String candidate : out) {
-						new_out.add(substitute(candidate, sub_expression.toString(), instantiated_sub_quantifier));
+				if (sub_expression.toString().contains("forall")) {
+					List<String> instantiated_sub_quantifiers = instantiate_nested_quantifiers(sub_expression,
+							sub_expression.toString(), context);
+					List<String> new_out = new LinkedList<String>();
+					for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
+						for (String candidate : out) {
+							new_out.add(substitute(candidate, sub_expression.toString(), instantiated_sub_quantifier));
+						}
 					}
+					out = new_out;
 				}
-				out = new_out;
 			}
 		}
 		return out;
