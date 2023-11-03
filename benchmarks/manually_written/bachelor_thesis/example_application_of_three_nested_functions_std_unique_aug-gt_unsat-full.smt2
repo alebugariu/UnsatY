@@ -9,7 +9,7 @@
 (declare-sort RMode 0)
 (declare-fun g (Int) Int)
 (declare-fun h (Int Int) Int)
-(assert (! (forall ((xpy0 Int)) (! (= (h (f (g xpy0)) 0) 0) :pattern ((g xpy0)) )) :named A0))
+(assert (! (forall ((xpy0 Int)) (! (= (h (f (g xpy0)) 0) 0) :pattern ((h (g xpy0) xpy0)) )) :named A0))
 (assert (! (= (h (f (g 1)) 0) 1) :named A1))
 (check-sat)
 (get-info :reason-unknown)
