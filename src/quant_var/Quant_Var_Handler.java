@@ -71,7 +71,7 @@ public class Quant_Var_Handler {
 	// We us them when constructing a potential example.
 	// Is initialized in the constructor.
 	// Elements are continuously added by the add_new_quant_var method.
-	private Map<Expr<?>, List<Quantifier>> quantified_input_formulas;
+	private Map<Expr<?>, Set<Quantifier>> quantified_input_formulas;
 
 	// Captures the parent-child relation for nested quantifiers.
 	// Is initialized in the constructor.
@@ -82,17 +82,13 @@ public class Quant_Var_Handler {
 
 	private Default_Values defaults;
 
-	public Quantifier get_parent_quantifier(Quantifier quantifier) {
-		return parent_quantifiers.get(quantifier);
-	}
-
 	public Quant_Var_Handler(Verbal_Output verbal_output, Context context, Input_Reader input_reader) {
 		this.verbal_output = verbal_output;
 		this.context = context;
 		this.input_reader = input_reader;
 		this.quant_vars = new LinkedHashSet<Quant_Var>();
 		this.names_to_quant_vars = new HashMap<String, Quant_Var>();
-		this.quantified_input_formulas = new HashMap<Expr<?>, List<Quantifier>>();
+		this.quantified_input_formulas = new HashMap<Expr<?>, Set<Quantifier>>();
 		this.parent_quantifiers = new HashMap<Quantifier, Quantifier>();
 		this.defaults = new Default_Values();
 	}
@@ -133,10 +129,10 @@ public class Quant_Var_Handler {
 		quant_vars.add(quant_var);
 		names_to_quant_vars.put(var_name, quant_var);
 		if (!quantified_input_formulas.keySet().contains(input_formula)) {
-			List<Quantifier> quantifiers = new LinkedList<Quantifier>();
+			Set<Quantifier> quantifiers = new LinkedHashSet<Quantifier>();
 			quantifiers.add(quantifier);
 			quantified_input_formulas.put(input_formula, quantifiers);
-		} else if (!quantified_input_formulas.get(input_formula).contains(quantifier)) {
+		} else {
 			quantified_input_formulas.get(input_formula).add(quantifier);
 		}
 		// We remember the parent-child relation in the case of nested quantifiers.
@@ -555,7 +551,7 @@ public class Quant_Var_Handler {
 			for (Quantifier quantifier : quantified_input_formulas.get(quantified_input_formula)) {
 				// We must only consider quantified variables that were instantiated, i.e., for
 				// which we have found at least one concrete value.
-				if (get_parent_quantifier(quantifier) != null) {
+				if (parent_quantifiers.get(quantifier) != null) {
 					// We instantiate nested quantifiers together with the most outer (parent)
 					// quantifier (in the instantiate_quantifier method). We therefore skip them
 					// here. If the parent_quantifier is not null, then it is a nested quantifier.
@@ -572,6 +568,11 @@ public class Quant_Var_Handler {
 				}
 				partially_instantiated_input_formulas = further_instantiated_input_formulas;
 			}
+			
+			for(String instantiated_formula: partially_instantiated_input_formulas) {
+				assert(!instantiated_formula.contains("forall"));
+			}
+			
 			instantiated_formulas.addAll(partially_instantiated_input_formulas);
 			for (Quant_Var quant_var : quant_vars) {
 				if (quant_var.is_instantiated()) {
@@ -642,7 +643,7 @@ public class Quant_Var_Handler {
 		}
 		List<String> quantifierless_quantifiers = new LinkedList<String>();
 		for (Expr<?> instantiated_quantifier : instantiated_quantifiers) {
-			// For each of our instantiated quantifiers, we also need to possibly
+			// For each of our instantiated quantifiers, we also need to
 			// instantiate nested quantifiers (if there are any).
 			String quantifier_as_string = instantiated_quantifier.toString();
 			List<String> instantiated_nested_quantifiers = possibly_instantiate_nested_quantifiers(
