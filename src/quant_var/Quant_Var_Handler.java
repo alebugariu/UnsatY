@@ -549,6 +549,11 @@ public class Quant_Var_Handler {
 			List<String> partially_instantiated_input_formulas = new LinkedList<String>();
 			partially_instantiated_input_formulas.add(quantified_input_formula.toString());
 			for (Quantifier quantifier : quantified_input_formulas.get(quantified_input_formula)) {
+
+				if (Thread.currentThread().isInterrupted()) {
+					throw new Proof_Exception("Interrupted while making the assertions for the potential example");
+				}
+
 				List<String> instantiated_quantifiers = instantiate_quantifier(quantifier, context);
 				List<String> further_instantiated_input_formulas = new LinkedList<String>();
 				for (String instantiated_quantifier : instantiated_quantifiers) {
@@ -678,17 +683,15 @@ public class Quant_Var_Handler {
 		if (current_expression.isApp()) {
 			out.add(instantiated_quantifier);
 			for (Expr<?> sub_expression : current_expression.getArgs()) {
-				if (sub_expression.isQuantifier()) {
-					List<String> instantiated_sub_quantifiers = instantiate_nested_quantifiers(sub_expression,
-							sub_expression.toString(), context);
-					List<String> new_out = new LinkedList<String>();
-					for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
-						for (String candidate : out) {
-							new_out.add(substitute(candidate, sub_expression.toString(), instantiated_sub_quantifier));
-						}
+				List<String> instantiated_sub_quantifiers = instantiate_nested_quantifiers(sub_expression,
+						sub_expression.toString(), context);
+				List<String> new_out = new LinkedList<String>();
+				for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
+					for (String candidate : out) {
+						new_out.add(substitute(candidate, sub_expression.toString(), instantiated_sub_quantifier));
 					}
-					out = new_out;
 				}
+				out = new_out;
 			}
 		}
 		return out;
