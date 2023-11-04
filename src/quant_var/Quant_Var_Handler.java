@@ -881,7 +881,7 @@ public class Quant_Var_Handler {
 		source = String_Utility.remove_line_breaks(source);
 		replaced = String_Utility.remove_line_breaks(replaced);
 		replacement = String_Utility.remove_line_breaks(replacement);
-		Pattern pattern = Pattern.compile("(?<=^|\\s|\\W)" + Pattern.quote(replaced) + "(?=$|\\s|\\W)");
+		Pattern pattern = Pattern.compile("(?<=^|\\W)" + Pattern.quote(replaced));
 		Matcher matcher = pattern.matcher(source);
 		String result = matcher.replaceAll(Matcher.quoteReplacement(replacement));
 		return result;
