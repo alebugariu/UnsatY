@@ -17,4 +17,4 @@ export PATH=$PATH:$PATH_SMTSolvers/z3-4.12.2/build
 export LD_LIBRARY_PATH=$PATH_SMTSolvers/z3-4.12.2/build
 
 cd "$PATH_UNSATY"
-java -Djava.library.path=$PATH_SMTSolvers/z3-4.12.2/build -Xmx16g -cp "classes:jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:jars/commons-lang3-3.13.0.jar:$PATH_SMTSolvers/z3-4.12.2/build/com.microsoft.z3.jar" evaluation.Main $*
+java -Djava.library.path=$PATH_SMTSolvers/z3-4.12.2/build -Xmx16g -ea -cp "classes:jars/commons-io-2.11.0.jar:jars/commons-cli-1.4.jar:jars/commons-lang3-3.13.0.jar:$PATH_SMTSolvers/z3-4.12.2/build/com.microsoft.z3.jar" evaluation.Main $*
