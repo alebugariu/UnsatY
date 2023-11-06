@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 /*
  * This class contains a collection of static regex and other string-based
  * methods that are used at multiple stages in this project. For each of these,
@@ -143,24 +145,12 @@ public class String_Utility {
 
 	// Returns the number of opening braces '(' in s.
 	public static int count_opening_braces(String s) {
-		int opening_braces = 0;
-		for (int i = 0; i < s.length(); i++) {
-			if (s.substring(i, i + 1).equals("(")) {
-				opening_braces++;
-			}
-		}
-		return opening_braces;
+		return StringUtils.countMatches(s, "(");
 	}
 
 	// Returns the number of closing braces ')' in s.
 	public static int count_closing_braces(String s) {
-		int closing_braces = 0;
-		for (int i = 0; i < s.length(); i++) {
-			if (s.substring(i, i + 1).equals(")")) {
-				closing_braces++;
-			}
-		}
-		return closing_braces;
+		return StringUtils.countMatches(s, ")");
 	}
 
 	// Returns true if there are as many opening braces as closing braces in s.
@@ -252,9 +242,61 @@ public class String_Utility {
 			String match_regex = "\\(! .*? :named";
 			match = match_first(match_regex, match);
 			String content = match.substring(3, match.length() - 7);
-			source = String_Utility.replace_first(regex, source, content);
+			source = replace_first(regex, source, content);
 		}
 		return source;
+	}
+
+	public static String remove_let_expressions(String source) throws Proof_Exception {
+		if (!source.contains("(let ((")) {
+			return source;
+		}
+		int first_index = source.indexOf("(let ((");
+		int last_index = source.length() - 1;
+		int open_brackets = -1;
+		int close_brackets = 0;
+		for (int i = first_index; i < source.length(); i++) {
+			if (source.charAt(i) == '(') {
+				open_brackets++;
+			} else if (source.charAt(i) == ')') {
+				close_brackets++;
+			}
+			if(open_brackets > 0 && open_brackets == close_brackets) {
+				last_index = i;
+				break;
+			}
+		}
+
+		String let_expression = source.substring(first_index, last_index + 1);
+		String let_match = let_expression.substring("(let ((".length());
+		int first_index_of_space = let_match.indexOf(" ");
+		String variable = let_match.substring(0, first_index_of_space);
+		String value = let_match.substring(first_index_of_space + 1, let_match.length() - 2); // remove the "))" at the end
+		String result = source.replace(let_expression, "");
+		// remove the additional ")" from the let expression
+		if(first_index == 0) {
+			result = result.substring(0, result.lastIndexOf(')'));
+		}
+		result = substitute(result, variable, value);
+		return result;
+	}
+	
+	public static String remove_let_and_substitute(String source, String replaced, String replacement) throws Proof_Exception {
+		source = remove_let_expressions(source);
+		replaced = remove_let_expressions(replaced);
+		replacement = remove_let_expressions(replacement);
+		return substitute(source, replaced, replacement);
+	}
+
+	public static String substitute(String source, String replaced, String replacement) throws Proof_Exception {
+		source = remove_line_breaks(source);
+		replaced = remove_line_breaks(replaced);
+		replacement = remove_line_breaks(replacement);
+		Pattern pattern = Pattern.compile("(?<=^|\\W)" + Pattern.quote(replaced));
+		Matcher matcher = pattern.matcher(source);
+		String result = matcher.replaceAll(Matcher.quoteReplacement(replacement));
+		return result;
+
 	}
 
 	public static String get_name(String assertion) {
@@ -281,7 +323,7 @@ public class String_Utility {
 		if (source.contains(";")) {
 			String regex = (";.*");
 			String match = match_first(regex, source);
-			source = String_Utility.replace_first(escape_metacharacters(match), source, "");
+			source = replace_first(escape_metacharacters(match), source, "");
 		}
 		return source;
 	}
@@ -345,7 +387,7 @@ public class String_Utility {
 			List<String> matches = match_all(regex, source);
 			for (String match : matches) {
 				String token_name = match.substring(1, match.length() - 1);
-				source = String_Utility.replace_all(escape_metacharacters(match), source, token_name);
+				source = replace_all(escape_metacharacters(match), source, token_name);
 			}
 		}
 		return source;
@@ -369,7 +411,7 @@ public class String_Utility {
 			a = a.substring(3, a.length() - 1);
 			String b = match_first(" (\\S*?)\\)", source.substring(a.length() + 2));
 			b = b.substring(1, b.length() - 1);
-			source = String_Utility.replace_first(regex, source, ("(" + a + "_" + b + ")"));
+			source = replace_first(regex, source, ("(" + a + "_" + b + ")"));
 		}
 		return source;
 	}
@@ -385,19 +427,19 @@ public class String_Utility {
 			List<String> matches = match_all(spaces_regex, source);
 			for (String match : matches) {
 				String token_name = match.substring(2, match.length() - 1);
-				source = String_Utility.replace_first(spaces_regex, source, " (- 0 " + token_name + ") ");
+				source = replace_first(spaces_regex, source, " (- 0 " + token_name + ") ");
 			}
 			String braces_regex = "\\(-(\\S*?)\\)";
 			matches = match_all(braces_regex, source);
 			for (String match : matches) {
 				String token_name = match.substring(2, match.length() - 1);
-				source = String_Utility.replace_first(braces_regex, source, "(- 0 " + token_name + ")");
+				source = replace_first(braces_regex, source, "(- 0 " + token_name + ")");
 			}
 			String mixed_regex = " -(\\S*?)\\)";
 			matches = match_all(mixed_regex, source);
 			for (String match : matches) {
 				String token_name = match.substring(2, match.length() - 1);
-				source = String_Utility.replace_first(mixed_regex, source, "(- 0 " + token_name + "))");
+				source = replace_first(mixed_regex, source, "(- 0 " + token_name + "))");
 			}
 		}
 		return source;
@@ -433,12 +475,12 @@ public class String_Utility {
 			if (source.contains("bv2int")) {
 				// We assume source to have the form: "(forall ((x BV_32)) (P (bv2int x)))".
 				String bitvec_regex = "\\(bv2int (.*?)\\)";
-				String bitvec = String_Utility.match_first(bitvec_regex, source);
+				String bitvec = match_first(bitvec_regex, source);
 				// bitvec: "(bv2int x)".
 				String argument = bitvec.substring(8, bitvec.length() - 1);
 				// argument: "x";
 				String argument_declaration_regex = "\\(" + argument + " [^\\)]*?\\)";
-				String argument_declaration = String_Utility.match_first(argument_declaration_regex, source);
+				String argument_declaration = match_first(argument_declaration_regex, source);
 				// argument_declaration: "(x BV_32)".
 				String bitvec_type = argument_declaration.substring(2 + argument.length(),
 						argument_declaration.length() - 1);
@@ -491,7 +533,7 @@ public class String_Utility {
 				String token_name = match.substring(1, match.length() - 1);
 				if (names.contains(token_name)) {
 					// We only rewrite the occurrence if it corresponds to some user-defined name.
-					source = String_Utility.replace_all_if(regex, source, token_name, match);
+					source = replace_all_if(regex, source, token_name, match);
 				}
 			}
 		}
@@ -569,7 +611,7 @@ public class String_Utility {
 		String references;
 		try {
 			references = match_last("\\[[^\\]]*\\]", source);
-			return String_Utility.match_all("\\d+", references);
+			return match_all("\\d+", references);
 		} catch (Proof_Exception e) {
 			return new LinkedList<String>();
 		}

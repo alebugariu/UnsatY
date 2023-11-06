@@ -16,8 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.microsoft.z3.BoolSort;
 import com.microsoft.z3.Context;
@@ -554,12 +552,12 @@ public class Quant_Var_Handler {
 					throw new Proof_Exception("Interrupted while making the assertions for the potential example");
 				}
 
-				List<String> instantiated_quantifiers = instantiate_quantifier(quantifier, context);
+				List<String> instantiated_quantifiers = instantiate_quantifier(quantifier);
 				List<String> further_instantiated_input_formulas = new LinkedList<String>();
 				for (String instantiated_quantifier : instantiated_quantifiers) {
 					for (String partially_instantiated_input_formula : partially_instantiated_input_formulas) {
-						String further_instantiated_input_formula = substitute(partially_instantiated_input_formula,
-								quantifier.toString(), instantiated_quantifier);
+						String further_instantiated_input_formula = String_Utility.substitute(
+								partially_instantiated_input_formula, quantifier.toString(), instantiated_quantifier);
 						further_instantiated_input_formulas.add(further_instantiated_input_formula);
 					}
 				}
@@ -596,7 +594,7 @@ public class Quant_Var_Handler {
 	// constants from possible_constants.
 	// Also considers nested quantifiers.
 	// Returns a list of instantiated quantifiers.
-	private List<String> instantiate_quantifier(Quantifier quantifier, Context context) throws Proof_Exception {
+	private List<String> instantiate_quantifier(Quantifier quantifier) throws Proof_Exception {
 
 		if (Thread.currentThread().isInterrupted()) {
 			throw new Proof_Exception("Interrupted while instantiating the quantifiers");
@@ -614,7 +612,9 @@ public class Quant_Var_Handler {
 			// for the corresponding quantified variable.
 			Quant_Var quant_var = names_to_quant_vars.get(quantifier_variables[i].toString());
 			List<Expr<?>> constants = possible_constants.get(quant_var);
-			number_of_values = constants.size();
+			if (number_of_values < constants.size()) {
+				number_of_values = constants.size();
+			}
 			// Translate from De-Brujn indexing.
 			quantifier_constants[len - i - 1] = constants;
 			for (Expr<?> constant : constants) {
@@ -634,7 +634,12 @@ public class Quant_Var_Handler {
 		for (int i = 0; i < number_of_values; i++) {
 			Expr<?>[] current_constants = new Expr<?>[len];
 			for (int j = 0; j < quantifier_constants.length; j++) {
-				current_constants[j] = quantifier_constants[j].get(i);
+				try {
+					current_constants[j] = quantifier_constants[j].get(i);
+				} catch (IndexOutOfBoundsException e) {
+					// some variables have only one value (see x1 above)
+					current_constants[j] = quantifier_constants[j].get(0);
+				}
 			}
 			instantiated_quantifiers.add(quantifier.getBody().substituteVars(current_constants));
 		}
@@ -646,7 +651,7 @@ public class Quant_Var_Handler {
 			// instantiate nested quantifiers (if there are any).
 			if (nested_quantifiers.contains(quantifier)) {
 				List<String> instantiated_nested_quantifiers = instantiate_nested_quantifiers(instantiated_quantifier,
-						quantifier_as_string, context);
+						quantifier_as_string);
 				quantifierless_quantifiers.addAll(instantiated_nested_quantifiers);
 			} else {
 				// Otherwise, we just remember the initial instantiated quantifier.
@@ -663,8 +668,8 @@ public class Quant_Var_Handler {
 	// quantifier is too instantiated and each of the instantiated_sub_quantifiers
 	// we find by doing so is used to replace the nested quantifier in the
 	// instantiated_quantifier.
-	private List<String> instantiate_nested_quantifiers(Expr<?> current_expression, String instantiated_quantifier,
-			Context context) throws Proof_Exception {
+	private List<String> instantiate_nested_quantifiers(Expr<?> current_expression, String instantiated_quantifier)
+			throws Proof_Exception {
 
 		if (Thread.currentThread().isInterrupted()) {
 			throw new Proof_Exception("Interrupted while instantiating nested quantifiers");
@@ -672,10 +677,9 @@ public class Quant_Var_Handler {
 
 		List<String> out = new LinkedList<String>();
 		if (current_expression.isQuantifier()) {
-			List<String> instantiated_sub_quantifiers = instantiate_quantifier((Quantifier) current_expression,
-					context);
+			List<String> instantiated_sub_quantifiers = instantiate_quantifier((Quantifier) current_expression);
 			for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
-				out.add(substitute(instantiated_quantifier, current_expression.toString(),
+				out.add(String_Utility.substitute(instantiated_quantifier, current_expression.toString(),
 						instantiated_sub_quantifier));
 			}
 			return out;
@@ -683,13 +687,15 @@ public class Quant_Var_Handler {
 		if (current_expression.isApp()) {
 			out.add(instantiated_quantifier);
 			for (Expr<?> sub_expression : current_expression.getArgs()) {
-				if (sub_expression.toString().contains("forall")) {
+				String sub_expression_as_string = sub_expression.toString();
+				if (sub_expression_as_string.contains("forall")) {
 					List<String> instantiated_sub_quantifiers = instantiate_nested_quantifiers(sub_expression,
-							sub_expression.toString(), context);
+							sub_expression.toString());
 					List<String> new_out = new LinkedList<String>();
 					for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
 						for (String candidate : out) {
-							new_out.add(substitute(candidate, sub_expression.toString(), instantiated_sub_quantifier));
+							new_out.add(String_Utility.remove_let_and_substitute(candidate, sub_expression_as_string,
+									instantiated_sub_quantifier));
 						}
 					}
 					out = new_out;
@@ -815,7 +821,7 @@ public class Quant_Var_Handler {
 		}
 	}
 
-	public List<String> create_triggering_terms(List<Expr<?>> pattern_function_applications) {
+	public List<String> create_triggering_terms(List<Expr<?>> pattern_function_applications) throws Proof_Exception {
 		List<String> dummies = new LinkedList<String>();
 		List<String> triggering_terms = new LinkedList<String>();
 
@@ -853,7 +859,8 @@ public class Quant_Var_Handler {
 							continue;
 						}
 						String concrete_val = concrete_values.get(val_index).toString();
-						String new_triggering_term = substitute(possible_triggering_term, var_name, concrete_val);
+						String new_triggering_term = String_Utility.substitute(possible_triggering_term, var_name,
+								concrete_val);
 						assert (!new_triggering_term.contains(":var"));
 						additional_triggering_terms.add(new_triggering_term);
 					}
@@ -875,17 +882,6 @@ public class Quant_Var_Handler {
 			}
 		}
 		return dummies;
-	}
-
-	public String substitute(String source, String replaced, String replacement) {
-		source = String_Utility.remove_line_breaks(source);
-		replaced = String_Utility.remove_line_breaks(replaced);
-		replacement = String_Utility.remove_line_breaks(replacement);
-		Pattern pattern = Pattern.compile("(?<=^|\\W)" + Pattern.quote(replaced));
-		Matcher matcher = pattern.matcher(source);
-		String result = matcher.replaceAll(Matcher.quoteReplacement(replacement));
-		return result;
-
 	}
 
 // *****************************************************************************
