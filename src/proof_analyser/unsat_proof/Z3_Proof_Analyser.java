@@ -149,7 +149,6 @@ public class Z3_Proof_Analyser implements Proof_Analyser {
 			return;
 		}
 		if (status.equals(Status.UNKNOWN)) {
-			System.out.println(solver.getStatistics());
 			Exception_Handler.throw_proof_exception("Z3 failed to produce an unsat-proof for " + input_file
 					+ ", because: " + solver.getReasonUnknown() + ".", verbal_output, Status.UNKNOWN);
 			return;
