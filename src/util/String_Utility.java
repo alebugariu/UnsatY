@@ -8,6 +8,7 @@
 package util;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -251,37 +252,61 @@ public class String_Utility {
 		if (!source.contains("(let ((")) {
 			return source;
 		}
-		int first_index = source.indexOf("(let ((");
-		int last_index = source.length() - 1;
-		int open_brackets = -1;
-		int close_brackets = 0;
-		for (int i = first_index; i < source.length(); i++) {
-			if (source.charAt(i) == '(') {
-				open_brackets++;
-			} else if (source.charAt(i) == ')') {
-				close_brackets++;
-			}
-			if(open_brackets > 0 && open_brackets == close_brackets) {
-				last_index = i;
-				break;
-			}
-		}
 
-		String let_expression = source.substring(first_index, last_index + 1);
-		String let_match = let_expression.substring("(let ((".length());
-		int first_index_of_space = let_match.indexOf(" ");
-		String variable = let_match.substring(0, first_index_of_space);
-		String value = let_match.substring(first_index_of_space + 1, let_match.length() - 2); // remove the "))" at the end
+		List<String> variables = new ArrayList<String>();
+		List<String> values = new ArrayList<String>();
+
+		source = remove_line_breaks(source);
+		int let_index = source.indexOf("(let (");
+		String partial_source = source.substring(let_index + "(let (".length());
+
+		String let_expression = "(let (";
+		do {
+			int first_index = partial_source.indexOf("(");
+			int last_index = partial_source.length() - 1;
+			int open_brackets = 0;
+			int close_brackets = 0;
+	
+			for (int i = first_index; i < partial_source.length(); i++) {
+				if (partial_source.charAt(i) == '(') {
+					open_brackets++;
+				} else if (partial_source.charAt(i) == ')') {
+					close_brackets++;
+				}
+				if (open_brackets > 0 && open_brackets == close_brackets) {
+					last_index = i;
+					break;
+				}
+			}
+
+			String current_let_expression = partial_source.substring(0, last_index + 1);
+			String let_match;
+			if (variables.size() == 0) { // first temp variable
+				let_match = current_let_expression.substring("(".length());
+			} else {
+				let_match = current_let_expression.substring(" (".length());
+			}
+			let_expression += current_let_expression;
+			int first_index_of_space = let_match.indexOf(" ");
+			String variable = let_match.substring(0, first_index_of_space);
+			String value = let_match.substring(first_index_of_space + 1, let_match.length() - 2); // remove the "))" at
+																									// the end
+			variables.add(variable);
+			values.add(value);
+
+			partial_source = partial_source.substring(last_index + 1);
+		} while (partial_source.startsWith(" (a!"));
+
+		let_expression += ')';
 		String result = source.replace(let_expression, "");
-		// remove the additional ")" from the let expression
-		if(first_index == 0) {
-			result = result.substring(0, result.lastIndexOf(')'));
+		for (int i = 0; i < variables.size(); i++) {
+			result = substitute(result, variables.get(i), values.get(i));
 		}
-		result = substitute(result, variable, value);
 		return result;
 	}
-	
-	public static String remove_let_and_substitute(String source, String replaced, String replacement) throws Proof_Exception {
+
+	public static String remove_let_and_substitute(String source, String replaced, String replacement)
+			throws Proof_Exception {
 		source = remove_let_expressions(source);
 		replaced = remove_let_expressions(replaced);
 		replacement = remove_let_expressions(replacement);
