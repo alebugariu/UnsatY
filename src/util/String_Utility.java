@@ -248,7 +248,7 @@ public class String_Utility {
 		return source;
 	}
 
-	public static String remove_let_expressions(String source) throws Proof_Exception {
+	private static String remove_let(String source) throws Proof_Exception {
 		if (!source.contains("(let ((")) {
 			return source;
 		}
@@ -266,7 +266,7 @@ public class String_Utility {
 			int last_index = partial_source.length() - 1;
 			int open_brackets = 0;
 			int close_brackets = 0;
-	
+
 			for (int i = first_index; i < partial_source.length(); i++) {
 				if (partial_source.charAt(i) == '(') {
 					open_brackets++;
@@ -305,6 +305,14 @@ public class String_Utility {
 		return result;
 	}
 
+	public static String remove_let_expressions(String source) throws Proof_Exception {
+		String result = source;
+		while (result.contains("(let ((")) {
+			result = remove_let(result);
+		}
+		return result;
+	}
+
 	public static String remove_let_and_substitute(String source, String replaced, String replacement)
 			throws Proof_Exception {
 		source = remove_let_expressions(source);
@@ -314,6 +322,9 @@ public class String_Utility {
 	}
 
 	public static String substitute(String source, String replaced, String replacement) throws Proof_Exception {
+		if (source.equals(replaced)) {
+			return replacement;
+		}
 		source = remove_line_breaks(source);
 		replaced = remove_line_breaks(replaced);
 		replacement = remove_line_breaks(replacement);
