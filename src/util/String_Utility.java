@@ -289,8 +289,8 @@ public class String_Utility {
 			let_expression += current_let_expression;
 			int first_index_of_space = let_match.indexOf(" ");
 			String variable = let_match.substring(0, first_index_of_space);
-			String value = let_match.substring(first_index_of_space + 1, let_match.length() - 2); // remove the "))" at
-																									// the end
+			String value = let_match.substring(first_index_of_space + 1, let_match.length() - 1); // remove the ")" at the end
+			assert(has_balanced_braces(value));
 			variables.add(variable);
 			values.add(value);
 
@@ -302,6 +302,8 @@ public class String_Utility {
 		for (int i = 0; i < variables.size(); i++) {
 			result = substitute(result, variables.get(i), values.get(i));
 		}
+		result = result.substring(0, result.length() - 1); // remove the last ")"
+		assert(has_balanced_braces(result));
 		return result;
 	}
 
