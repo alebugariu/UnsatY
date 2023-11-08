@@ -33,11 +33,11 @@ import proof_analyser.Input_Reader;
 import quant_var.Quant_Var_Handler;
 import recovery.Proof_Concrete_Values;
 import util.Exception_Handler;
-import util.Expression_Wrapper;
 import util.Proof_Exception;
 import util.Setup;
 import util.Verbal_Output;
 import util.Verbal_Output.Log_Type;
+import util.wrapper.Expression_Wrapper;
 
 /*
  * This class is used to generate and analyze a Z3 unsat-proof and find explicit

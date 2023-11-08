@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import util.wrapper.Let_Wrapper;
+
 /*
  * This class contains a collection of static regex and other string-based
  * methods that are used at multiple stages in this project. For each of these,
@@ -248,9 +250,9 @@ public class String_Utility {
 		return source;
 	}
 
-	private static String remove_let(String source) throws Proof_Exception {
+	private static Let_Wrapper find_let_expression(String source) throws Proof_Exception {
 		if (!source.contains("(let ((")) {
-			return source;
+			return null;
 		}
 
 		List<String> variables = new ArrayList<String>();
@@ -262,6 +264,10 @@ public class String_Utility {
 
 		String let_expression = "(let (";
 		do {
+			if (Thread.currentThread().isInterrupted()) {
+				throw new Proof_Exception("Interrupted while removing let expressions");
+			}
+
 			int first_index = partial_source.indexOf("(");
 			int last_index = partial_source.length() - 1;
 			int open_brackets = 0;
@@ -289,8 +295,10 @@ public class String_Utility {
 			let_expression += current_let_expression;
 			int first_index_of_space = let_match.indexOf(" ");
 			String variable = let_match.substring(0, first_index_of_space);
-			String value = let_match.substring(first_index_of_space + 1, let_match.length() - 1); // remove the ")" at the end
-			assert(has_balanced_braces(value));
+			assert (variable.contains("a!"));
+			String value = let_match.substring(first_index_of_space + 1, let_match.length() - 1); // remove the ")" at
+																									// the end
+			assert (has_balanced_braces(value));
 			variables.add(variable);
 			values.add(value);
 
@@ -298,21 +306,31 @@ public class String_Utility {
 		} while (partial_source.startsWith(" (a!"));
 
 		let_expression += ')';
-		String result = source.replace(let_expression, "");
-		for (int i = 0; i < variables.size(); i++) {
-			result = substitute(result, variables.get(i), values.get(i));
-		}
-		result = result.substring(0, result.length() - 1); // remove the last ")"
-		assert(has_balanced_braces(result));
-		return result;
+		return new Let_Wrapper(let_expression, source.indexOf(let_expression), variables, values);
 	}
 
 	public static String remove_let_expressions(String source) throws Proof_Exception {
+		List<Let_Wrapper> let_expressions = new ArrayList<Let_Wrapper>();
+
+		source = remove_line_breaks(source);
 		String result = source;
 		while (result.contains("(let ((")) {
-			result = remove_let(result);
+			Let_Wrapper let = find_let_expression(result);
+			let_expressions.add(let);
+			result = result.substring(let.start_index + let.expr.length());
 		}
-		return result;
+
+		String source_without_let = source;
+		for (Let_Wrapper let : let_expressions) {
+			source_without_let = source_without_let.replace(let.expr, "");
+			for (int i = 0; i < let.variables.size(); i++) {
+				source_without_let = substitute(source_without_let, let.variables.get(i), let.values.get(i));
+			}
+			source_without_let = source_without_let.substring(0, source_without_let.length() - 1); // remove the last
+																									// ")"
+			assert (has_balanced_braces(source_without_let));
+		}
+		return source_without_let;
 	}
 
 	public static String remove_let_and_substitute(String source, String replaced, String replacement)
