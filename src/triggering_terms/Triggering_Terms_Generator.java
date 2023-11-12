@@ -17,12 +17,12 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 
 import quant_var.Quant_Var_Handler;
 import util.Proof_Exception;
 import util.Setup;
+import util.wrapper.Pattern_Wrapper;
 import util.Command_Line_Result;
 import util.Command_Line_Utility;
 
@@ -36,7 +36,7 @@ import util.Command_Line_Utility;
 
 public class Triggering_Terms_Generator {
 
-	public boolean synthesisize_triggering_terms(File input_file, Set<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+	public boolean synthesisize_triggering_terms(File input_file, Set<Pattern_Wrapper> patterns, Quant_Var_Handler quant_vars)
 			throws Proof_Exception {
 
 		File output_file = generate_ematching_file(input_file, patterns, quant_vars);
@@ -56,7 +56,7 @@ public class Triggering_Terms_Generator {
 		throw new Proof_Exception("E-matching returned: " + result + " for " + output_file);
 	}
 
-	private File generate_ematching_file(File input_file, Set<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+	private File generate_ematching_file(File input_file, Set<Pattern_Wrapper> patterns, Quant_Var_Handler quant_vars)
 			throws Proof_Exception {
 		try {
 			String temp_file_path = "output" + File.separator + FilenameUtils.getBaseName(input_file.getName())

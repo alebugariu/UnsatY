@@ -9,7 +9,6 @@ package quant_var;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -27,7 +26,6 @@ import com.microsoft.z3.Symbol;
 import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
-import proof_analyser.Input_Reader;
 import recovery.Default_Values;
 import util.Proof_Exception;
 import util.Setup;
@@ -35,6 +33,7 @@ import util.String_Utility;
 import util.Vampire_to_Z3_Parser;
 import util.Verbal_Output;
 import util.Verbal_Output.Log_Type;
+import util.wrapper.Pattern_Wrapper;
 
 /*
  * This class is used to maintain the information about quantified variables
@@ -54,8 +53,6 @@ public class Quant_Var_Handler {
 	// - from the Z3 API.
 	// Is provided in the constructor.
 	protected Context context;
-
-	private Input_Reader input_reader;
 
 	// Contains all Quant_Var objects that are maintained.
 	// Is initialized in the constructor.
@@ -77,10 +74,9 @@ public class Quant_Var_Handler {
 
 	private Default_Values defaults;
 
-	public Quant_Var_Handler(Verbal_Output verbal_output, Context context, Input_Reader input_reader) {
+	public Quant_Var_Handler(Verbal_Output verbal_output, Context context) {
 		this.verbal_output = verbal_output;
 		this.context = context;
-		this.input_reader = input_reader;
 		this.quant_vars = new LinkedHashSet<Quant_Var>();
 		this.names_to_quant_vars = new HashMap<String, Quant_Var>();
 		this.quantified_input_formulas = new HashMap<Expr<?>, Set<Quantifier>>();
@@ -809,39 +805,25 @@ public class Quant_Var_Handler {
 	// *****************************************************************************
 	// E-Matching-related methods.
 
-	// collects all the variables used as (nested) arguments to the function
-	// application
-	private void collect_variables(Expr<?> function_application, List<Expr<?>> vars) {
-		for (Expr<?> arg : function_application.getArgs()) {
-			if (arg.isConst() && !this.input_reader.constants.contains(arg)) {
-				vars.add(arg);
-			} else if (arg.isApp()) {
-				collect_variables(arg, vars);
-			}
-		}
-	}
-
-	public Set<String> create_triggering_terms(Set<Expr<?>> pattern_function_applications) throws Proof_Exception {
+	public Set<String> create_triggering_terms(Set<Pattern_Wrapper> patterns) throws Proof_Exception {
 		Set<String> dummies = new LinkedHashSet<String>();
 		Set<String> triggering_terms = new LinkedHashSet<String>();
 
-		for (Expr<?> function_application : pattern_function_applications) {
+		for (Pattern_Wrapper pattern : patterns) {
 
 			if (Thread.currentThread().isInterrupted()) {
 				throw new Proof_Exception("Interrupted while creating the triggering terms");
 			}
 
-			List<Expr<?>> vars = new ArrayList<Expr<?>>();
-			collect_variables(function_application, vars);
-			if (vars.size() == 0) {
+			Symbol[] vars = pattern.vars;
+			if (vars.length == 0) {
 				continue; // this pattern is not relevant for the contradiction
 			}
 
-			String string_function_application = function_application.toString();
 			List<String> possible_triggering_terms = new LinkedList<String>();
-			possible_triggering_terms.add(string_function_application);
+			possible_triggering_terms.add(pattern.expr);
 
-			for (Expr<?> aVar : vars) {
+			for (Symbol aVar : vars) {
 				String var_name = aVar.toString();
 				Quant_Var quant_var = names_to_quant_vars.get(var_name);
 				if (!quant_var.is_explicitly_instantiated) {
@@ -873,7 +855,7 @@ public class Quant_Var_Handler {
 			for (String triggering_term : possible_triggering_terms) {
 				if (!triggering_terms.contains(triggering_term)) {
 					triggering_terms.add(triggering_term);
-					Sort range = function_application.getFuncDecl().getRange();
+					Sort range = pattern.range;
 					String dummy_function_name = "dummy" + dummy_function_counter;
 					FuncDecl<BoolSort> dummy_function_decl = context.mkFuncDecl(dummy_function_name, range,
 							context.getBoolSort());

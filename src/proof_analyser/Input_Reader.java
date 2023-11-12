@@ -40,6 +40,7 @@ import util.Setup;
 import util.String_Utility;
 import util.Verbal_Output;
 import util.Verbal_Output.Log_Type;
+import util.wrapper.Pattern_Wrapper;
 
 /*
  * This class is used to pre-process and read an SMT-LIBv2 input file (.smt2) and
@@ -171,7 +172,7 @@ public class Input_Reader {
 			}
 		};
 		this.context = new Context(context_settings);
-		this.quant_vars = new Quant_Var_Handler(verbal_output, context, this);
+		this.quant_vars = new Quant_Var_Handler(verbal_output, context);
 		this.declarations = new LinkedHashSet<FuncDecl<?>>();
 		this.constants = new LinkedHashSet<Expr<?>>();
 		// Next, we have to modify the input_file so that the method parseSMTLIB2File as
@@ -440,14 +441,14 @@ public class Input_Reader {
 
 	// The method below are used to generate triggering terms for E-Matching.
 
-	protected Set<Expr<?>> get_patterns() {
-		Set<Expr<?>> pattern_function_applications = new LinkedHashSet<Expr<?>>();
+	protected Set<Pattern_Wrapper> get_patterns() {
+		Set<Pattern_Wrapper> pattern_function_applications = new LinkedHashSet<Pattern_Wrapper>();
 		collect_patterns(input, new ArrayList<Quantifier>(), pattern_function_applications);
 		return pattern_function_applications;
 	}
 
 	private void collect_patterns(Expr<?>[] expressions, List<Quantifier> parent_quantifiers,
-			Set<Expr<?>> accumulator) {
+			Set<Pattern_Wrapper> accumulator) {
 		for (Expr<?> expression : expressions) {
 			String expr_as_string = expression.toString();
 			if (!(expr_as_string.contains("forall") && (expr_as_string.contains("pattern")))) {
@@ -473,14 +474,16 @@ public class Input_Reader {
 	}
 
 	private void find_function_applications_in_pattern(Quantifier quantifier, List<Quantifier> parent_quantifiers,
-			Expr<?>[] patterns, Set<Expr<?>> accumulator) {
+			Expr<?>[] patterns, Set<Pattern_Wrapper> accumulator) {
 		for (Expr<?> pattern : patterns) {
 			if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
 				Expr<?> function_application;
+				Symbol[] variables;
 				if (parent_quantifiers.isEmpty()) {
 					function_application = replace_quant_vars_with_constants(pattern, quantifier);
+					variables = quantifier.getBoundVariableNames();
 				} else {
-					Symbol[] variables = parent_quantifiers.get(0).getBoundVariableNames();
+					variables = parent_quantifiers.get(0).getBoundVariableNames();
 					Sort[] types = parent_quantifiers.get(0).getBoundVariableSorts();
 					for (int i = 1; i < parent_quantifiers.size(); i++) {
 						Quantifier parent_quantifier = parent_quantifiers.get(i);
@@ -491,7 +494,7 @@ public class Input_Reader {
 					types = ArrayUtils.addAll(types, quantifier.getBoundVariableSorts());
 					function_application = replace_vars_with_constants(pattern, variables, types);
 				}
-				accumulator.add(function_application);
+				accumulator.add(new Pattern_Wrapper(function_application.toString(), variables, function_application.getSort()));
 			}
 		}
 	}
