@@ -306,7 +306,37 @@ public class String_Utility {
 		} while (partial_source.startsWith(" (a!"));
 
 		let_expression += ')';
-		return new Let_Wrapper(let_expression, source.indexOf(let_expression), variables, values);
+		String scope = match_next_rbraces(let_expression, source);
+		return new Let_Wrapper(let_expression, scope, source.indexOf(let_expression), variables, values);
+	}
+
+	// returns true if this variable is only used as a temp variable in one let
+	// expression
+	private static boolean is_unique_variable(String variable, Let_Wrapper let, List<Let_Wrapper> let_expressions) {
+		if (let_expressions.size() == 1) {
+			return true;
+		}
+		for (int i = 0; i < let_expressions.size(); i++) {
+			Let_Wrapper current_let = let_expressions.get(i);
+			if (let != current_let) {
+				if (current_let.variables.contains(variable)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private static void propagate_substitution(List<Let_Wrapper> let_expressions, Let_Wrapper let, String replaced,
+			String replacement) throws Proof_Exception {
+		for (int i = 0; i < let_expressions.size(); i++) {
+			Let_Wrapper current_let = let_expressions.get(i);
+			if (let != current_let) {
+				if (current_let.scope.contains(replaced)) {
+					current_let.scope = substitute(current_let.scope, replaced, replacement);
+				}
+			}
+		}
 	}
 
 	public static String remove_let_expressions(String source) throws Proof_Exception {
@@ -317,19 +347,30 @@ public class String_Utility {
 		while (result.contains("(let ((")) {
 			Let_Wrapper let = find_let_expression(result);
 			let_expressions.add(let);
-			result = result.substring(let.start_index + let.expr.length());
+			result = result.substring(let.scope_start_index + let.expr.length());
 		}
 
 		String source_without_let = source;
-		for (Let_Wrapper let : let_expressions) {
+		for (int index = let_expressions.size() - 1; index >= 0; index--) {
+			Let_Wrapper let = let_expressions.get(index);
 			source_without_let = source_without_let.replace(let.expr, "");
 			for (int i = 0; i < let.variables.size(); i++) {
-				source_without_let = substitute(source_without_let, let.variables.get(i), let.values.get(i));
+				String variable = let.variables.get(i);
+				if (is_unique_variable(variable, let, let_expressions)) {
+					source_without_let = substitute(source_without_let, variable, let.values.get(i));
+				} else {
+					String substitute_scope = let.scope.replace(let.expr, "");
+					String substitute_result = substitute(substitute_scope, variable, let.values.get(i));
+					source_without_let = substitute(source_without_let, substitute_scope, substitute_result);
+					propagate_substitution(let_expressions, let, let.scope, substitute_result);
+					let.scope = substitute_result;
+				}
 			}
 			source_without_let = source_without_let.substring(0, source_without_let.length() - 1); // remove the last
 																									// ")"
 			assert (has_balanced_braces(source_without_let));
 		}
+		assert (!source_without_let.contains("a!"));
 		return source_without_let;
 	}
 
