@@ -821,11 +821,15 @@ public class Quant_Var_Handler {
 		}
 	}
 
-	public List<String> create_triggering_terms(List<Expr<?>> pattern_function_applications) throws Proof_Exception {
-		List<String> dummies = new LinkedList<String>();
-		List<String> triggering_terms = new LinkedList<String>();
+	public Set<String> create_triggering_terms(Set<Expr<?>> pattern_function_applications) throws Proof_Exception {
+		Set<String> dummies = new LinkedHashSet<String>();
+		Set<String> triggering_terms = new LinkedHashSet<String>();
 
 		for (Expr<?> function_application : pattern_function_applications) {
+
+			if (Thread.currentThread().isInterrupted()) {
+				throw new Proof_Exception("Interrupted while creating the triggering terms");
+			}
 
 			List<Expr<?>> vars = new ArrayList<Expr<?>>();
 			collect_variables(function_application, vars);
@@ -845,9 +849,7 @@ public class Quant_Var_Handler {
 					Expr<?> additional_constant = quant_var.concrete_values.get(0);
 					FuncDecl<Sort> additional_constant_decl = context.mkConstDecl(additional_constant.toString(),
 							quant_var.get_type());
-					if (!dummies.contains(additional_constant_decl.toString())) {
-						dummies.add(additional_constant_decl.toString());
-					}
+					dummies.add(additional_constant_decl.toString());
 				}
 				List<Expr<?>> concrete_values = quant_var.concrete_values;
 				List<String> additional_triggering_terms = new LinkedList<String>();

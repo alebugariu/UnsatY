@@ -13,7 +13,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -297,7 +296,7 @@ public class Input_Reader {
 	private void extract_quantified_variables(Quantifier quantifier, Quantifier parent, Expr<?> input_line)
 			throws Proof_Exception {
 		if (quantifier.isExistential()) {
-			// We assume that all quantifiers are universal due to preprocessing.
+			// We assume that all quantifiers are universal due to pre-processing.
 			Exception_Handler.throw_proof_exception(
 					"Encountered an existential quantifier in the input, which is not supposed to happen due to preprocessing.",
 					verbal_output);
@@ -441,14 +440,14 @@ public class Input_Reader {
 
 	// The method below are used to generate triggering terms for E-Matching.
 
-	protected List<Expr<?>> get_patterns() {
-		List<Expr<?>> pattern_function_applications = new LinkedList<Expr<?>>();
+	protected Set<Expr<?>> get_patterns() {
+		Set<Expr<?>> pattern_function_applications = new LinkedHashSet<Expr<?>>();
 		collect_patterns(input, new ArrayList<Quantifier>(), pattern_function_applications);
 		return pattern_function_applications;
 	}
 
 	private void collect_patterns(Expr<?>[] expressions, List<Quantifier> parent_quantifiers,
-			List<Expr<?>> accumulator) {
+			Set<Expr<?>> accumulator) {
 		for (Expr<?> expression : expressions) {
 			String expr_as_string = expression.toString();
 			if (!(expr_as_string.contains("forall") && (expr_as_string.contains("pattern")))) {
@@ -474,7 +473,7 @@ public class Input_Reader {
 	}
 
 	private void find_function_applications_in_pattern(Quantifier quantifier, List<Quantifier> parent_quantifiers,
-			Expr<?>[] patterns, List<Expr<?>> accumulator) {
+			Expr<?>[] patterns, Set<Expr<?>> accumulator) {
 		for (Expr<?> pattern : patterns) {
 			if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
 				Expr<?> function_application;
@@ -492,9 +491,7 @@ public class Input_Reader {
 					types = ArrayUtils.addAll(types, quantifier.getBoundVariableSorts());
 					function_application = replace_vars_with_constants(pattern, variables, types);
 				}
-				if (!accumulator.contains(function_application)) {
-					accumulator.add(function_application);
-				}
+				accumulator.add(function_application);
 			}
 		}
 	}

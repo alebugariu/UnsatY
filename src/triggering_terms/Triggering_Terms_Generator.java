@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -37,7 +36,7 @@ import util.Command_Line_Utility;
 
 public class Triggering_Terms_Generator {
 
-	public boolean synthesisize_triggering_terms(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+	public boolean synthesisize_triggering_terms(File input_file, Set<Expr<?>> patterns, Quant_Var_Handler quant_vars)
 			throws Proof_Exception {
 
 		File output_file = generate_ematching_file(input_file, patterns, quant_vars);
@@ -57,7 +56,7 @@ public class Triggering_Terms_Generator {
 		throw new Proof_Exception("E-matching returned: " + result + " for " + output_file);
 	}
 
-	private File generate_ematching_file(File input_file, List<Expr<?>> patterns, Quant_Var_Handler quant_vars)
+	private File generate_ematching_file(File input_file, Set<Expr<?>> patterns, Quant_Var_Handler quant_vars)
 			throws Proof_Exception {
 		try {
 			String temp_file_path = "output" + File.separator + FilenameUtils.getBaseName(input_file.getName())
