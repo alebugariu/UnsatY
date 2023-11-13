@@ -220,7 +220,7 @@ public class Input_Reader {
 				continue;
 			}
 			Expr<?>[] expression_in_array = new Expr<?>[] { expression };
-			find_quantifiers(expression_in_array, null, expression);
+			find_quantifiers(expression_in_array, new ArrayList<Quantifier>(), expression);
 		}
 		// Finally, we print what we encountered while looking at the input.
 		if (Setup.log_type == Log_Type.full) {
@@ -234,7 +234,14 @@ public class Input_Reader {
 	// Throws a Proof_Exception if the input does not satisfy our assumptions:
 	// - All quantified variables have unique names.
 	// - There are no existential quantifiers.
-	private void find_quantifiers(Expr<?>[] expressions, Quantifier parent, Expr<?> input_line) throws Proof_Exception {
+	private void find_quantifiers(Expr<?>[] expressions, List<Quantifier> parent_quantifiers, Expr<?> input_line)
+			throws Proof_Exception {
+		
+		Quantifier parent = null;
+		if (!parent_quantifiers.isEmpty()) {
+			parent = parent_quantifiers.get(parent_quantifiers.size() - 1);
+		}
+		
 		for (Expr<?> expression : expressions) {
 			// Quantified expressions are marked as Z3_QUANTIFIER_AST.
 			if (expression.isQuantifier()) {
@@ -245,6 +252,7 @@ public class Input_Reader {
 				// Cast expression to a Quantifier so we can use Quantifier methods.
 				// This always succeeds because we checked for isQuantifier before.
 				Quantifier quantifier = (Quantifier) expression;
+
 				// We memorize all quantified variables declared in the expression. That is, for
 				// each of them we create a Quant_Var object that is maintained by quant_vars.
 				extract_quantified_variables(quantifier, parent, input_line);
@@ -265,7 +273,8 @@ public class Input_Reader {
 					// We therefore possibly look into the arguments of our quantifier to find
 					// nested Quantifiers.
 					if (body.toString().contains("forall")) {
-						find_quantifiers(body.getArgs(), quantifier, input_line);
+						parent_quantifiers.add(quantifier);
+						find_quantifiers(body.getArgs(), parent_quantifiers, input_line);
 					}
 				}
 				// It can happen that applications of uninterpreted functions appear only in the
@@ -281,10 +290,6 @@ public class Input_Reader {
 
 					if (Setup.E_MATCHING) {
 						// collect the patterns for E-matching
-						List<Quantifier> parent_quantifiers = new ArrayList<Quantifier>();
-						if (parent != null) {
-							parent_quantifiers.add(parent);
-						}
 						collect_patterns(quantifier, parent_quantifiers);
 					}
 				}
@@ -293,7 +298,7 @@ public class Input_Reader {
 				// not, it may contain a Quantifier somewhere in its arguments, which we
 				// therefore recursively look at.
 				if (expression.toString().contains("forall")) {
-					find_quantifiers(expression.getArgs(), parent, input_line);
+					find_quantifiers(expression.getArgs(), parent_quantifiers, input_line);
 				}
 				find_function_applications(parent, expression.getArgs());
 			}
