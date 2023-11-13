@@ -180,7 +180,7 @@ public class Proof_Analyser_Framework {
 		Triggering_Terms_Generator generator = new Triggering_Terms_Generator();
 		Quant_Var_Handler quant_vars = input_reader.quant_vars;
 		quant_vars.further_declarations.removeAll(input_reader.declarations);
-		return generator.synthesisize_triggering_terms(input_file, input_reader.get_patterns(), quant_vars);
+		return generator.synthesisize_triggering_terms(input_file, input_reader.patterns, quant_vars);
 	}
 
 }

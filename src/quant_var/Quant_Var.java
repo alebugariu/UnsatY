@@ -72,12 +72,6 @@ public class Quant_Var {
 	// Is provided in the constructor.
 	protected Quantifier quantifier;
 
-	// If the quantifier that defines this quantified variable is nested in some
-	// other Quantifier, then parent holds that other Quantifier.
-	// Is provided in the constructor.
-	// Can be null (if quantifier is not nested).
-	protected Quantifier parent_quantifier;
-
 	// Contains all applications of uninterpreted functions that use this quantified
 	// variable as an argument.
 	// Your Input_Reader and Proof_Analyser continuously add objects to this.
@@ -106,15 +100,13 @@ public class Quant_Var {
 
 	// Constructor that creates a new Quant_Var object from scratch.
 	// This constructor is called by your Input_Reader object.
-	protected Quant_Var(String name, Sort type, Expr<?> input_line, int number_in_input_formula, Quantifier quantifier,
-			Quantifier parent_quantifier, Verbal_Output verbal_output) {
+	protected Quant_Var(String name, Sort type, Expr<?> input_line, int number_in_input_formula, Quantifier quantifier, Verbal_Output verbal_output) {
 		this.verbal_output = verbal_output;
 		this.name = name;
 		this.type = type;
 		this.input_line = input_line;
 		this.number_in_input_formula = number_in_input_formula;
 		this.quantifier = quantifier;
-		this.parent_quantifier = parent_quantifier;
 		this.function_applications_with_quantified_variables = new HashMap<FuncDecl<?>, Set<Expr<?>>>();
 		this.concrete_values = new LinkedList<Expr<?>>();
 	}
@@ -309,7 +301,6 @@ public class Quant_Var {
 		this.type = parent.get_type();
 		this.input_line = parent.input_line;
 		this.quantifier = parent.quantifier;
-		this.parent_quantifier = parent.parent_quantifier;
 		this.function_applications_with_quantified_variables = parent.function_applications_with_quantified_variables;
 		this.vampirized_input_line = parent.vampirized_input_line;
 		// Note that we only copy the parts that were populated by the input_reader.

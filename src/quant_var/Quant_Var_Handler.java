@@ -115,8 +115,7 @@ public class Quant_Var_Handler {
 			return false;
 		}
 		// If our assumptions are satisfied, we create add a fresh Quant_Var object.
-		quant_var = new Quant_Var(var_name, type, input_formula, number_in_input_formula, quantifier, parent,
-				verbal_output);
+		quant_var = new Quant_Var(var_name, type, input_formula, number_in_input_formula, quantifier, verbal_output);
 		quant_vars.add(quant_var);
 		names_to_quant_vars.put(var_name, quant_var);
 		if (!quantified_input_formulas.keySet().contains(input_formula)) {

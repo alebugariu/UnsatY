@@ -19,7 +19,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.SerializationUtils;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -137,6 +136,8 @@ public class Input_Reader {
 	// Is empty before the method analyze_input has been called.
 	protected Set<String> type_names;
 
+	protected Set<Pattern_Wrapper> patterns;
+
 	// Do not call this constructor yourself but use the Proof_Analyser_Framework.
 	protected Input_Reader(File input_file, PrintStream out) {
 		this.initial_input_file = input_file;
@@ -144,6 +145,7 @@ public class Input_Reader {
 		this.function_names = new LinkedHashSet<String>();
 		this.constant_names = new LinkedHashSet<String>();
 		this.type_names = new LinkedHashSet<String>();
+		this.patterns = new LinkedHashSet<Pattern_Wrapper>();
 		if (Setup.log_type == Log_Type.full) {
 			verbal_output.add_to_buffer("[INFO]", "Handling " + initial_input_file.toString() + ".");
 			verbal_output.add_to_buffer("[INFO]", "Created an Input_Reader object.");
@@ -232,8 +234,7 @@ public class Input_Reader {
 	// Throws a Proof_Exception if the input does not satisfy our assumptions:
 	// - All quantified variables have unique names.
 	// - There are no existential quantifiers.
-	private void find_quantifiers(Expr<?>[] expressions, Quantifier quantifier_parent, Expr<?> input_line)
-			throws Proof_Exception {
+	private void find_quantifiers(Expr<?>[] expressions, Quantifier parent, Expr<?> input_line) throws Proof_Exception {
 		for (Expr<?> expression : expressions) {
 			// Quantified expressions are marked as Z3_QUANTIFIER_AST.
 			if (expression.isQuantifier()) {
@@ -246,7 +247,7 @@ public class Input_Reader {
 				Quantifier quantifier = (Quantifier) expression;
 				// We memorize all quantified variables declared in the expression. That is, for
 				// each of them we create a Quant_Var object that is maintained by quant_vars.
-				extract_quantified_variables(quantifier, quantifier_parent, input_line);
+				extract_quantified_variables(quantifier, parent, input_line);
 				// Next, we look for applications of uninterpreted functions with quantified
 				// variables.
 				BoolExpr body = quantifier.getBody();
@@ -277,15 +278,21 @@ public class Input_Reader {
 						Expr<?>[] pattern_arguments = pattern.getTerms();
 						find_function_applications(quantifier, pattern_arguments);
 					}
+					// collect the patterns for E-matching
+					List<Quantifier> parent_quantifiers = new ArrayList<Quantifier>();
+					if (parent != null) {
+						parent_quantifiers.add(parent);
+					}
+					collect_patterns(quantifier, parent_quantifiers);
 				}
 			} else if (expression.isApp()) {
 				// No matter whether the current_expression is marked as Z3_QUANTIFIER_AST or
 				// not, it may contain a Quantifier somewhere in its arguments, which we
 				// therefore recursively look at.
 				if (expression.toString().contains("forall")) {
-					find_quantifiers(expression.getArgs(), quantifier_parent, input_line);
+					find_quantifiers(expression.getArgs(), parent, input_line);
 				}
-				find_function_applications(quantifier_parent, expression.getArgs());
+				find_function_applications(parent, expression.getArgs());
 			}
 		}
 	}
@@ -442,50 +449,29 @@ public class Input_Reader {
 
 	// The method below are used to generate triggering terms for E-Matching.
 
-	protected Set<Pattern_Wrapper> get_patterns() throws Proof_Exception {
-		Set<Pattern_Wrapper> pattern_function_applications = new LinkedHashSet<Pattern_Wrapper>();
-		collect_patterns(input, new ArrayList<Quantifier>(), pattern_function_applications);
-		return pattern_function_applications;
-	}
+	private void collect_patterns(Quantifier quantifier, List<Quantifier> parent_quantifiers) throws Proof_Exception {
+		int num_patterns = quantifier.getNumPatterns();
+		if (num_patterns > 0) {
 
-	private void collect_patterns(Expr<?>[] expressions, List<Quantifier> parent_quantifiers,
-			Set<Pattern_Wrapper> accumulator) throws Proof_Exception {
-		for (Expr<?> expression : expressions) {
-			String expr_as_string = expression.toString();
-			if (!(expr_as_string.contains("forall") && (expr_as_string.contains("pattern")))) {
-				continue;
+			List<List<String>> patterns_as_strings = String_Utility.extract_patterns(quantifier.toString(),
+					num_patterns);
+			Symbol[] variables = quantifier.getBoundVariableNames();
+			for (int i = 0; i < parent_quantifiers.size(); i++) {
+				Quantifier parent_quantifier = parent_quantifiers.get(i);
+				variables = ArrayUtils.addAll(variables, parent_quantifier.getBoundVariableNames());
 			}
-			if (expression.isQuantifier()) {
-				Quantifier quantifier = (Quantifier) expression;
-				
-				int num_patterns = quantifier.getNumPatterns();
-				if (num_patterns > 0) {
-				
-					List<List<String>> patterns_as_strings = String_Utility.extract_patterns(quantifier.toString(), num_patterns);
-					Symbol[] variables = quantifier.getBoundVariableNames();
-					for (int i = 0; i < parent_quantifiers.size(); i++) {
-						Quantifier parent_quantifier = parent_quantifiers.get(i);
-						variables = ArrayUtils.addAll(variables, parent_quantifier.getBoundVariableNames());
-					}
-					
-					Pattern[] patterns = quantifier.getPatterns();
-					for (int i = 0; i < patterns.length; i++) {
-						Pattern multi_pattern = patterns[i];
-						Expr<?>[] alternative_patterns = multi_pattern.getTerms();
-						for (int j = 0; j < alternative_patterns.length; j++) {
-							Expr<?> pattern = alternative_patterns[j];
-							if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
-								String function_application = patterns_as_strings.get(i).get(j);
-								accumulator.add(new Pattern_Wrapper(function_application, variables, pattern.getSort()));
-							}
-						}
+
+			Pattern[] quantifier_patterns = quantifier.getPatterns();
+			for (int i = 0; i < quantifier_patterns.length; i++) {
+				Pattern multi_pattern = quantifier_patterns[i];
+				Expr<?>[] alternative_patterns = multi_pattern.getTerms();
+				for (int j = 0; j < alternative_patterns.length; j++) {
+					Expr<?> pattern = alternative_patterns[j];
+					if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
+						String function_application = patterns_as_strings.get(i).get(j);
+						patterns.add(new Pattern_Wrapper(function_application, variables, pattern.getSort()));
 					}
 				}
-				// check for nested quantifiers
-				parent_quantifiers.add(quantifier);
-				collect_patterns(new Expr<?>[] { quantifier.getBody() }, parent_quantifiers, accumulator);
-			} else if (expression.isApp()) {
-				collect_patterns(expression.getArgs(), parent_quantifiers, accumulator);
 			}
 		}
 	}
@@ -501,7 +487,7 @@ public class Input_Reader {
 
 	private boolean was_instantiated(String assertion, List<Quant_Var> quant_vars) {
 		for (Quant_Var quant_var : quant_vars) {
-			if (assertion.contains(quant_var.get_name().toString())) {
+			if (assertion.contains(quant_var.get_name())) {
 				return true;
 			}
 		}
