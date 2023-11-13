@@ -6,8 +6,8 @@ import com.microsoft.z3.Symbol;
 public class Pattern_Wrapper {
 	
 	public String expr;
-	public Symbol[] vars;
-	public Sort range;
+	public Symbol[] vars; // over-approximation of the quantified variables appearing in this pattern
+	public Sort range; // return type of the outer uninterpreted function
 	
 	public Pattern_Wrapper(String expr, Symbol[] vars, Sort range ) {
 		this.expr = expr;

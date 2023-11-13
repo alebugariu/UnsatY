@@ -249,6 +249,43 @@ public class String_Utility {
 		}
 		return source;
 	}
+	
+	public static List<List<String>> extract_patterns(String source, int number_of_patterns) throws Proof_Exception {
+		List<List<String>> multi_patterns = new ArrayList<List<String>>();
+		
+		String regex_alternative_pattern = "\\((.*?)\\)";
+		
+		do {
+			int pattern_index = source.lastIndexOf(":pattern ");
+			int last_index = match_brackets(source, pattern_index);
+			String match = source.substring(pattern_index + ":pattern ".length(), last_index + 1);
+			match = match.substring(1, match.length() - 1); // remove the outer "()"
+			List<String> alternative_patterns = match_all(regex_alternative_pattern, match);
+			multi_patterns.add(alternative_patterns);
+			source = source.substring(pattern_index);
+		} while(multi_patterns.size() != number_of_patterns);
+		
+		return multi_patterns;
+	}
+	
+	private static int match_brackets(String source, int first_index) {
+		int last_index = source.length() - 1;
+		int open_brackets = 0;
+		int close_brackets = 0;
+
+		for (int i = first_index; i < source.length(); i++) {
+			if (source.charAt(i) == '(') {
+				open_brackets++;
+			} else if (source.charAt(i) == ')') {
+				close_brackets++;
+			}
+			if (open_brackets > 0 && open_brackets == close_brackets) {
+				last_index = i;
+				break;
+			}
+		}
+		return last_index;
+	}
 
 	private static Let_Wrapper find_let_expression(String source) throws Proof_Exception {
 		if (!source.contains("(let ((")) {
@@ -269,21 +306,7 @@ public class String_Utility {
 			}
 
 			int first_index = partial_source.indexOf("(");
-			int last_index = partial_source.length() - 1;
-			int open_brackets = 0;
-			int close_brackets = 0;
-
-			for (int i = first_index; i < partial_source.length(); i++) {
-				if (partial_source.charAt(i) == '(') {
-					open_brackets++;
-				} else if (partial_source.charAt(i) == ')') {
-					close_brackets++;
-				}
-				if (open_brackets > 0 && open_brackets == close_brackets) {
-					last_index = i;
-					break;
-				}
-			}
+			int last_index = match_brackets(partial_source, first_index);
 
 			String current_let_expression = partial_source.substring(0, last_index + 1);
 			String let_match;

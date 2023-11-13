@@ -19,6 +19,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -441,14 +442,14 @@ public class Input_Reader {
 
 	// The method below are used to generate triggering terms for E-Matching.
 
-	protected Set<Pattern_Wrapper> get_patterns() {
+	protected Set<Pattern_Wrapper> get_patterns() throws Proof_Exception {
 		Set<Pattern_Wrapper> pattern_function_applications = new LinkedHashSet<Pattern_Wrapper>();
 		collect_patterns(input, new ArrayList<Quantifier>(), pattern_function_applications);
 		return pattern_function_applications;
 	}
 
 	private void collect_patterns(Expr<?>[] expressions, List<Quantifier> parent_quantifiers,
-			Set<Pattern_Wrapper> accumulator) {
+			Set<Pattern_Wrapper> accumulator) throws Proof_Exception {
 		for (Expr<?> expression : expressions) {
 			String expr_as_string = expression.toString();
 			if (!(expr_as_string.contains("forall") && (expr_as_string.contains("pattern")))) {
@@ -456,12 +457,28 @@ public class Input_Reader {
 			}
 			if (expression.isQuantifier()) {
 				Quantifier quantifier = (Quantifier) expression;
-				if (quantifier.getNumPatterns() > 0) {
+				
+				int num_patterns = quantifier.getNumPatterns();
+				if (num_patterns > 0) {
+				
+					List<List<String>> patterns_as_strings = String_Utility.extract_patterns(quantifier.toString(), num_patterns);
+					Symbol[] variables = quantifier.getBoundVariableNames();
+					for (int i = 0; i < parent_quantifiers.size(); i++) {
+						Quantifier parent_quantifier = parent_quantifiers.get(i);
+						variables = ArrayUtils.addAll(variables, parent_quantifier.getBoundVariableNames());
+					}
+					
 					Pattern[] patterns = quantifier.getPatterns();
-					for (Pattern pattern : patterns) {
-						Expr<?>[] pattern_arguments = pattern.getTerms();
-						find_function_applications_in_pattern(quantifier, parent_quantifiers, pattern_arguments,
-								accumulator);
+					for (int i = 0; i < patterns.length; i++) {
+						Pattern multi_pattern = patterns[i];
+						Expr<?>[] alternative_patterns = multi_pattern.getTerms();
+						for (int j = 0; j < alternative_patterns.length; j++) {
+							Expr<?> pattern = alternative_patterns[j];
+							if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
+								String function_application = patterns_as_strings.get(i).get(j);
+								accumulator.add(new Pattern_Wrapper(function_application, variables, pattern.getSort()));
+							}
+						}
 					}
 				}
 				// check for nested quantifiers
@@ -469,32 +486,6 @@ public class Input_Reader {
 				collect_patterns(new Expr<?>[] { quantifier.getBody() }, parent_quantifiers, accumulator);
 			} else if (expression.isApp()) {
 				collect_patterns(expression.getArgs(), parent_quantifiers, accumulator);
-			}
-		}
-	}
-
-	private void find_function_applications_in_pattern(Quantifier quantifier, List<Quantifier> parent_quantifiers,
-			Expr<?>[] patterns, Set<Pattern_Wrapper> accumulator) {
-		for (Expr<?> pattern : patterns) {
-			if (pattern.getFuncDecl().getDeclKind().equals(Z3_decl_kind.Z3_OP_UNINTERPRETED)) {
-				Expr<?> function_application;
-				Symbol[] variables;
-				if (parent_quantifiers.isEmpty()) {
-					function_application = replace_quant_vars_with_constants(pattern, quantifier);
-					variables = quantifier.getBoundVariableNames();
-				} else {
-					variables = parent_quantifiers.get(0).getBoundVariableNames();
-					Sort[] types = parent_quantifiers.get(0).getBoundVariableSorts();
-					for (int i = 1; i < parent_quantifiers.size(); i++) {
-						Quantifier parent_quantifier = parent_quantifiers.get(i);
-						variables = ArrayUtils.addAll(variables, parent_quantifier.getBoundVariableNames());
-						types = ArrayUtils.addAll(types, parent_quantifier.getBoundVariableSorts());
-					}
-					variables = ArrayUtils.addAll(variables, quantifier.getBoundVariableNames());
-					types = ArrayUtils.addAll(types, quantifier.getBoundVariableSorts());
-					function_application = replace_vars_with_constants(pattern, variables, types);
-				}
-				accumulator.add(new Pattern_Wrapper(function_application.toString(), variables, function_application.getSort()));
 			}
 		}
 	}
