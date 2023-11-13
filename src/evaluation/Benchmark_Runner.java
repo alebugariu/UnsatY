@@ -31,10 +31,8 @@ public class Benchmark_Runner implements Callable<Void> {
 	private Prover prover;
 	private PrintStream log;
 	private String preprocessor;
-	private boolean ematching;
 
-	public Benchmark_Runner(File input_file, Statistics statistics, Prover prover, String preprocessor,
-			boolean ematching) throws Proof_Exception {
+	public Benchmark_Runner(File input_file, Statistics statistics, Prover prover, String preprocessor) throws Proof_Exception {
 		this.statistics = statistics;
 		this.preprocessor = preprocessor;
 		if (this.preprocessor == null) {
@@ -43,7 +41,6 @@ public class Benchmark_Runner implements Callable<Void> {
 			this.input_file = preprocess(input_file);
 		}
 		this.prover = prover;
-		this.ematching = ematching;
 		if (Setup.log_type == Log_Type.full) {
 			set_printstream_to_new_file(this.input_file);
 		}
@@ -133,7 +130,7 @@ public class Benchmark_Runner implements Callable<Void> {
 						throw new Proof_Exception("interrupted");
 					}
 					framework.minimize_input();
-					if (!Thread.currentThread().isInterrupted() && ematching
+					if (!Thread.currentThread().isInterrupted() && Setup.E_MATCHING
 							&& framework.synthesize_triggering_terms()) {
 						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
 						statistics.ematching_success.incrementAndGet();

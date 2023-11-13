@@ -28,6 +28,7 @@ public class Setup {
 	public static final String nlsat_seed = ":nlsat.seed";
 	
 	public static final boolean API_unsat_core = false; 
+	public static boolean E_MATCHING = false;
 
 	// Returns the current value of sat_random_seed and restores it to the default.
 	public static String get_sat_random_seed() {

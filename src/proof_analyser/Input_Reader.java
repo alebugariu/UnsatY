@@ -278,12 +278,15 @@ public class Input_Reader {
 						Expr<?>[] pattern_arguments = pattern.getTerms();
 						find_function_applications(quantifier, pattern_arguments);
 					}
-					// collect the patterns for E-matching
-					List<Quantifier> parent_quantifiers = new ArrayList<Quantifier>();
-					if (parent != null) {
-						parent_quantifiers.add(parent);
+
+					if (Setup.E_MATCHING) {
+						// collect the patterns for E-matching
+						List<Quantifier> parent_quantifiers = new ArrayList<Quantifier>();
+						if (parent != null) {
+							parent_quantifiers.add(parent);
+						}
+						collect_patterns(quantifier, parent_quantifiers);
 					}
-					collect_patterns(quantifier, parent_quantifiers);
 				}
 			} else if (expression.isApp()) {
 				// No matter whether the current_expression is marked as Z3_QUANTIFIER_AST or

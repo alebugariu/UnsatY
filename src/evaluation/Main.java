@@ -98,7 +98,7 @@ public class Main {
 			preprocessor = cmd.getOptionValue("pre");
 		}
 
-		boolean ematching = cmd.hasOption("ematching");
+		Setup.E_MATCHING = cmd.hasOption("ematching");
 
 		if (cmd.hasOption("folder")) {
 
@@ -113,7 +113,7 @@ public class Main {
 				System.exit(1);
 			}
 			Collection<File> files = FileUtils.listFiles(folder, new String[] { "smt2" }, true);
-			evaluate(files, prover, preprocessor, ematching);
+			evaluate(files, prover, preprocessor);
 		}
 
 		else if (cmd.hasOption("file")) {
@@ -130,14 +130,14 @@ public class Main {
 			}
 			Collection<File> files = new ArrayList<File>();
 			files.add(file);
-			evaluate(files, prover, preprocessor, ematching);
+			evaluate(files, prover, preprocessor);
 		}
 
 		FileUtils.deleteDirectory(tmpFolder);
 		assert (Command_Line_Utility.processes.size() == 0);
 	}
 
-	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor, boolean ematching)
+	public static void evaluate(Collection<File> benchmarks, Prover prover, String preprocessor)
 			throws Proof_Exception {
 		int nr_threads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(nr_threads);
@@ -145,7 +145,7 @@ public class Main {
 		Statistics statistics = new Statistics(benchmarks.size());
 
 		for (File benchmark : benchmarks) {
-			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, statistics, prover, preprocessor, ematching),
+			threads_map.put(Concurrency_Handler.process_file(executor, benchmark, statistics, prover, preprocessor),
 					benchmark);
 		}
 		for (Future<Void> future : threads_map.keySet()) {
@@ -165,7 +165,7 @@ public class Main {
 				}
 				File file = threads_map.get(future);
 				System.out.println("Timeout reached while processing the file " + file);
-				if (ematching || !Setup.API_unsat_core) {
+				if (Setup.E_MATCHING || !Setup.API_unsat_core) {
 					Command_Line_Utility.stop_processes(file);
 				}
 			}
