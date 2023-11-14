@@ -236,12 +236,12 @@ public class Input_Reader {
 	// - There are no existential quantifiers.
 	private void find_quantifiers(Expr<?>[] expressions, List<Quantifier> parent_quantifiers, Expr<?> input_line)
 			throws Proof_Exception {
-		
+
 		Quantifier parent = null;
 		if (!parent_quantifiers.isEmpty()) {
 			parent = parent_quantifiers.get(parent_quantifiers.size() - 1);
 		}
-		
+
 		for (Expr<?> expression : expressions) {
 			// Quantified expressions are marked as Z3_QUANTIFIER_AST.
 			if (expression.isQuantifier()) {
@@ -455,14 +455,24 @@ public class Input_Reader {
 		}
 	}
 
-	// The method below are used to generate triggering terms for E-Matching.
+	// The methods below are used to generate triggering terms for E-Matching.
 
 	private void collect_patterns(Quantifier quantifier, List<Quantifier> parent_quantifiers) throws Proof_Exception {
 		int num_patterns = quantifier.getNumPatterns();
 		if (num_patterns > 0) {
 
-			List<List<String>> patterns_as_strings = String_Utility.extract_patterns(quantifier.toString(),
-					num_patterns);
+			List<List<String>> patterns_as_strings;
+			String quantifier_as_string = quantifier.toString();
+			int index_var = quantifier_as_string.lastIndexOf(":var");
+			if(!(index_var == -1 || quantifier_as_string.indexOf(":pattern") > index_var)) {
+				Quantifier direct_parent = parent_quantifiers.get(parent_quantifiers.size() - 1);
+				String parent_as_string = String_Utility.remove_line_breaks(direct_parent.toString());
+				int start_index = parent_as_string.lastIndexOf("(forall");
+				int end_index = String_Utility.match_brackets(parent_as_string, start_index);
+				quantifier_as_string = parent_as_string.substring(start_index, end_index + 1);
+			}
+			patterns_as_strings = String_Utility.extract_patterns(quantifier_as_string, num_patterns);
+
 			Symbol[] variables = quantifier.getBoundVariableNames();
 			for (int i = 0; i < parent_quantifiers.size(); i++) {
 				Quantifier parent_quantifier = parent_quantifiers.get(i);

@@ -249,26 +249,33 @@ public class String_Utility {
 		}
 		return source;
 	}
-	
+
 	public static List<List<String>> extract_patterns(String source, int number_of_patterns) throws Proof_Exception {
 		List<List<String>> multi_patterns = new ArrayList<List<String>>();
-		
-		String regex_alternative_pattern = "\\((.*?)\\)";
-		
+
 		do {
 			int pattern_index = source.lastIndexOf(":pattern ");
 			int last_index = match_brackets(source, pattern_index);
 			String match = source.substring(pattern_index + ":pattern ".length(), last_index + 1);
 			match = match.substring(1, match.length() - 1); // remove the outer "()"
-			List<String> alternative_patterns = match_all(regex_alternative_pattern, match);
-			multi_patterns.add(alternative_patterns);
-			source = source.substring(pattern_index);
-		} while(multi_patterns.size() != number_of_patterns);
-		
+			List<String> alternative_patterns = new ArrayList<String>();
+
+			int inner_last_index = match.length() - 1;
+			do {
+				inner_last_index = match_brackets(match, 0);
+				String possible_pattern = match.substring(0, inner_last_index + 1);
+				assert (!possible_pattern.contains(":var"));
+				alternative_patterns.add(possible_pattern);
+				multi_patterns.add(alternative_patterns);
+				match = match.substring(inner_last_index + 1);
+			} while (!match.isEmpty() && inner_last_index != match.length() - 1);
+			source = source.substring(0, pattern_index);
+		} while (source.contains(":pattern") && multi_patterns.size() != number_of_patterns);
+
 		return multi_patterns;
 	}
-	
-	private static int match_brackets(String source, int first_index) {
+
+	public static int match_brackets(String source, int first_index) {
 		int last_index = source.length() - 1;
 		int open_brackets = 0;
 		int close_brackets = 0;
