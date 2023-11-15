@@ -23,6 +23,7 @@ import com.microsoft.z3.Sort;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 
 import util.Proof_Exception;
+import util.String_Utility;
 import util.Vampire_Runner;
 import util.Verbal_Output;
 
@@ -64,7 +65,7 @@ public class Quant_Var {
 
 	// Input line where this quantified variable occurs according to the Z3 API.
 	// Is provided in the constructor.
-	protected Expr<?> input_line;
+	protected String input_line;
 
 	protected int number_in_input_formula;
 
@@ -104,7 +105,7 @@ public class Quant_Var {
 		this.verbal_output = verbal_output;
 		this.name = name;
 		this.type = type;
-		this.input_line = input_line;
+		this.input_line = String_Utility.remove_line_breaks(input_line.toString());
 		this.number_in_input_formula = number_in_input_formula;
 		this.quantifier = quantifier;
 		this.function_applications_with_quantified_variables = new HashMap<FuncDecl<?>, Set<Expr<?>>>();

@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import com.microsoft.z3.Expr;
-
 import proof_analyser.unsat_proof.Vampire_Unsat_Proof;
 import util.Verbal_Output.Log_Type;
 
@@ -106,7 +104,7 @@ public class Vampire_Runner {
 	// does not contain anything else and from whose unsat-proof we can thus read
 	// out the translation.
 	// Returns this translated input line.
-	public static String translate_to_vampire(File input_file, Expr<?> input_line, Set<String> vampire_names,
+	public static String translate_to_vampire(File input_file, String input_line, Set<String> vampire_names,
 			Verbal_Output verbal_output) throws Proof_Exception {
 		try {
 			// First we need to create a file containing only the given input line and the
@@ -133,7 +131,7 @@ public class Vampire_Runner {
 			// add some dummy part to ensure the unsatisfiability of the input. We
 			// concretely do that by making a conjunction of the input line and "false".
 			// Otherwise, Vampire will have difficulties with trying to prove this input.
-			translation_input_printer.println("(assert (and " + input_line.toString() + " false))");
+			translation_input_printer.println("(assert (and " + input_line + " false))");
 			translation_input_printer.close();
 			List<String> translation_proof = run_vampire(translation_input_file, vampire_names, verbal_output).getLines();
 			// Now, we look for our translated quantifier in the translation_proof.

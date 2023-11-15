@@ -786,15 +786,15 @@ public class Quant_Var_Handler {
 	}
 
 	public String get_input_lines() {
-		List<Expr<?>> input_lines = new LinkedList<Expr<?>>();
+		List<String> input_lines = new LinkedList<String>();
 		for (Quant_Var quant_var : quant_vars) {
 			if (quant_var.is_instantiated() && !input_lines.contains(quant_var.input_line)) {
 				input_lines.add(quant_var.input_line);
 			}
 		}
 		String out = "";
-		for (Expr<?> input_line : input_lines) {
-			out += String_Utility.remove_line_breaks(input_line.toString()) + "\n";
+		for (String input_line : input_lines) {
+			out += input_line + "\n";
 		}
 		return out;
 	}
