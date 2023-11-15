@@ -140,22 +140,23 @@ public class Benchmark_Runner implements Callable<Void> {
 						throw new Proof_Exception("interrupted");
 					}
 					
-					if (!Thread.currentThread().isInterrupted() && Setup.E_MATCHING
-							&& framework.synthesize_triggering_terms()) {
-						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + file_name);
-						statistics.ematching_success.incrementAndGet();
-					}
-					
-					if (Thread.currentThread().isInterrupted()) {
-						throw new Proof_Exception("interrupted");
-					}
-					
 					if(!Thread.currentThread().isInterrupted() && framework.minimize_input()) {
 						System.out.println("INPUT MINIMIZED for " + file_name);
 					}
 					else {
 						System.out.println("INPUT NOT MINIMIZED for " + file_name);
 					}
+					
+					if (Thread.currentThread().isInterrupted()) {
+						throw new Proof_Exception("interrupted");
+					}
+					
+					if (!Thread.currentThread().isInterrupted() && Setup.E_MATCHING
+							&& framework.synthesize_triggering_terms()) {
+						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + file_name);
+						statistics.ematching_success.incrementAndGet();
+					}
+					
 				} else {
 					System.out.println("EXAMPLE CONSTRUCTION FAILED for " + file_name);
 				}

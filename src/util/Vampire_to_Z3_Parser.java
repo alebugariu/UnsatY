@@ -61,8 +61,8 @@ public class Vampire_to_Z3_Parser {
 				a = a.substring(2, a.length() - 1);
 				String b = String_Utility.match_first("\\,[^\\s]*\\)$", s);
 				b = b.substring(1, b.length() - 1);
-				ArithExpr expr_a = (ArithExpr) parse_to_expr(a);
-				ArithExpr expr_b = (ArithExpr) parse_to_expr(b);
+				ArithExpr<?> expr_a = (ArithExpr<?>) parse_to_expr(a);
+				ArithExpr<?> expr_b = (ArithExpr<?>) parse_to_expr(b);
 				if (expr_a != null && expr_b != null) {
 					return context.mkAdd(expr_a, expr_b);
 				}
@@ -71,13 +71,13 @@ public class Vampire_to_Z3_Parser {
 				a = a.substring(2, a.length() - 1);
 				String b = String_Utility.match_first("\\,[^\\s]*\\)$", s);
 				b = b.substring(1, b.length() - 1);
-				ArithExpr expr_a = (ArithExpr) parse_to_expr(a);
-				ArithExpr expr_b = (ArithExpr) parse_to_expr(b);
+				ArithExpr<?> expr_a = (ArithExpr<?>) parse_to_expr(a);
+				ArithExpr<?> expr_b = (ArithExpr<?>) parse_to_expr(b);
 				if (expr_a != null && expr_b != null) {
 					return context.mkSub(expr_a, expr_b);
 				}
 			} else if (isUminus(s)) {
-				ArithExpr expr_a = (ArithExpr) parse_to_expr(s.substring(1));
+				ArithExpr<?> expr_a = (ArithExpr<?>) parse_to_expr(s.substring(1));
 				if (expr_a != null) {
 					return context.mkUnaryMinus(expr_a);
 				}

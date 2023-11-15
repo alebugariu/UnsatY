@@ -685,7 +685,7 @@ public class Quant_Var_Handler {
 				String sub_expression_as_string = sub_expression.toString();
 				if (sub_expression_as_string.contains("forall")) {
 					List<String> instantiated_sub_quantifiers = instantiate_nested_quantifiers(sub_expression,
-							sub_expression.toString());
+							sub_expression_as_string);
 					List<String> new_out = new LinkedList<String>();
 					for (String instantiated_sub_quantifier : instantiated_sub_quantifiers) {
 						for (String candidate : out) {
