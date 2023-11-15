@@ -467,7 +467,10 @@ public class Input_Reader {
 			if(!(index_var == -1 || quantifier_as_string.indexOf(":pattern") > index_var)) {
 				Quantifier direct_parent = parent_quantifiers.get(parent_quantifiers.size() - 1);
 				String parent_as_string = String_Utility.remove_line_breaks(direct_parent.toString());
-				int start_index = parent_as_string.lastIndexOf("(forall");
+				int quant_vars_start_index = quantifier_as_string.indexOf("((");
+				int quant_vars_end_index = String_Utility.match_brackets(quantifier_as_string, quant_vars_start_index);
+				quantifier_as_string = "(forall " + quantifier_as_string.substring(quant_vars_start_index, quant_vars_end_index); // extract just the quant var declarations
+				int start_index = parent_as_string.indexOf(quantifier_as_string);
 				int end_index = String_Utility.match_brackets(parent_as_string, start_index);
 				quantifier_as_string = parent_as_string.substring(start_index, end_index + 1);
 			}
