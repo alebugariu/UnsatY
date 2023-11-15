@@ -154,8 +154,7 @@ public class Proof_Analyser_Framework {
 	}
 
 	public Boolean minimize_input() {
-		success = input_reader.minimize(example);
-		return success;
+		return input_reader.minimize(example);
 	}
 
 	public Boolean get_minimization_success() {

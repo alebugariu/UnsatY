@@ -87,56 +87,77 @@ public class Benchmark_Runner implements Callable<Void> {
 	@Override
 	public Void call() {
 		Proof_Analyser_Framework framework = new Proof_Analyser_Framework(input_file, prover, log);
+		String file_name = input_file.toString();
 		try {
-			System.out.println("Processing " + input_file.toString() + " with " + prover + ": ");
+			System.out.println("Processing " + file_name + " with " + prover + ": ");
 			System.out.flush();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime start_time = LocalDateTime.now();
-			System.out.println("Started Calculations for " + input_file.toString() + ": " + dtf.format(start_time));
+			System.out.println("Started Calculations for " + file_name + ": " + dtf.format(start_time));
 			framework.setup();
 			statistics.formulas.add(framework.get_number_of_formulas());
 			statistics.quantifiers.add(framework.get_number_of_quantifiers());
 			if (!Thread.currentThread().isInterrupted() && framework.generate_unsat_core()) {
 				LocalDateTime now = LocalDateTime.now();
 				System.out.println(
-						"Unsat core sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
+						"Unsat core sucessfully generated for " + file_name + ": " + dtf.format(now));
 				statistics.unsat_core_success.incrementAndGet();
 				statistics.unsat_core_formulas.add(framework.get_number_of_formulas());
 				statistics.unsat_core_quantifiers.add(framework.get_number_of_quantifiers());
+				
 				if (Thread.currentThread().isInterrupted()) {
 					throw new Proof_Exception("interrupted");
 				}
+				
 				framework.generate_proof();
 				statistics.proof_generation_success.incrementAndGet();
 				statistics.proof_size.add(framework.get_proof_size());
 				now = LocalDateTime.now();
 				System.out.println(
-						"Unsat proof sucessfully generated for " + input_file.toString() + ": " + dtf.format(now));
+						"Unsat proof sucessfully generated for " + file_name + ": " + dtf.format(now));
 				if (!Thread.currentThread().isInterrupted() && framework.construct_potential_example()) {
 					statistics.example_construction_success.incrementAndGet();
-					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + input_file.toString());
+					System.out.println("EXAMPLE CONSTRUCTRED SUCCESSFULLY for " + file_name);
+					
 					if (Thread.currentThread().isInterrupted()) {
 						throw new Proof_Exception("interrupted");
 					}
+					
 					framework.minimize_example();
 					if (Setup.log_type == Log_Type.full) {
 						log.println("------------------------------------------");
 						log.print(framework.get_user_presentation());
 					}
 					if (framework.get_minimization_success()) {
+						System.out.println("EXAMPLE MINIMIZED for " + file_name);
 						statistics.example_minimization.incrementAndGet();
 					}
+					else {
+						System.out.println("EXAMPLE NOT MINIMIZED for " + file_name);
+					}
+					
 					if (Thread.currentThread().isInterrupted()) {
 						throw new Proof_Exception("interrupted");
 					}
-					framework.minimize_input();
+					
 					if (!Thread.currentThread().isInterrupted() && Setup.E_MATCHING
 							&& framework.synthesize_triggering_terms()) {
-						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + input_file.toString());
+						System.out.println("TRIGGERGING TERMS SYNTHESIZED SUCCESSFULLY for " + file_name);
 						statistics.ematching_success.incrementAndGet();
 					}
+					
+					if (Thread.currentThread().isInterrupted()) {
+						throw new Proof_Exception("interrupted");
+					}
+					
+					if(!Thread.currentThread().isInterrupted() && framework.minimize_input()) {
+						System.out.println("INPUT MINIMIZED for " + file_name);
+					}
+					else {
+						System.out.println("INPUT NOT MINIMIZED for " + file_name);
+					}
 				} else {
-					System.out.println("EXAMPLE CONSTRUCTION FAILED for " + input_file.toString());
+					System.out.println("EXAMPLE CONSTRUCTION FAILED for " + file_name);
 				}
 				if (Setup.log_type == Log_Type.full) {
 					log.println("------------------------------------------");
@@ -144,16 +165,16 @@ public class Benchmark_Runner implements Callable<Void> {
 					log.println(", [RECOVERY: " + framework.get_recovery_info() + "].");
 				}
 			} else {
-				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + input_file.toString());
+				System.out.println("UNSAT CORE CONSTRUCTION FAILED for " + file_name);
 			}
 			LocalDateTime end_time = LocalDateTime.now();
-			System.out.println("Finished Calculations for " + input_file.toString() + ": " + dtf.format(end_time));
+			System.out.println("Finished Calculations for " + file_name + ": " + dtf.format(end_time));
 			System.out.println();
 			statistics.time.add((int) Duration.between(start_time, end_time).toMillis());
 		} catch (Proof_Exception e) {
 			Command_Line_Utility.stop_processes(input_file);
 			String error_message = e.getMessage();
-			System.out.println("FAIL for " + input_file.toString() + ": " + error_message);
+			System.out.println("FAIL for " + file_name + ": " + error_message);
 			System.out.println();
 		} finally {
 			framework.close_context();

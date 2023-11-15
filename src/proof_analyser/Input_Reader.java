@@ -603,6 +603,6 @@ public class Input_Reader {
 		} catch (IOException e) {
 			return false;
 		}
-		return false;
+		return true;
 	}
 }
