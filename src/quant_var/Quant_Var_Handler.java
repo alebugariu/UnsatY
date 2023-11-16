@@ -794,7 +794,7 @@ public class Quant_Var_Handler {
 		}
 		String out = "";
 		for (String input_line : input_lines) {
-			out += input_line + "\n";
+			out += "(assert " + input_line + ")\n";
 		}
 		return out;
 	}

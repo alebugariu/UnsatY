@@ -153,7 +153,7 @@ public class Proof_Analyser_Framework {
 		return success;
 	}
 
-	public Boolean minimize_input() {
+	public Boolean minimize_input() throws Proof_Exception {
 		return input_reader.minimize(example);
 	}
 

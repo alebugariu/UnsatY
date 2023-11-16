@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.microsoft.z3.BoolExpr;
@@ -31,7 +32,6 @@ import com.microsoft.z3.Symbol;
 import com.microsoft.z3.enumerations.Z3_decl_kind;
 import com.microsoft.z3.enumerations.Z3_sort_kind;
 
-import quant_var.Quant_Var;
 import quant_var.Quant_Var_Handler;
 import util.Exception_Handler;
 import util.Input_Compatibility;
@@ -464,12 +464,15 @@ public class Input_Reader {
 			List<List<String>> patterns_as_strings;
 			String quantifier_as_string = quantifier.toString();
 			int index_var = quantifier_as_string.lastIndexOf(":var");
-			if(!(index_var == -1 || quantifier_as_string.indexOf(":pattern") > index_var)) {
+			if (!(index_var == -1 || quantifier_as_string.indexOf(":pattern") > index_var)) {
 				Quantifier direct_parent = parent_quantifiers.get(parent_quantifiers.size() - 1);
 				String parent_as_string = String_Utility.remove_line_breaks(direct_parent.toString());
 				int quant_vars_start_index = quantifier_as_string.indexOf("((");
 				int quant_vars_end_index = String_Utility.match_brackets(quantifier_as_string, quant_vars_start_index);
-				quantifier_as_string = "(forall " + quantifier_as_string.substring(quant_vars_start_index, quant_vars_end_index); // extract just the quant var declarations
+				quantifier_as_string = "(forall "
+						+ quantifier_as_string.substring(quant_vars_start_index, quant_vars_end_index); // extract just
+																										// the quant var
+																										// declarations
 				int start_index = parent_as_string.indexOf(quantifier_as_string);
 				int end_index = String_Utility.match_brackets(parent_as_string, start_index);
 				quantifier_as_string = parent_as_string.substring(start_index, end_index + 1);
@@ -506,18 +509,10 @@ public class Input_Reader {
 		return false;
 	}
 
-	private boolean was_instantiated(String assertion, List<Quant_Var> quant_vars) {
-		for (Quant_Var quant_var : quant_vars) {
-			if (assertion.contains(quant_var.get_name())) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private String get_required_assertions(Set<String> assertions, Example example) {
+	private String get_required_assertions(Set<String> assertions, Example example) throws Proof_Exception {
 		BoolExpr[] unsat_core = example.unsat_core;
-		List<Quant_Var> quant_vars = example.get_instantiated_quant_vars();
+		String input_lines = quant_vars.get_input_lines();
+		String lines_without_spaces = input_lines.replace(" ", "");
 		String required_assertions = "";
 		for (String assertion : assertions) {
 			if (required_assertions.contains(assertion)) {
@@ -527,8 +522,11 @@ public class Input_Reader {
 				if (in_unsat_core(assertion, unsat_core)) {
 					required_assertions += assertion + "\n";
 				}
-			} else if (was_instantiated(assertion, quant_vars)) {
-				required_assertions += assertion + "\n";
+			} else {
+				String unnamed_assertion = String_Utility.remove_names(assertion).replace(" ", "");
+				if (lines_without_spaces.contains(unnamed_assertion)) {
+					required_assertions += assertion + "\n";
+				}
 			}
 		}
 		return required_assertions;
@@ -552,7 +550,7 @@ public class Input_Reader {
 		return used_declarations;
 	}
 
-	public Boolean minimize(Example example) {
+	public Boolean minimize(Example example) throws Proof_Exception {
 		Scanner scanner;
 		try {
 			scanner = new Scanner(this.z3_input_file);
@@ -600,9 +598,9 @@ public class Input_Reader {
 			}
 			output.close();
 			scanner.close();
+			return !FileUtils.contentEquals(this.z3_input_file, output_file);
 		} catch (IOException e) {
 			return false;
 		}
-		return true;
 	}
 }
